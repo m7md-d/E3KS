@@ -1,0 +1,16 @@
+name: e3ks_engine
+description: محرّك E3KS — فحص وتبديل الألوان والخطوط في مستندات OOXML بأمانة تامة.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+# ملاحظة: Dart خالص. ممنوع إضافة flutter هنا — القاعدة 01، اتجاه الاعتماد.
+dependencies:
+  archive: ^4.0.7
+  xml: ^6.6.1
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^6.0.0

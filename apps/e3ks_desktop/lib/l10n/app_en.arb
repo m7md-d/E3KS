@@ -1,0 +1,227 @@
+{
+  "@@locale": "en",
+  "appName": "E3KS",
+  "tagline": "Reverse your document's identity",
+  "languageName": "English",
+  "dropHere": "Drop a Word file here",
+  "orDivider": "— or —",
+  "chooseFile": "Choose a file…",
+  "supported": "Supports .docx files from Microsoft Word",
+  "reading": "Reading the document…",
+  "openAnother": "Open another file",
+  "tabColors": "Colours",
+  "tabFonts": "Fonts",
+  "tabIdentities": "Saved identities",
+  "identityColors": "Colours the reader sees",
+  "identityColorsHint": "These are your document's actual design colours. Usually the ones you want to change.",
+  "inheritedColors": "Colours inherited from Word templates",
+  "inheritedColorsHint": "Colours that came with built-in Word templates and never appear in the text. Normally left alone.",
+  "pickReplacement": "Pick a replacement colour",
+  "colorUsage": "{count} places · {role} · {parts}",
+  "@colorUsage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "role": {},
+      "parts": {}
+    }
+  },
+  "occurrences": "{count} places",
+  "@occurrences": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emptyColors": "Open a document to see its colours.",
+  "emptyFonts": "Open a document to see its fonts.",
+  "replacementColor": "Replacement colour",
+  "removeMapping": "Remove replacement",
+  "confirm": "Apply",
+  "fromOtherDocument": "From another open document",
+  "openReferenceHint": "Open a file that has the identity you want, and its colours appear here.",
+  "fromSavedIdentities": "From your saved identities",
+  "contrastReadable": "Contrast on white {ratio}:1 ✓ readable",
+  "@contrastReadable": {
+    "placeholders": {
+      "ratio": {}
+    }
+  },
+  "contrastLow": "Contrast on white {ratio}:1 — low",
+  "@contrastLow": {
+    "placeholders": {
+      "ratio": {}
+    }
+  },
+  "fontsHint": "Unify the document's fonts. Arabic and Latin are separate because merging them breaks one of the two.",
+  "latinFont": "Latin font",
+  "arabicFont": "Arabic font",
+  "keepAsIs": "Leave unchanged",
+  "protectedFonts": "Protected fonts",
+  "protectedFontsHint": "Fonts used for code and technical tables. Changing them ruins the alignment, so we skip them.",
+  "likelyCodeFont": "likely a code font",
+  "before": "Before",
+  "after": "After",
+  "showNumbers": "Show paragraph numbers",
+  "jumpToSection": "Jump to section",
+  "nextChange": "Next change",
+  "previousChange": "Previous change",
+  "noChangesYet": "No changes",
+  "fitWidth": "Fit width",
+  "actualSize": "Actual size",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "pageOf": "Page {n} of {total}",
+  "@pageOf": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "previewTruncated": "Part of the document is shown because it is long.",
+  "sectionBody": "Body",
+  "sectionHeader": "Header",
+  "sectionFooter": "Footer",
+  "sectionFootnotes": "Footnotes",
+  "sectionEndnotes": "Endnotes",
+  "sectionComments": "Comments",
+  "partStyles": "Styles",
+  "partTheme": "Theme",
+  "partNumbering": "Lists",
+  "roleText": "text colour",
+  "roleParagraphFill": "paragraph fill",
+  "roleCellFill": "cell fill",
+  "roleRowFill": "row fill",
+  "roleTableFill": "table fill",
+  "roleRunFill": "text fill",
+  "roleShadingPattern": "shading pattern",
+  "roleBorder": "border",
+  "rolePageBackground": "page background",
+  "roleGraphics": "graphics",
+  "roleThemePalette": "theme palette",
+  "roleOther": "unspecified",
+  "familyRed": "red",
+  "familyOrange": "orange",
+  "familyGold": "gold",
+  "familyGreen": "green",
+  "familyTeal": "teal",
+  "familyCyan": "cyan",
+  "familyBlue": "blue",
+  "familyPurple": "purple",
+  "familyPink": "pink",
+  "familyNeutral": "neutral",
+  "toneVeryDark": "very dark",
+  "toneDark": "dark",
+  "toneMedium": "medium",
+  "toneLight": "light",
+  "toneVeryLight": "very light",
+  "slotAscii": "Latin",
+  "slotHighAnsi": "Latin extended",
+  "slotComplexScript": "Arabic / complex",
+  "slotEastAsian": "East Asian",
+  "slotDrawing": "graphics",
+  "identitiesHint": "A set of colours and fonts you save once and apply to any document.",
+  "saveIdentity": "Save as identity",
+  "saveIdentityDisabled": "Change some colours first, then save them as an identity",
+  "identityName": "Identity name",
+  "identityNameHint": "e.g. Tuwaiq Academy",
+  "applyIdentity": "Apply",
+  "deleteIdentity": "Delete",
+  "noIdentities": "No saved identities yet.\nChange some colours, then press \"Save as identity\".",
+  "documentFacts": "What we found in the document",
+  "factDesignColors": "Design colours",
+  "factInheritedColors": "Inherited colours",
+  "factFonts": "Fonts",
+  "factScannedParts": "Parts scanned",
+  "export": "Export document",
+  "exporting": "Preparing the file…",
+  "exported": "Saved",
+  "exportBlocked": "Write cancelled — no file was created",
+  "exportBlockedWhy": "We found a fault that could break the file when opened, so we stopped the save.",
+  "reportColorsReplaced": "Colours replaced",
+  "reportFontsReplaced": "Fonts replaced",
+  "reportPartsChanged": "Parts changed",
+  "reportFontsProtected": "Fonts protected",
+  "reportUnmatched": "Colours you picked were not found in the document: {colors}",
+  "@reportUnmatched": {
+    "placeholders": {
+      "colors": {}
+    }
+  },
+  "close": "Close",
+  "cancel": "Cancel",
+  "save": "Save",
+  "reset": "Undo all",
+  "changesBadge": "{count} changes",
+  "@changesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "language": "Language",
+  "settings": "Settings",
+  "fontsSection": "Document fonts",
+  "fontsSectionHint": "To show your file as it really looks we need its fonts. Whatever is not on your machine we fetch and keep here.",
+  "fetchFonts": "Fetch missing fonts",
+  "fetchFontsHint": "Only the font name leaves your machine — never the document's content or name.",
+  "cachedFonts": "Saved fonts",
+  "cacheSize": "Space used",
+  "deleteAllFonts": "Delete all",
+  "deleteFont": "Delete",
+  "noCachedFonts": "No saved fonts yet.",
+  "fontDeletedNote": "Deleted fonts stay on screen until the app restarts.",
+  "fontsMissingOne": "One font is unavailable; the preview shows a substitute.",
+  "fontsMissingMany": "{count} fonts are unavailable; the preview shows substitutes.",
+  "@fontsMissingMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fontsFetching": "Fetching the document's fonts…",
+  "showDetails": "Details",
+  "originBundled": "Bundled with the app",
+  "originSystem": "Installed on your machine",
+  "originCached": "Saved here",
+  "originFetched": "Just fetched",
+  "originUnavailable": "Unavailable — likely a commercial or private font",
+  "originOffline": "Could not connect",
+  "originDisabled": "Fetching is turned off in settings",
+  "errNotAnArchive": "This is not a valid Word document — we could not open it.",
+  "errMissingContentTypes": "The file is missing an essential part — it is not an Office document.",
+  "errChecksumMismatch": "The file is damaged or incomplete.",
+  "errMalformedXml": "A part inside the document is damaged: {part}",
+  "@errMalformedXml": {
+    "placeholders": {
+      "part": {}
+    }
+  },
+  "errEmptyTextNode": "We found {count} places that break opening the file in Google Docs.",
+  "@errEmptyTextNode": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errUnbalancedField": "Word fields are unbalanced — page numbers or the table of contents would break.",
+  "errContentTypesNotFirst": "The file's parts are in the wrong order — some programs would reject it.",
+  "errPartCountMismatch": "The output part count does not match the source.",
+  "errPartNotFound": "A required part is missing from the document.",
+  "errEncodeFailed": "We could not build the output file.",
+  "errUnmatchedMapping": "Colours in your plan were not found in the document: {colors}",
+  "@errUnmatchedMapping": {
+    "placeholders": {
+      "colors": {}
+    }
+  }
+}

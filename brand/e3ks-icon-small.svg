@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"
+     role="img" aria-label="E3KS">
+  <title>E3KS</title>
+
+  <!--
+    نسخة الأحجام الصغيرة (‎16–32px‎): شريط المهام، الشريط العلوي، أيقونة الموقع.
+
+    نفس الفكرة والألوان، وثلاثة فروق مقصودة تحفظ الوضوح حين تُصغَّر:
+      · شريط أثخن (72 بدل 58) ⇒ ‎2.25px‎ عند 16px بدل ‎1.8px‎
+      · زوايا حادّة، فالتدوير يذوب عند هذا الحجم ويبقى ضبابًا
+      · حرف أكبر داخل الإطار، فالهواء ترفٌ لا يُحتمل هنا
+
+    النسخة الكاملة (‎e3ks-icon.svg‎) هي الأصل، وتُستعمل من 48px فما فوق.
+  -->
+
+  <defs>
+    <clipPath id="frame">
+      <rect x="0" y="0" width="512" height="512" rx="114" ry="114"/>
+    </clipPath>
+    <clipPath id="firstIdentity">
+      <path d="M0 0 H512 L0 512 Z"/>
+    </clipPath>
+    <g id="mark">
+      <rect x="336" y="88"  width="72"  height="336"/>
+      <rect x="104" y="88"  width="304" height="72"/>
+      <rect x="168" y="220" width="240" height="72"/>
+      <rect x="104" y="352" width="304" height="72"/>
+    </g>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="512" height="512" fill="#0B1013"/>
+    <use href="#mark" fill="#4FD6E8"/>
+    <g clip-path="url(#firstIdentity)">
+      <rect width="512" height="512" fill="#F5F8F9"/>
+      <use href="#mark" fill="#0B1013"/>
+    </g>
+  </g>
+</svg>

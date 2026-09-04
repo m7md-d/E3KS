@@ -1,0 +1,7 @@
+.DS_Store
+.dart_tool/
+build/
+*.iml
+.idea/
+# مخرجات تجريبية لا تدخل المستودع — القاعدة 03
+/scratch/

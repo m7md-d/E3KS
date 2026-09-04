@@ -1,0 +1,52 @@
+name: e3ks_desktop
+description: E3KS — اعكس. تطبيق سطح مكتب لعكس الهوية البصرية في المستندات.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # الترجمة الرسمية: ملفات ARB يقرؤها المترجم بلا برمجة.
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+  # المحرّك — كل المنطق هناك، ولا منطق تحويل في هذه الحزمة (القاعدة 01).
+  e3ks_engine:
+    path: ../../packages/e3ks_engine
+
+  # حوارا الفتح والحفظ الأصليان (فريق Flutter).
+  file_selector: ^1.0.3
+  # السحب والإفلات على النافذة.
+  desktop_drop: ^0.6.1
+
+  # الأيقونات — مكتبة جاهزة، خطّ أيقونات نقيّ بلا كود أصلي.
+  lucide_icons_flutter: ^3.1.17
+
+  # لا حزمة لإدارة الحالة: ChangeNotifier + ListenableBuilder من النواة تكفي.
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  # الخط المعتمد، مضمَّن في التطبيق لا مطلوب من النظام: البرنامج يجب أن
+  # يبدو واحدًا على كل جهاز. رخصة OFL 1.1 تجيز التضمين (assets/fonts/OFL.txt).
+  fonts:
+    - family: IBM Plex Sans Arabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
+          weight: 700

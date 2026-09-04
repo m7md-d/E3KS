@@ -1,0 +1,7 @@
+# توليد الترجمات من ملفات ARB.
+# القاعدة: لا سلسلة نصّية معروضة داخل ودجة — كلها هنا.
+arb-dir: lib/l10n
+template-arb-file: app_ar.arb
+output-localization-file: app_localizations.dart
+output-class: L
+nullable-getter: false

@@ -1,0 +1,227 @@
+{
+  "@@locale": "ar",
+  "appName": "E3KS",
+  "tagline": "اعكس هوية مستندك",
+  "languageName": "العربية",
+  "dropHere": "اسحب ملف Word هنا",
+  "orDivider": "ــ أو ــ",
+  "chooseFile": "اختر ملفًا…",
+  "supported": "يدعم ملفات ‎.docx‎ من Microsoft Word",
+  "reading": "نقرأ المستند…",
+  "openAnother": "افتح ملفًا آخر",
+  "tabColors": "الألوان",
+  "tabFonts": "الخطوط",
+  "tabIdentities": "الهويات المحفوظة",
+  "identityColors": "ألوان يراها القارئ",
+  "identityColorsHint": "هذه ألوان التصميم الفعلية في مستندك. غالبًا هي ما تريد تغييره.",
+  "inheritedColors": "ألوان موروثة من قوالب Word",
+  "inheritedColorsHint": "ألوان أتت مع قوالب Word الجاهزة ولا تظهر في النصّ. عادةً تُترك كما هي.",
+  "pickReplacement": "اختر لونًا بديلًا",
+  "colorUsage": "{count} موضعًا · {role} · {parts}",
+  "@colorUsage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "role": {},
+      "parts": {}
+    }
+  },
+  "occurrences": "{count} موضعًا",
+  "@occurrences": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emptyColors": "افتح مستندًا لعرض ألوانه.",
+  "emptyFonts": "افتح مستندًا لعرض خطوطه.",
+  "replacementColor": "اللون البديل",
+  "removeMapping": "أزل التبديل",
+  "confirm": "اعتمد",
+  "fromOtherDocument": "من مستند آخر مفتوح",
+  "openReferenceHint": "افتح ملفًا فيه الهوية التي تريدها، وستظهر ألوانه هنا.",
+  "fromSavedIdentities": "من هوياتك المحفوظة",
+  "contrastReadable": "التباين مع الأبيض {ratio}:1 ✓ مقروء",
+  "@contrastReadable": {
+    "placeholders": {
+      "ratio": {}
+    }
+  },
+  "contrastLow": "التباين مع الأبيض {ratio}:1 — منخفض",
+  "@contrastLow": {
+    "placeholders": {
+      "ratio": {}
+    }
+  },
+  "fontsHint": "وحّد خطوط المستند. الخطوط العربية والإنجليزية منفصلة لأن دمجها يكسر أحدهما.",
+  "latinFont": "الخط الإنجليزي",
+  "arabicFont": "الخط العربي",
+  "keepAsIs": "اتركه كما هو",
+  "protectedFonts": "خطوط محميّة",
+  "protectedFontsHint": "خطوط الكود والجداول التقنية. تغييرها يفسد محاذاتها، فنستثنيها.",
+  "likelyCodeFont": "يُرجَّح أنه خط كود",
+  "before": "قبل",
+  "after": "بعد",
+  "showNumbers": "أظهِر ترقيم الفقرات",
+  "jumpToSection": "انتقل إلى قسم",
+  "nextChange": "التغيير التالي",
+  "previousChange": "التغيير السابق",
+  "noChangesYet": "لا تغييرات",
+  "fitWidth": "ملء العرض",
+  "actualSize": "مقاس حقيقي",
+  "zoomIn": "تكبير",
+  "zoomOut": "تصغير",
+  "pageOf": "صفحة {n} من {total}",
+  "@pageOf": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "previewTruncated": "عُرض جزء من المستند لأنه طويل.",
+  "sectionBody": "المتن",
+  "sectionHeader": "الترويسة",
+  "sectionFooter": "التذييل",
+  "sectionFootnotes": "الحواشي",
+  "sectionEndnotes": "التعليقات الختامية",
+  "sectionComments": "التعليقات",
+  "partStyles": "الأنماط",
+  "partTheme": "الثيم",
+  "partNumbering": "القوائم",
+  "roleText": "لون نص",
+  "roleParagraphFill": "خلفية فقرة",
+  "roleCellFill": "خلفية خلية",
+  "roleRowFill": "خلفية صف",
+  "roleTableFill": "خلفية جدول",
+  "roleRunFill": "خلفية نص",
+  "roleShadingPattern": "نمط تظليل",
+  "roleBorder": "حد",
+  "rolePageBackground": "خلفية صفحة",
+  "roleGraphics": "رسوميات",
+  "roleThemePalette": "لوحة الثيم",
+  "roleOther": "غير محدّد",
+  "familyRed": "أحمر",
+  "familyOrange": "برتقالي",
+  "familyGold": "أصفر/ذهبي",
+  "familyGreen": "أخضر",
+  "familyTeal": "أزرق مخضرّ",
+  "familyCyan": "سماوي",
+  "familyBlue": "أزرق",
+  "familyPurple": "بنفسجي",
+  "familyPink": "وردي",
+  "familyNeutral": "رمادي/محايد",
+  "toneVeryDark": "داكن جدًا",
+  "toneDark": "داكن",
+  "toneMedium": "متوسط",
+  "toneLight": "فاتح",
+  "toneVeryLight": "فاتح جدًا",
+  "slotAscii": "لاتيني",
+  "slotHighAnsi": "لاتيني موسّع",
+  "slotComplexScript": "عربي/معقّد",
+  "slotEastAsian": "شرق آسيوي",
+  "slotDrawing": "رسوميات",
+  "identitiesHint": "مجموعة ألوان وخطوط تحفظها مرّة وتطبّقها على أي مستند.",
+  "saveIdentity": "احفظ كهويّة",
+  "saveIdentityDisabled": "بدّل ألوانًا أولًا ثم احفظها كهويّة",
+  "identityName": "اسم الهوية",
+  "identityNameHint": "مثال: أكاديمية طويق",
+  "applyIdentity": "طبّق",
+  "deleteIdentity": "احذف",
+  "noIdentities": "لا هويات محفوظة بعد.\nبدّل بعض الألوان ثم اضغط «احفظ كهويّة».",
+  "documentFacts": "ما وجدناه في المستند",
+  "factDesignColors": "ألوان التصميم",
+  "factInheritedColors": "ألوان موروثة",
+  "factFonts": "خطوط",
+  "factScannedParts": "أجزاء مفحوصة",
+  "export": "صدّر المستند",
+  "exporting": "نُجهّز الملف…",
+  "exported": "تم الحفظ",
+  "exportBlocked": "أُلغيت الكتابة — لم يُنشأ أي ملف",
+  "exportBlockedWhy": "اكتشفنا خللًا قد يكسر الملف عند فتحه، فأوقفنا الحفظ.",
+  "reportColorsReplaced": "ألوان بُدِّلت",
+  "reportFontsReplaced": "خطوط بُدِّلت",
+  "reportPartsChanged": "أجزاء تغيّرت",
+  "reportFontsProtected": "خطوط حُميت",
+  "reportUnmatched": "ألوان اخترتها لم توجد في المستند: {colors}",
+  "@reportUnmatched": {
+    "placeholders": {
+      "colors": {}
+    }
+  },
+  "close": "إغلاق",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+  "reset": "تراجع عن الكل",
+  "changesBadge": "{count} تغييرًا",
+  "@changesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "language": "اللغة",
+  "settings": "الإعدادات",
+  "fontsSection": "خطوط المستندات",
+  "fontsSectionHint": "لعرض ملفّك بشكله الحقيقي نحتاج خطوطه. ما لا يوجد على جهازك نجلبه ونحفظه هنا.",
+  "fetchFonts": "اجلب الخطوط الناقصة",
+  "fetchFontsHint": "يغادر جهازك اسم الخطّ فقط — لا محتوى المستند ولا اسمه.",
+  "cachedFonts": "خطوط محفوظة",
+  "cacheSize": "المساحة المستهلكة",
+  "deleteAllFonts": "احذف الكل",
+  "deleteFont": "احذف",
+  "noCachedFonts": "لا خطوط محفوظة بعد.",
+  "fontDeletedNote": "المحذوف يبقى معروضًا حتى إعادة تشغيل التطبيق.",
+  "fontsMissingOne": "خطّ واحد غير متاح، والمعاينة تعرضه ببديل.",
+  "fontsMissingMany": "{count} خطوط غير متاحة، والمعاينة تعرضها ببدائل.",
+  "@fontsMissingMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fontsFetching": "نجلب خطوط المستند…",
+  "showDetails": "التفاصيل",
+  "originBundled": "مضمَّن في التطبيق",
+  "originSystem": "منصَّب على جهازك",
+  "originCached": "محفوظ عندنا",
+  "originFetched": "جُلب الآن",
+  "originUnavailable": "غير متاح — خطّ تجاري أو خاص غالبًا",
+  "originOffline": "تعذّر الاتصال",
+  "originDisabled": "الجلب معطَّل من الإعدادات",
+  "errNotAnArchive": "الملف ليس مستند Word صالحًا — تعذّر فتحه.",
+  "errMissingContentTypes": "الملف ينقصه جزء أساسي — ليس مستند Office.",
+  "errChecksumMismatch": "الملف تالف أو غير مكتمل.",
+  "errMalformedXml": "جزء داخل المستند تالف: {part}",
+  "@errMalformedXml": {
+    "placeholders": {
+      "part": {}
+    }
+  },
+  "errEmptyTextNode": "وجدنا {count} موضعًا يكسر فتح الملف في Google Docs.",
+  "@errEmptyTextNode": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errUnbalancedField": "حقول Word غير متوازنة — أرقام الصفحات أو الفهرس ستنكسر.",
+  "errContentTypesNotFirst": "ترتيب أجزاء الملف غير سليم — بعض البرامج سترفضه.",
+  "errPartCountMismatch": "عدد أجزاء المخرج لا يطابق المصدر.",
+  "errPartNotFound": "جزء مطلوب غير موجود في المستند.",
+  "errEncodeFailed": "تعذّر بناء الملف الناتج.",
+  "errUnmatchedMapping": "ألوان في خطتك لم توجد في المستند: {colors}",
+  "@errUnmatchedMapping": {
+    "placeholders": {
+      "colors": {}
+    }
+  }
+}

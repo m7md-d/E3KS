@@ -1,0 +1,15 @@
+name: e3ks_cli
+description: واجهة سطر أوامر رفيعة فوق محرّك E3KS — تُثبت المسار عمليًا.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+# لا حزم خارجية: تحليل الوسائط يدوي، وJSON من نواة Dart.
+dependencies:
+  e3ks_engine:
+    path: ../../packages/e3ks_engine
+
+dev_dependencies:
+  lints: ^6.0.0

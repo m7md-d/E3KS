@@ -1,0 +1,117 @@
+/// **مرجع الحقيقة الواحد للألوان.**
+///
+/// لا لون في هذا التطبيق يُكتب خارج هذا الملف. لا في ودجة، ولا في ثيم،
+/// ولا في رسّام. مغطّى باختبار يمسح `lib/` ويرفض أي قيمة لون خارجه.
+///
+/// **لماذا هذا الصرامة بالذات؟** لأن منتجنا نفسه يوحّد ألوان المستندات.
+/// أداةٌ تفرّق ألوانها في عشرين ملفًا لا تُصدَّق حين تَعِد بتوحيد ألوان غيرها.
+///
+/// والخطّ كذلك: [Type] مرجعه الوحيد، ولا اسم خطّ ولا وزن يُكتب في ودجة.
+///
+/// نطاقات منفصلة **لا تختلط**:
+///   [Type]   الخطّ المعتمد وأوزانه.
+///   [Shade]  سطح التطبيق — داكن، ولمسة المرآة السماوية.
+///   [Paper]  سطح المستند المعروض — أبيض دائمًا، لا يتبع ثيم التطبيق.
+///   [Brand]  الرمز — انظر `brand/README.md`، ومطابقته مضمونة باختبار.
+library;
+
+import 'package:flutter/painting.dart';
+
+/// الخطّ المعتمد وأوزانه.
+///
+/// **IBM Plex Sans Arabic**، مضمَّن في التطبيق لا مطلوب من نظام المستخدم:
+/// خطٌّ يعتمد على التنصيب يجعل البرنامج يبدو مختلفًا على كل جهاز — وهذا
+/// عيبٌ في أداةٍ تبيع الاتساق البصري.
+///
+/// يرسم العربية واللاتينية معًا بعائلة واحدة، فلا ينكسر السطر المختلط.
+abstract final class Type {
+  /// اسم العائلة كما هو مصرَّح في `pubspec.yaml`. لا يُكتب في ودجة.
+  static const family = 'IBM Plex Sans Arabic';
+
+  /// احتياطي النظام إن تعذّر تحميل الأصل لأي سبب.
+  static const fallback = <String>['SF Arabic', 'Geeza Pro'];
+
+  /// الأوزان المضمَّنة. طلب وزن غير مضمَّن يجعل Flutter يصطنعه فيبهت.
+  static const display = FontWeight.w200; // الشعار وحده
+  static const regular = FontWeight.w400;
+  static const semiBold = FontWeight.w600; // العناوين والأزرار
+  static const bold = FontWeight.w700; // التوكيد داخل النصّ
+}
+
+/// ألوان واجهة التطبيق.
+abstract final class Shade {
+  /// خلفية النافذة — شبه أسود بميل أزرق، لا رمادي ميّت.
+  static const canvas = Color(0xFF0B1013);
+
+  /// أسطح مرتفعة: اللوحات والبطاقات.
+  static const surface = Color(0xFF121A1F);
+  static const surfaceHigh = Color(0xFF18232A);
+  static const surfaceHover = Color(0xFF1E2B33);
+
+  static const border = Color(0xFF243239);
+  static const borderStrong = Color(0xFF33454F);
+
+  static const text = Color(0xFFE6EDF1);
+  static const textMuted = Color(0xFF93A6B1);
+  static const textFaint = Color(0xFF5F7480);
+
+  /// السماوي — لون المرآة. الفعل والتحديد والأثر، ولا يُبعثر.
+  static const mirror = Color(0xFF4FD6E8);
+  static const mirrorSoft = Color(0xFF2A98A8);
+  static const mirrorDeep = Color(0xFF12414A);
+
+  /// النصّ فوق السماوي. تباينه معه ‎12.6:1‎.
+  static const onMirror = Color(0xFF04191D);
+
+  static const success = Color(0xFF56D9A3);
+  static const warning = Color(0xFFE8B84F);
+  static const danger = Color(0xFFF07A7A);
+}
+
+/// ألوان رسم المستند في المعاينة.
+///
+/// **لا تتبع ثيم التطبيق ولا يجوز أن تتبعه.** الورقة بيضاء لأن ورقة Word
+/// بيضاء؛ عرضها داكنة يجعل المعاينة كذبًا. وما عدا ألوان المستند نفسه
+/// (تأتي من المحرّك) فهو من هنا.
+abstract final class Paper {
+  /// الورقة. بيضاء دائمًا.
+  static const sheet = Color(0xFFFFFFFF);
+
+  /// حبر النصّ حين لا يصرّح المستند بلون.
+  static const ink = Color(0xFF1A1A1A);
+
+  /// أرقام الفقرات في الهامش — حاضرة ولا تزاحم النصّ.
+  static const gutter = Color(0xFFB2BCC3);
+
+  /// حدود الجداول وفواصل الأقسام.
+  static const rule = Color(0xFFD8DDE1);
+
+  static const shadow = Color(0x66000000);
+}
+
+/// ألوان الرمز في `brand/`.
+///
+/// مذكورة هنا **ومطابقتها لملفات SVG مضمونة باختبار** — فالمرجع الواحد
+/// يعبر حدود اللغات، ولا يبقى وعدًا في ملف توثيق.
+abstract final class Brand {
+  /// حبر الرمز = خلفية التطبيق. سوادٌ واحد في المنتج كلّه، لا اثنان متقاربان.
+  static const ink = Shade.canvas;
+
+  /// ورق الرمز. ليس أبيض نقيًّا: الرمز علامة لا مستند.
+  static const paper = Color(0xFFF5F8F9);
+
+  /// سماوي الرمز = سماوي الواجهة. هو الرابط بين الأيقونة والتطبيق.
+  static const mirror = Shade.mirror;
+}
+
+/// أطراف فضاء الألوان في منتقي الألوان.
+///
+/// قيم رياضية لا اختيارات تصميمية: مكعّب HSV يبدأ عند الأبيض وينتهي عند
+/// الأسود. تسكن هنا كي تبقى القاعدة بلا استثناء.
+abstract final class Picker {
+  static const white = Color(0xFFFFFFFF);
+  static const black = Color(0xFF000000);
+  static const cursor = Color(0xFFFFFFFF);
+  static const cursorRing = Color(0x44000000);
+  static const transparent = Color(0x00000000);
+}
