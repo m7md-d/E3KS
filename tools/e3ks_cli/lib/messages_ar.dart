@@ -15,6 +15,10 @@ E3KS — اعكس
   e3ks restyle <ملف.docx> --plan <خطة.json> --out <مخرج.docx>
       يطبّق الخطة. لا يُكتب شيء إن رفضت بوابة التحقّق المخرج.
 
+  e3ks restyle-dir <مجلد> --plan <خطة.json> --out <مجلد>
+      يطبّق الخطة على كل مستند في المجلد وما تحته، ويحفظ البنية كما هي.
+      ملفٌ يسقط لا يوقف البقيّة، ويُذكر في الحصيلة.
+
 صيغة الخطة:
   {
     "colors": { "#4C2FB8": "#00635D" },
@@ -32,6 +36,15 @@ const Map<String, String> ui = {
   'planNotObject': 'الخطة يجب أن تكون كائن JSON.',
   'badColor': 'لون غير صالح في الخطة',
   'writeCancelled': 'أُلغيت الكتابة — لم يُنشأ أي ملف:',
+  'needDirPlanAndOut': 'يلزم: <مجلد> --plan <خطة.json> --out <مجلد>',
+  'missingDir': 'لا يوجد مجلد',
+  'sameDir': 'مجلد المخرَج هو مجلد المصدر — المصدر لا يُكتب فوقه.',
+  'noDocuments': 'لا مستندات مدعومة في المجلد.',
+  'batchWritten': 'كُتب',
+  'batchFailed': 'سقط',
+  'batchUnchanged': 'بلا تغيير',
+  'batchOf': 'من',
+  'neverMatched': 'ألوان في الخطة لم تُطابق أي ملف',
   'scannedParts': 'أجزاء مفحوصة',
   'colors': 'ألوان',
   'fonts': 'خطوط',

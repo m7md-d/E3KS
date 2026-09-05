@@ -23,6 +23,8 @@ void main(List<String> args) {
       _inspect(args.skip(1).toList());
     case 'restyle':
       _restyle(args.skip(1).toList());
+    case 'restyle-dir':
+      _restyleDir(args.skip(1).toList());
     default:
       stderr.writeln('${m.ui["unknownCommand"]}: ${args.first}\n');
       stdout.writeln(m.usage);
@@ -234,4 +236,118 @@ StylePlan _parsePlan(String source) {
     preserveFonts: preserve,
     removeHighlight: root['removeHighlight'] == true,
   );
+}
+
+/// امتدادات البحث في المجلد.
+///
+/// **للعثور على الملفات وحدها.** الصيغة الفعلية يقرّرها المحرّك من محتوى
+/// الملف (`formatFor`)، فملفٌ أُعيدت تسميته يُعالَج بما هو أو يسقط بتقرير.
+const Set<String> _documentExtensions = {'.docx', '.pptx', '.ppsx', '.potx'};
+
+/// كتابة ذرّية: مؤقّت ثم إعادة تسمية — `00` §١/٣.
+void _writeAtomically(String path, Uint8List bytes) {
+  final target = File(path);
+  target.parent.createSync(recursive: true);
+  File('$path.part')
+    ..writeAsBytesSync(bytes)
+    ..renameSync(path);
+}
+
+List<File> _documentsIn(Directory root) {
+  final found = <File>[];
+  for (final entity in root.listSync(recursive: true, followLinks: false)) {
+    if (entity is! File) continue;
+    final name = entity.uri.pathSegments.last;
+    // ‏`~$` ملفات قفل يكتبها Word، والمخفيّة ليست مستندات المستخدم.
+    if (name.startsWith('~\$') || name.startsWith('.')) continue;
+    final dot = name.lastIndexOf('.');
+    if (dot < 0) continue;
+    if (!_documentExtensions.contains(name.substring(dot).toLowerCase())) {
+      continue;
+    }
+    found.add(entity);
+  }
+  found.sort((a, b) => a.path.compareTo(b.path));
+  return found;
+}
+
+void _restyleDir(List<String> args) {
+  final planPath = _option(args, 'plan');
+  final outPath = _option(args, 'out');
+  if (args.isEmpty || planPath == null || outPath == null) {
+    stderr.writeln('✖ ${m.ui["needDirPlanAndOut"]}');
+    exit(64);
+  }
+
+  final source = Directory(args.first);
+  if (!source.existsSync()) {
+    stderr.writeln('✖ ${m.ui["missingDir"]}: ${args.first}');
+    exit(66);
+  }
+
+  // المصدر مقدّس (`00` §١/٤): لا نكتب فوقه ولو طلب المستخدم.
+  final out = Directory(outPath);
+  if (out.absolute.path == source.absolute.path) {
+    stderr.writeln('✖ ${m.ui["sameDir"]}');
+    exit(64);
+  }
+
+  final files = _documentsIn(source);
+  if (files.isEmpty) {
+    stderr.writeln('✖ ${m.ui["noDocuments"]}');
+    exit(66);
+  }
+
+  final plan = _parsePlan(utf8.decode(_readOrExit(planPath)));
+  final base = source.absolute.path;
+  final entries = <BatchEntry>[];
+
+  for (final file in files) {
+    // البنية تُحفَظ: مسار الملف تحت المصدر هو مساره تحت المخرَج.
+    final relative = file.absolute.path.substring(base.length + 1);
+    final result = restyle(Uint8List.fromList(file.readAsBytesSync()), plan);
+    entries.add(BatchEntry.of(relative, result));
+
+    if (result case Ok(:final value)) {
+      _writeAtomically('${out.absolute.path}/$relative', value.bytes);
+      final report = value.report;
+      // بصيغة «الاسم: العدد» لا «العدد اسمًا»: العربية تُعرب المعدود،
+      // وصياغةٌ آلية تُخرج «31 خطوط».
+      stdout.writeln(
+        '✔ $relative  '
+        '${m.ui["colors"]}: ${report.totalColorReplacements}  '
+        '${m.ui["fonts"]}: ${report.totalFontReplacements}',
+      );
+    } else if (result case Failed(:final issues)) {
+      stderr.writeln('✖ $relative');
+      for (final issue in issues) {
+        stderr.writeln('   ${m.describeIssue(issue)}');
+      }
+    }
+  }
+
+  final report = BatchReport(entries);
+  stdout.writeln('');
+  stdout.writeln(
+    '${m.ui["batchWritten"]}: ${report.written.length} '
+    '${m.ui["batchOf"]} ${entries.length}'
+    '${report.unchanged.isEmpty ? "" : "  (${m.ui["batchUnchanged"]}: ${report.unchanged.length})"}',
+  );
+  if (report.failed.isNotEmpty) {
+    stdout.writeln('${m.ui["batchFailed"]}: ${report.failed.length}');
+  }
+  stdout.writeln(
+    '${m.ui["colorsReplaced"]}: ${report.totalColorReplacements}  '
+    '${m.ui["fontsReplaced"]}: ${report.totalFontReplacements}',
+  );
+
+  // لونٌ لا يُطابق ملفًّا واحدًا عادي؛ ولا يُطابق أربعين خطأٌ في الخطة.
+  final never = report.unmatchedEverywhere;
+  if (never.isNotEmpty) {
+    stdout.writeln(
+      '! ${m.ui["neverMatched"]}: ${never.map((c) => c.value).join("، ")}',
+    );
+  }
+
+  if (report.failed.isNotEmpty) exit(65);
 }
