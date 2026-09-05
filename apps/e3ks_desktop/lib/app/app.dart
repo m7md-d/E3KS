@@ -15,6 +15,7 @@ import '../data/font_cache.dart';
 import '../data/font_service.dart';
 import '../data/identity_store.dart';
 import '../data/settings_store.dart';
+import '../data/window_frame.dart';
 import '../data/workspace_store.dart';
 import '../features/splash/splash_view.dart';
 import '../features/workspace/workspace_screen.dart';
@@ -29,12 +30,15 @@ typedef AppServices = ({
   SettingsStore settings,
   IdentityStore identities,
   FontService fonts,
+  WindowFrame frame,
 });
 
 Future<AppServices> openServices() async => (
   settings: await SettingsStore.open(),
   identities: await IdentityStore.open(),
   fonts: FontService(await FontCache.open()),
+  // مقاس الإطار يُقاس مرّةً عند الإقلاع: أزرار النظام لا تتنقّل بعدها.
+  frame: await readWindowFrame(),
 );
 
 class E3ksApp extends StatefulWidget {
@@ -93,6 +97,7 @@ class _E3ksAppState extends State<E3ksApp> {
             identities: services.identities,
             settings: services.settings,
             fonts: services.fonts,
+            frame: services.frame,
           ),
         ),
       ),

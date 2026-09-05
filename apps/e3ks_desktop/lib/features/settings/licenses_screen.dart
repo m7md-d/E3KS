@@ -170,7 +170,7 @@ class _Header extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(LucideIcons.arrowLeft, size: 17),
+              icon: const Icon(LucideIcons.arrowLeftDir, size: 17),
               color: Shade.textMuted,
               tooltip: t.back,
             ),
@@ -258,12 +258,20 @@ class _PackageTile extends StatelessWidget {
                     const SizedBox(width: 8),
                     // السهم يدور بدل أن يُستبدل: الدوران يقول «هذا هو نفسه
                     // في حالة أخرى»، والاستبدال يقول «هذا شيء آخر».
+                    //
+                    // **والدوران يتبع الاتجاه كما تتبعه الأيقونة.** الأيقونة
+                    // معكوسة في العربية، فدورانٌ موحّد يجعلها تشير إلى فوق
+                    // بدل تحت. الانعكاس والدوران لا يتركّبان من تلقائهما.
                     AnimatedRotation(
-                      turns: expanded ? 0.25 : 0,
+                      turns: expanded
+                          ? (Directionality.of(context) == TextDirection.rtl
+                                ? -0.25
+                                : 0.25)
+                          : 0,
                       duration: Motion.quick,
                       curve: Motion.standard,
                       child: const Icon(
-                        LucideIcons.chevronRight,
+                        LucideIcons.chevronRightDir,
                         size: 15,
                         color: Shade.textFaint,
                       ),
@@ -281,9 +289,16 @@ class _PackageTile extends StatelessWidget {
               child: expanded
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                      child: SelectableText(
-                        group.texts.join('\n\n———\n\n'),
-                        style: text.labelSmall?.copyWith(height: 1.6),
+                      // **نصّ الرخصة إنجليزي دائمًا، فاتجاهه ثابت.** تبديل
+                      // لغة التطبيق لا يغيّر لغة النصّ، وعرضه من اليمين
+                      // يبعثر ترقيمه وعلاماته ويكسر أسطره.
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: SelectableText(
+                          group.texts.join('\n\n———\n\n'),
+                          textAlign: TextAlign.left,
+                          style: text.labelSmall?.copyWith(height: 1.6),
+                        ),
                       ),
                     )
                   : const SizedBox(width: double.infinity),

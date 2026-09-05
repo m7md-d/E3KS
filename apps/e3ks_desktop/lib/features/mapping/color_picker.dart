@@ -122,7 +122,7 @@ class _ColorDialogState extends State<_ColorDialog> {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Icon(
-                      LucideIcons.moveLeft,
+                      LucideIcons.moveRightDir,
                       size: 16,
                       color: Shade.textFaint,
                     ),

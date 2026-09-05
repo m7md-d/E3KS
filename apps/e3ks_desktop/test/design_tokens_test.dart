@@ -57,6 +57,37 @@ void main() {
     );
   });
 
+  test('كل أيقونة اتجاهية تتبع اتجاه القراءة', () {
+    // سهمٌ ثابت الاتجاه ينقلب معناه بين اللغتين: «من المصدر إلى البديل»
+    // في العربية تصير «من البديل إلى المصدر» في الإنجليزية. ونسخة `Dir`
+    // تحمل `matchTextDirection` فتنعكس مع الاتجاه بلا كود.
+    final directional = RegExp(
+      r'LucideIcons\.(moveLeft|moveRight|arrowLeft|arrowRight'
+      r'|chevronLeft|chevronRight|cornerUpLeft|cornerUpRight'
+      r'|cornerDownLeft|cornerDownRight|alignLeft|alignRight'
+      r'|undo|redo)\b(?!Dir)',
+    );
+    final offenders = <String>[];
+
+    for (final entity in Directory('lib').listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      final lines = entity.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final trimmed = lines[i].trim();
+        if (trimmed.startsWith('//') || trimmed.startsWith('///')) continue;
+        if (directional.hasMatch(lines[i])) {
+          offenders.add('${entity.path}:${i + 1}  $trimmed');
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason: 'أيقونة اتجاهية بلا Dir:\n${offenders.join("\n")}',
+    );
+  });
+
   test('لا زمن ولا منحنى حركة مؤلَّف خارج ملف الرموز', () {
     // الحركة لغة كالألوان. أزمنة متناثرة (120 هنا و130 هناك) تُنتج واجهةً
     // تبدو مصنوعة على دفعات، والعين تلتقط ذلك قبل أن يسمّيه صاحبها.

@@ -39,6 +39,49 @@ void main() {
     });
   });
 
+  testWidgets('نصّ الرخصة يبقى من اليسار في الواجهة العربية', (tester) async {
+    // النصّ إنجليزي مهما كانت لغة التطبيق. عرضه من اليمين يبعثر ترقيمه
+    // وعلاماته ويكسر أسطره.
+    await tester.binding.setSurfaceSize(const Size(1180, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(harness(const Locale('ar')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('archive'));
+    await tester.pumpAndSettle();
+
+    final body = find.byType(SelectableText);
+    expect(body, findsOneWidget);
+    expect(Directionality.of(tester.element(body)), equals(TextDirection.ltr));
+  });
+
+  // الأيقونة معكوسة في العربية، فدورانٌ موحّد يجعلها تشير إلى فوق بدل تحت.
+  // الانعكاس والدوران لا يتركّبان من تلقائهما.
+  for (final (locale, turns) in [
+    (const Locale('ar'), -0.25),
+    (const Locale('en'), 0.25),
+  ]) {
+    testWidgets('سهم الفتح يشير إلى تحت — ${locale.languageCode}', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(1180, 720));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(harness(locale));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('archive'));
+      await tester.pumpAndSettle();
+
+      final open = tester
+          .widgetList<AnimatedRotation>(find.byType(AnimatedRotation))
+          .map((w) => w.turns)
+          .where((t) => t != 0)
+          .toList();
+
+      expect(open, equals([turns]));
+    });
+  }
+
   for (final locale in [const Locale('ar'), const Locale('en')]) {
     final tag = locale.languageCode;
 
