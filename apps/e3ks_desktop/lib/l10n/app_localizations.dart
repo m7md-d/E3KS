@@ -1024,7 +1024,7 @@ abstract class L {
   /// No description provided for @shadesHint.
   ///
   /// In ar, this message translates to:
-  /// **'درجات محسوبة من اللون المختار؛ الدرجة المعلَّمة هي اللون نفسه'**
+  /// **'محسوبة من اللون المختار'**
   String get shadesHint;
 
   /// No description provided for @settings.

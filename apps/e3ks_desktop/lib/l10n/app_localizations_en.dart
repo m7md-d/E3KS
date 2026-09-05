@@ -506,8 +506,7 @@ class LEn extends L {
   String get shadesOf => 'Shades of this colour';
 
   @override
-  String get shadesHint =>
-      'Shades computed from the selected colour; the marked step is the colour itself';
+  String get shadesHint => 'Computed from the selected colour';
 
   @override
   String get settings => 'Settings';

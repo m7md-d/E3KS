@@ -204,7 +204,7 @@
   "showChangeMarks": "Show change marks",
   "pickColorToTrack": "Pick a colour from the page",
   "shadesOf": "Shades of this colour",
-  "shadesHint": "Shades computed from the selected colour; the marked step is the colour itself",
+  "shadesHint": "Computed from the selected colour",
   "settings": "Settings",
   "fontsSection": "Document fonts",
   "fontsSectionHint": "The preview uses the document's fonts. Those not installed are fetched and stored here.",

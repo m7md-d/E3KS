@@ -1,145 +1,101 @@
-<img src="brand/e3ks-icon.svg" alt="" width="88" align="left" hspace="12">
+<p align="center">
+  <img src="brand/e3ks-icon.svg" width="92" alt="">
+</p>
 
-# E3KS
+<h1 align="center">E3KS</h1>
 
-**Colour and font replacement for Office documents.** A macOS desktop app that
-re-skins the visual identity of `.docx` and `.pptx` files without corrupting
-them.
+<p align="center">Swap the colours and fonts of Word and PowerPoint documents.</p>
 
-<br clear="left">
+<p align="center">
+  <img alt="Flutter 3.47" src="https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white">
+  <img alt="Dart 3.9" src="https://img.shields.io/badge/Dart-3.9-0175C2?logo=dart&logoColor=white">
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-desktop-111111?logo=apple&logoColor=white">
+  <img alt="docx and pptx" src="https://img.shields.io/badge/formats-docx%20%C2%B7%20pptx-2A9D8F">
+  <img alt="GPL-3.0" src="https://img.shields.io/badge/licence-GPL--3.0-4FD6E8">
+</p>
 
----
+![E3KS with a document open](docs/screenshots/01-workspace.png)
 
-## The problem
+## What it is
 
-An organisation changes its brand. Its existing documents do not. A single
-Word file carries the old palette in the body, the headers, the footers, the
-footnotes, the table styles, the numbering definitions and the theme part —
-and the old typefaces in four separate attributes per run, one of which
-(`w:cs`) is the only one that affects Arabic text.
+A company changes its brand colours. The Word and PowerPoint files it already
+has still carry the old ones, spread across body text, headings, tables,
+headers and footers, and the document theme.
 
-Find-and-replace does not reach any of it. Doing it by hand means opening
-every style and every table. Scripting it with a general-purpose XML library
-usually works until it doesn't: re-serialising a part that was never edited
-changes attribute quoting, entity encoding and whitespace, and some importers
-reject the result. The failure often shows up somewhere other than Word —
-Google Docs is stricter — which means it shows up after the file has been
-sent.
+E3KS opens the file, lists every colour and font inside it, takes a
+replacement for each, shows the result page by page, and writes a new file.
 
-E3KS does the substitution and leaves everything else exactly as it found it.
+## Features
 
-## What it does
+- **Colour list** — each colour with its occurrence count, what it is used for
+  and a sample of its text. Colours that came from an Office template sit in
+  their own list.
+- **Preview** — pages at their real size, with a before/after toggle.
+- **Eyedropper** — point at a colour on the page to select it. The app follows
+  it through the document and offers computed shades of it.
+- **Fonts** — Latin and Arabic are set separately. Monospaced fonts stay as
+  they are. Fonts missing from the machine are fetched from Google Fonts and
+  cached.
+- **Identities** — save a palette and apply it to any document, or lift one
+  from another open file.
+- **Two languages** — Arabic and English, with the layout direction following
+  the language.
 
-**Inspect** — lists every colour and font in the document with its occurrence
-count, its role (text, paragraph fill, cell fill, border, shape fill, theme
-palette…), the parts it appears in, and a sample of the text it is applied to.
-Colours that belong to the content are separated from colours inherited from
-built-in Office templates; in a real document the inherited set can be most of
-the total and is rarely what anyone wants to change.
+## Screenshots
 
-**Preview** — renders pages at their real size, taken from the document
-(`w:sectPr/w:pgSz` and `w:pgMar`), not sized to their content. Slides are laid
-out from the declared shape geometry (`a:xfrm`), including placeholders that
-inherit their position from the slide layout. Before/after is a toggle. Line
-breaking is not simulated: what the document declares is what gets drawn, and
-where a page would overflow, the sheet extends and its true edge is marked
-rather than clipping content out of sight.
+**Choosing a replacement colour**
 
-**Map** — assign a replacement per colour, or apply a saved identity. Colours
-can be picked three ways: click one on the page, click the swatch in the list,
-or use the eyedropper in the preview toolbar, which samples the rendered
-pixels and resolves them to a colour the document actually declares. A tracked
-colour is highlighted wherever it appears and can be stepped through page by
-page. Each colour also offers a nine-step tonal ramp computed from itself.
+![The replacement colour dialog](docs/screenshots/02-picker.png)
 
-**Identities** — a named set of colours and fonts, stored as readable JSON, and
-applicable to any document. An identity can also be extracted from another open
-file: its colours ordered by use, labelled where a role can be inferred.
+**After applying a new palette**
 
-**Fonts** — the preview needs the document's fonts to be honest about how it
-looks. Resolution order is bundled → installed on the machine → previously
-cached → fetched from Google Fonts. Only the font name leaves the machine, and
-fetching can be switched off. Whatever is fetched is listed in settings with
-its size and can be deleted. Monospaced fonts are excluded from replacement by
-default, because substituting them breaks the alignment of code blocks.
+![The document with the new palette applied](docs/screenshots/03-after.png)
 
-**Export** — the output is validated before anything is written. If validation
-fails, no file is produced and the reason is reported.
+The document in the screenshots is [`docs/demo/brand-guidelines.docx`](docs/demo/brand-guidelines.docx).
 
-Interface is Arabic and English; layout direction follows the language.
+## Output
 
-## Fidelity
-
-The guarantee is at the level of the part, not the archive:
-
-- Parts that were not modified are copied byte for byte. XML that was not
-  changed is never re-serialised.
-- Entity encoding matches what Word writes (`&gt;` rather than a literal `>`),
-  so a parse/serialise round trip of an edited part is byte-identical to its
-  input. Measured across 4 documents and 78 parts.
-- The only accepted difference in the ZIP envelope is the dropped `0xA220`
-  Open Packaging Growth Hint field, which carries no document meaning.
-- Explicit colour changes also remove the `w:themeColor` / `*Theme` attributes
-  on the same element, otherwise the theme value can win in some importers and
-  the old colour comes back.
-- Dynamic fields (`PAGE`, `TOC`, `REF`) are not written into. The stored result
-  inside a field is a cached value, and overwriting it freezes page numbers.
-- No `<w:t>` element is ever emitted without a text node. It is schema-valid
-  and Word opens it, but the Google Docs importer dereferences null on it.
-- Each format declares the parts it owns, and the pipeline enforces the
-  declaration: a write outside it aborts the export. So a bug in the PowerPoint
-  path cannot reach `word/`.
-- Writes are atomic — temporary file then rename. The source is opened
-  read-only.
-
-Validation before every write checks: all XML parses, zero empty text nodes,
-balanced field characters, `[Content_Types].xml` present and first in the
-archive, output part count equal to input, every relationship target present,
-and the finished archive re-opens and reads back.
+Parts of the file that were left alone are copied byte for byte. Before
+anything is written, the output is checked: XML parses, fields are balanced,
+part counts match, relationships resolve, and the finished archive re-opens.
+A failed check means no file is produced. Writes go to a temporary file and
+are renamed into place, and the source is opened read-only.
 
 ## Formats
 
 | Format | Status |
 |---|---|
-| `.docx` — Word | Supported |
-| `.pptx`, `.ppsx`, `.potx` — PowerPoint | Supported |
-| `.pdf` | Researched only. Colours look feasible, fonts do not. |
+| `.docx` | Supported |
+| `.pptx`, `.ppsx`, `.potx` | Supported |
+| `.pdf` | Research. Colours look feasible; fonts do not. |
 
-Detection is by content type, not file extension, so a renamed file is handled
-as what it is.
-
-Not implemented on slides: images and charts are not drawn in the preview
-(text, fills and borders are), and speaker notes are inspected but not shown.
+Files are identified by content type, so a renamed file is handled as what it
+actually is.
 
 ## Built with
 
 | | |
 |---|---|
-| Language | Dart 3.9+ |
-| UI | Flutter (macOS desktop) |
-| Archive / XML | `archive`, `xml` |
+| Engine | Dart 3.9, pure — `archive` and `xml` |
+| UI | Flutter 3.47 on macOS |
 | Files | `file_selector`, `desktop_drop` |
 | Icons | `lucide_icons_flutter` |
-| Localisation | `flutter_localizations`, `intl`, ARB files |
-| State | `ChangeNotifier` and `ListenableBuilder` — no state framework |
-| UI font | IBM Plex Sans Arabic, bundled |
-
-The engine is pure Dart with no Flutter dependency, so it runs under
-`dart test` in seconds and can be reused on other platforms.
+| Localisation | `flutter_localizations`, `intl`, ARB |
+| State | `ChangeNotifier` |
+| Typeface | IBM Plex Sans Arabic, bundled |
 
 ## Layout
 
 ```
-packages/e3ks_engine/     Engine — inspect, transform, preview, validate
-  lib/src/format/         Everything format-specific; nothing outside knows a format name
-apps/e3ks_desktop/        Flutter UI. No transformation logic.
+packages/e3ks_engine/     Engine: inspect, transform, preview, validate
+  lib/src/format/         Everything specific to a file format
+apps/e3ks_desktop/        Flutter UI
 tools/e3ks_cli/           Command line over the engine
-docs/adr/                 Architecture decision records
-brand/                    Mark and its usage rules
-.claude/rules/            Project rules (Arabic)
+docs/adr/                 Architecture decisions
+brand/                    The mark and its usage
 ```
 
-## Building
+## Running
 
 ```bash
 # Engine
@@ -148,17 +104,13 @@ cd packages/e3ks_engine && dart pub get && dart test
 # App
 cd apps/e3ks_desktop && flutter pub get && flutter run -d macos
 
-# Release build, with the icon generated from brand/
+# Release build, icon generated from brand/
 ./brand/build-appicon.sh
 cd apps/e3ks_desktop && flutter build macos --release
 ```
 
-Current state: 71 engine tests and 85 app tests. Phases 1–3 (engine, macOS
-app, PowerPoint) are done; document metadata is next, on a separate path from
-the styling pipeline.
-
-Documentation and project rules are written in Arabic. Code identifiers are
-English.
+71 engine tests and 85 app tests. Documentation and project rules are in
+Arabic; code is in English.
 
 ## Licence
 
@@ -169,7 +121,7 @@ Copyright (C) 2026  m7md-d
 
 Free software under the **GNU General Public License, version 3** or any later
 version, as published by the Free Software Foundation. Distributed in the hope
-that it will be useful, but **with no warranty** — not even the implied
+that it will be useful, but **with no warranty** — without even the implied
 warranty of merchantability or fitness for a particular purpose. Full text in
 [`LICENSE`](LICENSE).
 
@@ -177,9 +129,9 @@ warranty of merchantability or fitness for a particular purpose. Full text in
 
 | | Licence |
 |---|---|
-| **IBM Plex Sans Arabic** — bundled UI font | SIL Open Font License 1.1, text in [`apps/e3ks_desktop/assets/fonts/OFL.txt`](apps/e3ks_desktop/assets/fonts/OFL.txt) |
+| **IBM Plex Sans Arabic** — bundled UI typeface | SIL Open Font License 1.1, text in [`apps/e3ks_desktop/assets/fonts/OFL.txt`](apps/e3ks_desktop/assets/fonts/OFL.txt) |
 | **Lucide** — UI icons | ISC |
 | Dart and Flutter packages | Listed in the app under Settings → Licences |
 
-Document fonts fetched from Google Fonts remain under their own licences and
-are not redistributed; they are stored on the user's machine only.
+Fonts fetched from Google Fonts stay under their own licences and are stored
+on the user's machine only.

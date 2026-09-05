@@ -334,6 +334,7 @@ class _PreviewPanelState extends State<PreviewPanel> {
                                       pages[i],
                                       pages.length,
                                     ),
+                                    marks: _marks,
                                     highlight:
                                         _marks &&
                                         store.hasChanges &&
@@ -384,6 +385,7 @@ class _PageSheet extends StatelessWidget {
     required this.startNumber,
     required this.showNumbers,
     required this.label,
+    required this.marks,
     required this.highlight,
     required this.changedColors,
     required this.changedFonts,
@@ -396,6 +398,12 @@ class _PageSheet extends StatelessWidget {
   final int startNumber;
   final bool showNumbers;
   final String label;
+
+  /// مفتاح علامات التغيير. **يحكم إطارات الكتل كما يحكم إطار الصفحة**:
+  /// إطفاؤه كان يُخفي إطار الصفحة ويترك كل فقرة تغيّرت محاطة — وهو الضجيج
+  /// نفسه الذي وُضع المفتاح لإسكاته.
+  final bool marks;
+
   final bool highlight;
   final Set<String> changedColors;
   final Set<String> changedFonts;
@@ -460,7 +468,8 @@ class _PageSheet extends StatelessWidget {
                   startNumber: startNumber,
                   showNumbers: showNumbers,
                   highlightChanged:
-                      changedColors.isNotEmpty || changedFonts.isNotEmpty,
+                      marks &&
+                      (changedColors.isNotEmpty || changedFonts.isNotEmpty),
                   changedColors: changedColors,
                   changedFonts: changedFonts,
                   focusedColor: focusedColor,

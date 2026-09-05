@@ -10,6 +10,7 @@ import 'package:e3ks_desktop/data/settings_store.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
 import 'package:e3ks_desktop/app/theme.dart';
 import 'package:e3ks_desktop/features/preview/color_pick_layer.dart';
+import 'package:e3ks_desktop/features/preview/document_paper.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
 import 'package:e3ks_desktop/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -117,12 +118,22 @@ void main() {
     final toggle = find.byIcon(LucideIcons.squareDashedMousePointer);
     expect(toggle, findsOneWidget, reason: 'مفتاح العلامات في الشريط');
 
+    bool marked() => tester
+        .widgetList<DocumentPaper>(find.byType(DocumentPaper))
+        .any((paper) => paper.highlightChanged);
+
+    // مطفأ ⇒ لا إطار حول كتلة. كان المفتاح يُخفي إطار الصفحة وحده ويترك كل
+    // فقرة تغيّرت محاطة — وهو الضجيج نفسه الذي وُضع المفتاح لإسكاته.
+    expect(marked(), isFalse, reason: 'العلامات مطفأة افتراضًا');
+
     await tester.tap(toggle);
     await tester.pumpAndSettle();
+    expect(marked(), isTrue, reason: 'المفتاح يُشغّل إطارات الكتل');
     expect(tester.takeException(), isNull);
 
     await tester.tap(toggle);
     await tester.pumpAndSettle();
+    expect(marked(), isFalse);
     expect(tester.takeException(), isNull);
   });
 

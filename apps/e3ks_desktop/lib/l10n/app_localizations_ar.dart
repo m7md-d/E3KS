@@ -504,8 +504,7 @@ class LAr extends L {
   String get shadesOf => 'درجات هذا اللون';
 
   @override
-  String get shadesHint =>
-      'درجات محسوبة من اللون المختار؛ الدرجة المعلَّمة هي اللون نفسه';
+  String get shadesHint => 'محسوبة من اللون المختار';
 
   @override
   String get settings => 'الإعدادات';
