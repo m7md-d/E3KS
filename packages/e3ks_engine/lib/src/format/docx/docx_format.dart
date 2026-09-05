@@ -19,8 +19,7 @@ import 'docx_preview.dart';
 import 'docx_transformer.dart';
 
 /// نوع محتوى المتن في `[Content_Types].xml`. الامتداد لا يُسأل (`claims`).
-const String _documentContentType =
-    'wordprocessingml.document.main+xml';
+const String _documentContentType = 'wordprocessingml.document.main+xml';
 
 final class DocxFormat implements DocumentFormat {
   const DocxFormat();

@@ -8,8 +8,7 @@ const String wNs =
     'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
 /// PresentationML — الشرائح وأشكالها.
-const String pNs =
-    'http://schemas.openxmlformats.org/presentationml/2006/main';
+const String pNs = 'http://schemas.openxmlformats.org/presentationml/2006/main';
 
 /// DrawingML — الرسوميات والثيم.
 const String aNs = 'http://schemas.openxmlformats.org/drawingml/2006/main';

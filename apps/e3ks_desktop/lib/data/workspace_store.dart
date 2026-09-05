@@ -26,6 +26,10 @@ class OpenTab {
   DocumentPreview? cachedPreview;
   int cachedPlanHash = -1;
 
+  /// اللون المتتبَّع في هذا الملف. لكل تبويب تتبّعه، فلا يقفز التركيز عند
+  /// التنقّل بين الملفات.
+  HexColor? focused;
+
   StylePlan get plan => StylePlan(
     colors: Map.of(colorMap),
     fonts: FontPlan(latin: latinFont, arabic: arabicFont),
@@ -67,6 +71,50 @@ class WorkspaceStore extends ChangeNotifier {
       result.addAll(_tabs[i].document.report.contentColors);
     }
     return result;
+  }
+
+  /// الملفات الأخرى المفتوحة، بأسمائها — مصدر الهويات الجاهزة.
+  List<({int index, String fileName})> otherDocuments() => [
+    for (var i = 0; i < _tabs.length; i++)
+      if (i != _active) (index: i, fileName: _tabs[i].document.fileName),
+  ];
+
+  LoadedDocument? documentAt(int index) =>
+      index >= 0 && index < _tabs.length ? _tabs[index].document : null;
+
+  /// اللون المتتبَّع: يُبرَز في المعاينة، ويُتنقَّل بين مواضعه، ويُمرَّر
+  /// إليه في قائمة الألوان.
+  ///
+  /// **هذا هو الجسر بين اللوحتين.** كان المستخدم يرى لونًا في الصفحة ثم
+  /// يبحث عنه في قائمة من ثلاثين لونًا بالرقم السداسي. الآن يضغط عليه.
+  HexColor? get focusedColor => current?.focused;
+
+  /// يتتبّع لونًا، أو يرفع التتبّع عنه إن كان متتبَّعًا.
+  ///
+  /// ويفتح تبويب الألوان: من ضغط لونًا في الصفحة يريد أن يفعل به شيئًا،
+  /// وتركُه ينظر إلى تبويب الخطوط يُضيّع الضغطة.
+  void focusColor(HexColor? color) {
+    final tab = current;
+    if (tab == null) return;
+    final resolved = color == null ? null : _sourceOf(tab, color);
+    tab.focused = (resolved == null || resolved == tab.focused)
+        ? null
+        : resolved;
+    if (tab.focused != null) _tab = WorkspaceTab.colors;
+    notifyListeners();
+  }
+
+  /// يردّ اللون إلى أصله في المستند.
+  ///
+  /// **خللٌ حقيقي كان هنا:** في عرض «بعد» تحمل الصفحة ألوان البدائل، وقائمة
+  /// الألوان مفهرسة بألوان **المصدر**. فالضغط على لون بديل كان يطلب تتبّع
+  /// لونٍ لا صفَّ له، فلا يحدث شيء. نردّه إلى مصدره فيجد صفّه.
+  HexColor? _sourceOf(OpenTab tab, HexColor color) {
+    if (tab.colorMap.containsKey(color)) return color;
+    for (final entry in tab.colorMap.entries) {
+      if (entry.value == color) return entry.key;
+    }
+    return color;
   }
 
   WorkspaceTab get tab => _tab;

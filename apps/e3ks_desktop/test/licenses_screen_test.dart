@@ -32,8 +32,8 @@ void main() {
       yield const LicenseEntryWithLineBreaks(
         ['IBM Plex Sans Arabic'],
         'SIL OPEN FONT LICENSE Version 1.1\n\n'
-            'PREAMBLE: The goals of the Open Font License (OFL) are to '
-            'stimulate worldwide development of collaborative font projects.',
+        'PREAMBLE: The goals of the Open Font License (OFL) are to '
+        'stimulate worldwide development of collaborative font projects.',
       );
       yield const LicenseEntryWithLineBreaks(['archive'], 'BSD license text.');
     });
@@ -76,6 +76,23 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('المحتوى محصور في قياس مقروء على الشاشة العريضة', (tester) async {
+    // سطرٌ يمتدّ على شاشة عريضة يُتعِب العين: تفقد بداية السطر التالي بعد
+    // نهاية الحالي. الفراغ حول النصّ ليس ضياعًا للمساحة، هو ما يجعلها مقروءة.
+    await tester.binding.setSurfaceSize(const Size(2560, 1440));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(harness(const Locale('ar')));
+    await tester.pumpAndSettle();
+
+    final row = tester.getRect(find.text('archive'));
+    expect(row.width, lessThan(900), reason: 'صفٌّ بعرض الشاشة كلّها');
+
+    // والترويسة تتبع القياس نفسه، وإلّا انفصلت عن قائمتها.
+    final title = tester.getRect(find.text('رخص المكوّنات'));
+    expect(title.left, greaterThan(400));
+  });
 
   testWidgets('ترويستنا لا ترويسة إطار العمل', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1180, 720));

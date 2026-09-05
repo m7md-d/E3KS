@@ -11,7 +11,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// شفافية الطفل كما تُرسَم فعلًا.
 double opacityOf(WidgetTester tester, String label) => tester
     .widgetList<FadeTransition>(
-      find.ancestor(of: find.text(label), matching: find.byType(FadeTransition)),
+      find.ancestor(
+        of: find.text(label),
+        matching: find.byType(FadeTransition),
+      ),
     )
     .fold<double>(1, (value, t) => value * t.opacity.value);
 
@@ -84,9 +87,7 @@ void main() {
     testWidgets('الإطفاء يُظهر فورًا بلا حركة', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: Entrance(enabled: false, child: Text('لوحة')),
-          ),
+          home: Scaffold(body: Entrance(enabled: false, child: Text('لوحة'))),
         ),
       );
       expect(opacityOf(tester, 'لوحة'), equals(1));
@@ -102,9 +103,7 @@ void main() {
   });
 
   testWidgets('شاشة الدخول تعرض العلامة على أرضية التطبيق', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: SplashView(name: 'E3KS')),
-    );
+    await tester.pumpWidget(const MaterialApp(home: SplashView(name: 'E3KS')));
     await tester.pumpAndSettle();
     expect(find.text('E3KS'), findsNWidgets(2), reason: 'الاسم وانعكاسه');
     expect(tester.takeException(), isNull);

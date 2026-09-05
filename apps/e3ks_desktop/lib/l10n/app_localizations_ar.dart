@@ -445,6 +445,75 @@ class LAr extends L {
   String get back => 'رجوع';
 
   @override
+  String get focusedColor => 'متابعة اللون';
+
+  @override
+  String get clearFocus => 'أوقف المتابعة';
+
+  @override
+  String get noMatches => 'لا مواضع';
+
+  @override
+  String get tapColorHint => 'اضغط أي لون في الصفحة لمتابعته';
+
+  @override
+  String get nextMatch => 'الموضع التالي';
+
+  @override
+  String get previousMatch => 'الموضع السابق';
+
+  @override
+  String get extractIdentity => 'استخرج الهوية من ملف مفتوح';
+
+  @override
+  String get extractIdentityHint =>
+      'يقرأ ألوان الملف مرتّبةً بالأكثر استعمالًا ويسمّيها';
+
+  @override
+  String extractFrom(String file) {
+    return 'استخرج من: $file';
+  }
+
+  @override
+  String get noOtherFiles => 'افتح ملفًا آخر يحمل الهوية التي تريدها';
+
+  @override
+  String get quickPick => 'اختيار سريع';
+
+  @override
+  String get quickPickHint => 'ألوان الهويات المستخرَجة من الملفات المفتوحة';
+
+  @override
+  String get labelPrimary => 'الأساسي';
+
+  @override
+  String get labelText => 'لون النصّ';
+
+  @override
+  String get labelBackground => 'الخلفية';
+
+  @override
+  String get labelAccent => 'مُكمّل';
+
+  @override
+  String get goToPage => 'اذهب إلى صفحة';
+
+  @override
+  String get showChangeMarks => 'أظهِر علامات التغيير';
+
+  @override
+  String get pickColorToTrack => 'تتبّع لونًا';
+
+  @override
+  String get stopTracking => 'أوقف التتبّع';
+
+  @override
+  String get shadesOf => 'درجات هذا اللون';
+
+  @override
+  String get shadesHint => 'محسوبة من اللون المختار — الدرجة المُعلَّمة هي هو';
+
+  @override
   String get settings => 'الإعدادات';
 
   @override

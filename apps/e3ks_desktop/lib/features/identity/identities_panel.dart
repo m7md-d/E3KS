@@ -9,6 +9,7 @@ import '../../shared/widgets/app_dialog.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/identity.dart';
+import '../../data/identity_extract.dart';
 import '../../data/identity_store.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/panel.dart';
@@ -46,6 +47,13 @@ class IdentitiesPanel extends StatelessWidget {
               store.hasChanges ? t.saveIdentity : t.saveIdentityDisabled,
             ),
           ),
+        ),
+        const SizedBox(height: 8),
+        // **استخراج بدل تأليف.** بناء هوية لونًا لونًا عملُ ساعة؛ وقراءتها
+        // من ملفٍ يحملها أصلًا عملُ ضغطة.
+        SizedBox(
+          width: double.infinity,
+          child: _ExtractButton(store: store, identities: identities),
         ),
         const SizedBox(height: 18),
         if (identities.items.isEmpty)
@@ -197,6 +205,75 @@ class _NameDialogState extends State<_NameDialog> {
           child: Text(t.save),
         ),
       ],
+    );
+  }
+}
+
+/// تسميات الهوية المستخرَجة، مترجَمة. `data/` لا يعرف لغة (`01`).
+IdentityLabels identityLabels(L t) => (
+  primary: t.labelPrimary,
+  text: t.labelText,
+  background: t.labelBackground,
+  accent: t.labelAccent,
+);
+
+/// زرّ الاستخراج: يعرض الملفات الأخرى المفتوحة، وواحدها يصير هوية محفوظة.
+class _ExtractButton extends StatelessWidget {
+  const _ExtractButton({required this.store, required this.identities});
+
+  final WorkspaceStore store;
+  final IdentityStore identities;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final others = store.otherDocuments();
+
+    if (others.isEmpty) {
+      return Tooltip(
+        message: t.noOtherFiles,
+        child: OutlinedButton.icon(
+          onPressed: null,
+          icon: const Icon(LucideIcons.fileDown, size: 16),
+          label: Text(t.extractIdentity),
+        ),
+      );
+    }
+
+    return PopupMenuButton<int>(
+      tooltip: t.extractIdentityHint,
+      color: Shade.surfaceHigh,
+      onSelected: (index) => _extract(context, index),
+      itemBuilder: (_) => [
+        for (final other in others)
+          PopupMenuItem(
+            value: other.index,
+            child: Text(
+              other.fileName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+      child: OutlinedButton.icon(
+        // الضغط يتولّاه `PopupMenuButton`؛ الزرّ هنا مظهر لا فعل.
+        onPressed: null,
+        icon: const Icon(LucideIcons.fileDown, size: 16),
+        label: Text(t.extractIdentity),
+      ),
+    );
+  }
+
+  Future<void> _extract(BuildContext context, int index) async {
+    final t = context.l10n;
+    final document = store.documentAt(index);
+    if (document == null) return;
+    await identities.save(
+      extractIdentity(
+        document,
+        name: document.fileName,
+        labels: identityLabels(t),
+      ),
     );
   }
 }

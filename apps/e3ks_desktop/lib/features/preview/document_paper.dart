@@ -8,6 +8,7 @@
 library;
 
 import 'package:e3ks_engine/e3ks_engine.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
@@ -17,7 +18,7 @@ import 'change_scan.dart';
 /// عرض عمود الترقيم بالنقاط الطباعية — يسكن **داخل** هامش الصفحة.
 const double _gutterPt = 22;
 
-class DocumentPaper extends StatelessWidget {
+class DocumentPaper extends StatefulWidget {
   const DocumentPaper({
     super.key,
     required this.page,
@@ -27,6 +28,8 @@ class DocumentPaper extends StatelessWidget {
     this.highlightChanged = false,
     this.changedColors = const {},
     this.changedFonts = const {},
+    this.focusedColor,
+    this.onColorTap,
   });
 
   /// صفحة واحدة. القائمة تبني المرئي منها فقط — وهذا سرّ خفّة المعاينة.
@@ -45,8 +48,58 @@ class DocumentPaper extends StatelessWidget {
   final Set<String> changedColors;
   final Set<String> changedFonts;
 
+  /// اللون المتتبَّع: يُحاط بإطار أينما ظهر، فيراه المستخدم في لمحة.
+  final HexColor? focusedColor;
+
+  /// ضغطة على لون في الصفحة. **هذا ما يصل الصفحة بقائمة الألوان**: كان
+  /// المستخدم يرى لونًا ثم يبحث عنه في قائمة بالرقم السداسي.
+  final void Function(HexColor color)? onColorTap;
+
+  @override
+  State<DocumentPaper> createState() => _DocumentPaperState();
+}
+
+class _DocumentPaperState extends State<DocumentPaper> {
+  /// مُلتقِط ضغطة لكل لون، يُعاد استعماله عبر إعادات البناء.
+  ///
+  /// ‏`TapGestureRecognizer` داخل `TextSpan` يجب أن يُتخلَّص منه، وإنشاؤه في
+  /// كل رسمة تسريبٌ صامت. الألوان عشرات لا آلاف، فخريطةٌ واحدة تكفي.
+  final Map<String, TapGestureRecognizer> _taps = {};
+
+  @override
+  void dispose() {
+    for (final tap in _taps.values) {
+      tap.dispose();
+    }
+    super.dispose();
+  }
+
+  TapGestureRecognizer? _tapFor(HexColor? color) {
+    final onTap = widget.onColorTap;
+    if (color == null || onTap == null) return null;
+    return _taps.putIfAbsent(
+      color.value,
+      () =>
+          TapGestureRecognizer()..onTap = () => widget.onColorTap?.call(color),
+    );
+  }
+
+  PreviewPage get page => widget.page;
+  double get zoom => widget.zoom;
+  int get startNumber => widget.startNumber;
+  bool get showNumbers => widget.showNumbers;
+  bool get highlightChanged => widget.highlightChanged;
+  Set<String> get changedColors => widget.changedColors;
+  Set<String> get changedFonts => widget.changedFonts;
+  HexColor? get focusedColor => widget.focusedColor;
+
   /// بكسل منطقي لكل نقطة طباعية عند هذا التكبير.
   double get _scale => zoom * Metrics.pxPerPoint;
+
+  bool _isFocused(HexColor? color) =>
+      color != null &&
+      focusedColor != null &&
+      color.value == focusedColor!.value;
 
   @override
   Widget build(BuildContext context) {
@@ -188,6 +241,7 @@ class DocumentPaper extends StatelessWidget {
   Widget _shape(List<PreviewParagraph> paragraphs, HexColor? fill) {
     final content = Container(
       color: fill == null ? null : toFlutter(fill),
+      foregroundDecoration: _isFocused(fill) ? _focusRing : null,
       padding: EdgeInsets.symmetric(
         horizontal: 7.2 * _scale,
         vertical: 3.6 * _scale,
@@ -212,7 +266,8 @@ class DocumentPaper extends StatelessWidget {
                 fonts: changedFonts,
               ),
             ));
-    return changed ? _ChangedFrame(scale: _scale, child: content) : content;
+    final tappable = _wrapTap(content, fill);
+    return changed ? _ChangedFrame(scale: _scale, child: tappable) : tappable;
   }
 
   Widget _paragraph(PreviewParagraph paragraph, {bool inCell = false}) {
@@ -231,6 +286,7 @@ class DocumentPaper extends StatelessWidget {
     final content = Container(
       width: double.infinity,
       color: paragraph.fill == null ? null : toFlutter(paragraph.fill!),
+      foregroundDecoration: _isFocused(paragraph.fill) ? _focusRing : null,
       padding: paragraph.fill == null
           ? EdgeInsets.zero
           : EdgeInsets.symmetric(horizontal: 7 * _scale, vertical: 2 * _scale),
@@ -254,10 +310,21 @@ class DocumentPaper extends StatelessWidget {
       ),
     );
 
+    final tappable = _wrapTap(content, paragraph.fill);
     final changed =
         highlightChanged &&
         paragraphChanged(paragraph, colors: changedColors, fonts: changedFonts);
-    return changed ? _ChangedFrame(scale: _scale, child: content) : content;
+    return changed ? _ChangedFrame(scale: _scale, child: tappable) : tappable;
+  }
+
+  /// يجعل مساحةً ملوَّنة قابلة للضغط — التعبئة لون كالنصّ.
+  Widget _wrapTap(Widget child, HexColor? color) {
+    final onTap = widget.onColorTap;
+    if (color == null || onTap == null) return child;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(onTap: () => onTap(color), child: child),
+    );
   }
 
   TextSpan _span(PreviewRun run, PreviewParagraph paragraph) {
@@ -272,11 +339,18 @@ class DocumentPaper extends StatelessWidget {
             _ => 1.0,
           };
 
+    // اللون المتتبَّع يظهر على أرضية سماوية خفيفة: أدقّ من إطار حول الفقرة
+    // كلّها — يشير إلى المقطع نفسه لا إلى ما حوله.
+    final focused = _isFocused(run.color) || _isFocused(run.shading);
+
     return TextSpan(
       text: run.text,
+      recognizer: _tapFor(run.color ?? run.shading),
       style: TextStyle(
         color: run.color == null ? Paper.ink : toFlutter(run.color!),
-        backgroundColor: run.shading == null ? null : toFlutter(run.shading!),
+        backgroundColor: focused
+            ? Shade.mirror.withValues(alpha: 0.28)
+            : (run.shading == null ? null : toFlutter(run.shading!)),
         // حجم المقطع بالنقاط كما صرّح به المستند، محوَّلًا إلى بكسل.
         fontSize: (run.sizePt ?? 11) * headingScale * _scale,
         // ارتفاع السطر من `w:spacing/@w:line`. ‏1.15 احتياطي «مفرد» في Word.
@@ -354,16 +428,20 @@ class DocumentPaper extends StatelessWidget {
                 fonts: changedFonts,
               ),
             ));
-    return Container(
+    final content = Container(
       color: cell.fill == null ? null : toFlutter(cell.fill!),
       // هوامش خلية Word الافتراضية: ‏5.4pt جانبًا ولا شيء رأسيًّا.
       padding: EdgeInsets.symmetric(
         horizontal: 5.4 * _scale,
         vertical: 1 * _scale,
       ),
-      foregroundDecoration: changed
-          ? BoxDecoration(border: Border.all(color: Shade.mirror, width: 1.5))
-          : null,
+      foregroundDecoration: _isFocused(cell.fill)
+          ? _focusRing
+          : (changed
+                ? BoxDecoration(
+                    border: Border.all(color: Shade.mirror, width: 1.5),
+                  )
+                : null),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -371,11 +449,17 @@ class DocumentPaper extends StatelessWidget {
         ],
       ),
     );
+    return _wrapTap(content, cell.fill);
   }
 
   bool _hitColor(HexColor? color) =>
       color != null && changedColors.contains(color.value);
 }
+
+/// إطار اللون المتتبَّع. أثخن من إطار التغيير كي يُميَّز عنه بلا لبس.
+final BoxDecoration _focusRing = BoxDecoration(
+  border: Border.all(color: Shade.mirror, width: 2.5),
+);
 
 /// خطّ رفيع عند حدّ الصفحة الحقيقي حين يتجاوزه المحتوى.
 ///

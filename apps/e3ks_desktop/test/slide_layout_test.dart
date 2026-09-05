@@ -37,12 +37,7 @@ void main() {
           paragraphs: [
             PreviewParagraph(runs: [PreviewRun(text: 'عنوان', sizePt: 44)]),
           ],
-          frame: BlockFrame(
-            leftPt: 66,
-            topPt: 54,
-            widthPt: 828,
-            heightPt: 90,
-          ),
+          frame: BlockFrame(leftPt: 66, topPt: 54, widthPt: 828, heightPt: 90),
         ),
       ],
     );

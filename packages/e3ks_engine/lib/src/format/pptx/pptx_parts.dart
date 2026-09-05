@@ -8,7 +8,9 @@ library;
 import '../../inspect/part_class.dart';
 
 PartClass classifyPptxPart(String name) {
-  if (!name.startsWith('ppt/') || !name.endsWith('.xml')) return PartClass.other;
+  if (!name.startsWith('ppt/') || !name.endsWith('.xml')) {
+    return PartClass.other;
+  }
   final leaf = name.substring('ppt/'.length);
 
   // ما يراه الحاضر على الشاشة.

@@ -48,3 +48,26 @@ bool paragraphChanged(
 
 bool _hit(HexColor? color, Set<String> colors) =>
     color != null && colors.contains(color.value);
+
+/// هل تحوي هذه الكتلة اللون [value]؟
+///
+/// نفس منطق [blockChanged] لكن بلون واحد: تتبّع لونٍ بعينه عبر المستند،
+/// كما يتتبّع المستخدم كلمةً بـ`Ctrl+F`.
+bool blockHasColor(PreviewBlock block, String value) => switch (block) {
+  ShapeBlock(:final paragraphs, :final fill) =>
+    _hit(fill, {value}) || paragraphs.any((p) => paragraphHasColor(p, value)),
+  ParagraphBlock(:final paragraph) => paragraphHasColor(paragraph, value),
+  TableBlock(:final rows) => rows.any(
+    (row) => row.cells.any(
+      (cell) =>
+          _hit(cell.fill, {value}) ||
+          cell.paragraphs.any((p) => paragraphHasColor(p, value)),
+    ),
+  ),
+};
+
+bool paragraphHasColor(PreviewParagraph paragraph, String value) =>
+    _hit(paragraph.fill, {value}) ||
+    paragraph.runs.any(
+      (run) => _hit(run.color, {value}) || _hit(run.shading, {value}),
+    );

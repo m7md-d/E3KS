@@ -8,7 +8,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -17,6 +16,7 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
+import '../../data/identity_extract.dart';
 import '../../data/identity_store.dart';
 import '../../data/openable_files.dart';
 import '../../data/settings_store.dart';
@@ -24,6 +24,7 @@ import '../../data/workspace_store.dart';
 import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
 import '../identity/identities_panel.dart';
+import '../mapping/color_picker.dart';
 import '../mapping/colors_panel.dart';
 import '../mapping/fonts_panel.dart';
 import '../preview/drop_zone.dart';
@@ -205,9 +206,23 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 
   Widget _controls(WorkspaceStore store) {
-    final suggestions = <HexColor>[
+    // **الاختيار السريع**: الهويات المحفوظة أولًا، ثم هويات الملفات المفتوحة
+    // مستخرَجةً في حينها. الاستخراج يمرّ على ثمانية ألوان لا أكثر، فثمنه
+    // لا يُذكر، والفائدة أن يجد المستخدم اللون مسمّى بدل أن يؤلّفه.
+    final t = context.l10n;
+    final suggestions = <QuickPickGroup>[
       for (final identity in widget.identities.items)
-        for (final color in identity.colors) color.hex,
+        (source: identity.name, colors: identity.colors),
+      for (final other in store.otherDocuments())
+        if (store.documentAt(other.index) case final document?)
+          (
+            source: other.fileName,
+            colors: extractIdentity(
+              document,
+              name: other.fileName,
+              labels: identityLabels(t),
+            ).colors,
+          ),
     ];
 
     final Widget child;

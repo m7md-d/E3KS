@@ -23,7 +23,9 @@ class ColorsPanel extends StatefulWidget {
   });
 
   final WorkspaceStore store;
-  final List<HexColor> suggestions;
+
+  /// ألوان مسمّاة جاهزة للّصق: من الهويات المحفوظة ومن الملفات المفتوحة.
+  final List<QuickPickGroup> suggestions;
 
   @override
   State<ColorsPanel> createState() => _ColorsPanelState();
@@ -31,6 +33,70 @@ class ColorsPanel extends StatefulWidget {
 
 class _ColorsPanelState extends State<ColorsPanel> {
   bool _showInherited = false;
+
+  /// مفاتيح الصفوف — **تُنشأ في الحالة لا في `build`.** مفتاحٌ جديد كل رسمة
+  /// يعني سياقًا ضائعًا، وهذا بعينه سبب أن أسهم المعاينة لم تكن تعمل يومًا.
+  final Map<String, GlobalKey> _rowKeys = {};
+  final ScrollController _scroll = ScrollController();
+  String? _scrolledTo;
+
+  /// ترتيب الصفوف المعروضة — يلزم للتقدير حين لا يكون الصفّ مبنيًّا بعد.
+  List<String> _order = const [];
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  GlobalKey _keyFor(HexColor color) =>
+      _rowKeys.putIfAbsent(color.value, GlobalKey.new);
+
+  /// يمرّر إلى اللون المتتبَّع بعد أن تُبنى صفوفه.
+  ///
+  /// **هذا نصف الجسر الثاني**: الضغط في الصفحة يتتبّع اللون، وهذا يُظهره في
+  /// القائمة. بلا التمرير يبقى اللون مختارًا في مكان لا يراه المستخدم.
+  void _revealFocused() {
+    final focused = widget.store.focusedColor;
+    if (focused == null) {
+      _scrolledTo = null;
+      return;
+    }
+    if (_scrolledTo == focused.value) return;
+    _scrolledTo = focused.value;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollTo(focused));
+  }
+
+  /// يقفز إلى صفٍّ قد لا يكون مبنيًّا بعد.
+  ///
+  /// القائمة تبني المرئي وما حوله فقط، فمفتاح صفٍّ بعيد بلا سياق. نقفز أولًا
+  /// بتقدير من موضعه في الترتيب، ثم نضبط بدقّة بعد أن يُبنى — نفس ما تفعله
+  /// أسهم المعاينة، وللسبب نفسه.
+  Future<void> _scrollTo(HexColor color) async {
+    if (!mounted) return;
+
+    if (_rowKeys[color.value]?.currentContext == null && _scroll.hasClients) {
+      final index = _order.indexOf(color.value);
+      if (index >= 0 && _order.isNotEmpty) {
+        final extent =
+            _scroll.position.maxScrollExtent +
+            _scroll.position.viewportDimension;
+        final target = (extent / _order.length) * index;
+        _scroll.jumpTo(target.clamp(0.0, _scroll.position.maxScrollExtent));
+        await WidgetsBinding.instance.endOfFrame;
+      }
+    }
+
+    final settled = _rowKeys[color.value]?.currentContext;
+    if (settled == null || !mounted) return;
+    await Scrollable.ensureVisible(
+      settled,
+      alignment: 0.1,
+      duration: Motion.normal,
+      curve: Motion.emphasized,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +106,23 @@ class _ColorsPanelState extends State<ColorsPanel> {
 
     final identity = report.contentColors;
     final inherited = report.inheritedColors;
+    final focused = widget.store.focusedColor;
+
+    // لونٌ متتبَّع من القسم الموروث يفتح القسم: لا معنى لتمرير إلى صفّ مطويّ.
+    if (focused != null &&
+        !_showInherited &&
+        inherited.any((c) => c.color.value == focused.value)) {
+      _showInherited = true;
+    }
+    _order = [
+      for (final usage in identity) usage.color.value,
+      if (_showInherited)
+        for (final usage in inherited) usage.color.value,
+    ];
+    _revealFocused();
 
     return ListView(
+      controller: _scroll,
       padding: const EdgeInsets.all(Metrics.gutter),
       children: [
         SectionHeader(
@@ -49,7 +130,13 @@ class _ColorsPanelState extends State<ColorsPanel> {
           hint: t.identityColorsHint,
           count: identity.length,
         ),
-        for (final usage in identity) _ColorRow(usage: usage, state: this),
+        for (final usage in identity)
+          _ColorRow(
+            key: _keyFor(usage.color),
+            usage: usage,
+            state: this,
+            focused: focused?.value == usage.color.value,
+          ),
         const SizedBox(height: 22),
         _InheritedSection(
           count: inherited.length,
@@ -57,7 +144,13 @@ class _ColorsPanelState extends State<ColorsPanel> {
           onToggle: () => setState(() => _showInherited = !_showInherited),
         ),
         if (_showInherited)
-          for (final usage in inherited) _ColorRow(usage: usage, state: this),
+          for (final usage in inherited)
+            _ColorRow(
+              key: _keyFor(usage.color),
+              usage: usage,
+              state: this,
+              focused: focused?.value == usage.color.value,
+            ),
         const SizedBox(height: 30),
       ],
     );
@@ -69,9 +162,7 @@ class _ColorsPanelState extends State<ColorsPanel> {
       context,
       original: usage.color,
       current: store.colorMap[usage.color],
-      suggestions: widget.suggestions,
-      // ألوان المستندات الأخرى المفتوحة، الأكثر استعمالًا أولًا.
-      reference: store.otherDocumentColors(),
+      quickPicks: widget.suggestions,
     );
     if (picked == null) return;
     store.mapColor(usage.color, picked == usage.color ? null : picked);
@@ -79,10 +170,18 @@ class _ColorsPanelState extends State<ColorsPanel> {
 }
 
 class _ColorRow extends StatelessWidget {
-  const _ColorRow({required this.usage, required this.state});
+  const _ColorRow({
+    super.key,
+    required this.usage,
+    required this.state,
+    this.focused = false,
+  });
 
   final ColorUsage usage;
   final _ColorsPanelState state;
+
+  /// متتبَّع الآن: مُبرَز هنا ومُحاط في الصفحة، فيربط المستخدم بينهما.
+  final bool focused;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +194,9 @@ class _ColorRow extends StatelessWidget {
         .toSet()
         .join('، ');
 
-    return Container(
+    return AnimatedContainer(
+      duration: Motion.quick,
+      curve: Motion.standard,
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -103,14 +204,29 @@ class _ColorRow extends StatelessWidget {
             ? Shade.mirrorDeep.withValues(alpha: 0.35)
             : Shade.surface,
         borderRadius: BorderRadius.circular(Metrics.radius),
-        border: Border.all(color: changed ? Shade.mirrorSoft : Shade.border),
+        border: Border.all(
+          color: focused
+              ? Shade.mirror
+              : (changed ? Shade.mirrorSoft : Shade.border),
+          width: focused ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Swatch(color: usage.color, size: 38),
+              // الضغط على العيّنة يتتبّع اللون في الصفحة — الطريق العكسي
+              // للضغط على اللون في المعاينة.
+              Tooltip(
+                message: t.tapColorHint,
+                child: Swatch(
+                  color: usage.color,
+                  size: 38,
+                  selected: focused,
+                  onTap: () => state.widget.store.focusColor(usage.color),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

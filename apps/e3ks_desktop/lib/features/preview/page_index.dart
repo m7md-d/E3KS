@@ -51,3 +51,12 @@ List<int> changedPages(
         entry.index,
   ];
 }
+
+/// فهارس الصفحات التي يظهر فيها [value] — وحدة التنقّل عند تتبّع لون.
+///
+/// بالصفحة لا بالفقرة: هو ما يفهمه المستخدم («صفحة ١٢»)، وهو ما يجعل القفز
+/// دقيقًا مع العرض المُحجَّم.
+List<int> pagesWithColor(List<FlatPage> pages, String value) => [
+  for (final entry in pages)
+    if (entry.page.blocks.any((b) => blockHasColor(b, value))) entry.index,
+];

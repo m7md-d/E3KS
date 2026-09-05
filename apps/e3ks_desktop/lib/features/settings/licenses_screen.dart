@@ -6,6 +6,11 @@
 ///
 /// وهنا قائمة واحدة تتوسّع عناصرها: لا لوحتين تتزاحمان، ولا تخطيط يتغيّر
 /// بتغيّر العرض. والحركة كلّها من [Motion] كبقيّة التطبيق.
+///
+/// **والعرض محدود لا ممدود.** سطرٌ يمتدّ على شاشة عريضة يُتعِب العين: تفقد
+/// بداية السطر التالي بعد نهاية الحالي. القياس المقروء ‎70–90‎ محرفًا، وهو
+/// ما يقابل [_measure] هنا. الفراغ حول النصّ ليس ضياعًا للمساحة، هو ما
+/// يجعلها مقروءة.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -14,6 +19,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
+
+/// أقصى عرض للمحتوى: القياس المقروء لا عرض الشاشة.
+const double _measure = 860;
 
 /// حزمة واحدة ونصوص رخصها.
 typedef LicenseGroup = ({String package, List<String> texts});
@@ -78,7 +86,14 @@ class _LicensesScreenState extends State<LicensesScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Header(title: t.licensesTitle, hint: t.licensesHint),
+          FutureBuilder<List<LicenseGroup>>(
+            future: _licenses,
+            builder: (context, snapshot) => _Header(
+              title: t.licensesTitle,
+              hint: t.licensesHint,
+              count: snapshot.data?.length,
+            ),
+          ),
           Expanded(
             child: FutureBuilder<List<LicenseGroup>>(
               future: _licenses,
@@ -99,10 +114,13 @@ class _LicensesScreenState extends State<LicensesScreen> {
                       Metrics.gutter,
                     ),
                     itemCount: groups.length,
-                    itemBuilder: (context, i) => _PackageTile(
-                      group: groups[i],
-                      expanded: _open == i,
-                      onTap: () => setState(() => _open = _open == i ? -1 : i),
+                    itemBuilder: (context, i) => _Measured(
+                      child: _PackageTile(
+                        group: groups[i],
+                        expanded: _open == i,
+                        onTap: () =>
+                            setState(() => _open = _open == i ? -1 : i),
+                      ),
                     ),
                   ),
                 );
@@ -116,10 +134,25 @@ class _LicensesScreenState extends State<LicensesScreen> {
 }
 
 /// ترويستنا: اسم الشاشة وزرّ الرجوع. بلا علامة طرف ثالث.
+/// يحصر طفله في القياس المقروء ويوسّطه.
+class _Measured extends StatelessWidget {
+  const _Measured({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: _measure),
+      child: child,
+    ),
+  );
+}
+
 class _Header extends StatelessWidget {
-  const _Header({required this.title, required this.hint});
+  const _Header({required this.title, required this.hint, this.count});
   final String title;
   final String hint;
+  final int? count;
 
   @override
   Widget build(BuildContext context) {
@@ -130,32 +163,41 @@ class _Header extends StatelessWidget {
         color: Shade.surface,
         border: Border(bottom: BorderSide(color: Shade.border)),
       ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(LucideIcons.arrowLeft, size: 17),
-            color: Shade.textMuted,
-            tooltip: t.back,
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 2),
-                Text(
-                  hint,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ],
+      // الترويسة تتبع القياس نفسه، وإلّا انفصل عنوانها عن قائمتها على
+      // الشاشة العريضة فبدا كلٌّ منهما في جهة.
+      child: _Measured(
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(LucideIcons.arrowLeft, size: 17),
+              color: Shade.textMuted,
+              tooltip: t.back,
             ),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 2),
+                  Text(
+                    hint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
+              ),
+            ),
+            if (count != null)
+              Text(
+                t.licenseEntries(count!),
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+          ],
+        ),
       ),
     );
   }

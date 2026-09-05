@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../shared/widgets/app_dialog.dart';
 import '../../app/l10n_extensions.dart';
+import '../../data/identity.dart';
 import '../../app/theme.dart';
 import '../../shared/widgets/swatch.dart';
 
@@ -22,33 +23,33 @@ Future<HexColor?> pickColor(
   BuildContext context, {
   required HexColor original,
   HexColor? current,
-  List<HexColor> suggestions = const [],
-  List<ColorUsage> reference = const [],
+  List<QuickPickGroup> quickPicks = const [],
 }) => showAppDialog<HexColor?>(
   context,
   (_) => _ColorDialog(
     original: original,
     current: current,
-    suggestions: suggestions,
-    reference: reference,
+    quickPicks: quickPicks,
   ),
 );
+
+/// ألوان مسمّاة من مصدر واحد: هوية محفوظة، أو هوية مستخرَجة من ملفّ مفتوح.
+typedef QuickPickGroup = ({String source, List<NamedColor> colors});
 
 class _ColorDialog extends StatefulWidget {
   const _ColorDialog({
     required this.original,
     this.current,
-    this.suggestions = const [],
-    this.reference = const [],
+    this.quickPicks = const [],
   });
 
   final HexColor original;
   final HexColor? current;
-  final List<HexColor> suggestions;
 
-  /// ألوان مستند آخر مفتوح، مرتّبة بكثرة الاستعمال — أسرع طريق لأخذ هوية
-  /// جاهزة من ملف بدل كتابة أرقام سداسية.
-  final List<ColorUsage> reference;
+  /// **الاختيار السريع.** ألوان مسمّاة من الهويات المحفوظة ومن الملفات
+  /// المفتوحة، مرتّبةً كما استُخرجت. الغرض ألّا يبني المستخدم كل لون في
+  /// وقته: أغلب الحالات لصقُ لون هوية جاهز، لا تأليف لون جديد.
+  final List<QuickPickGroup> quickPicks;
 
   @override
   State<_ColorDialog> createState() => _ColorDialogState();
@@ -201,50 +202,59 @@ class _ColorDialogState extends State<_ColorDialog> {
                   ),
                 ],
               ),
-              if (widget.reference.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(t.fromOtherDocument, style: theme.textTheme.labelSmall),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final usage in widget.reference.take(18))
-                      Tooltip(
-                        message:
-                            '${usage.color.value} · '
-                            '${t.occurrences(usage.count)}',
-                        child: Swatch(
-                          color: usage.color,
-                          size: 26,
-                          selected: usage.color.value == _hex,
-                          onTap: () => _setHsv(
-                            HSVColor.fromColor(toFlutter(usage.color)),
+              // **درجات اللون الحالي.** المستخدم اختار لونه، وغالبًا يريد
+              // أفتح منه للخلفية وأغمق للنصّ. نحسبها له بدل أن يفتح أداة
+              // تصميم — والدرجة المُعلَّمة هي لونه نفسه لا تقريبٌ له.
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Text(t.shadesOf, style: theme.textTheme.labelSmall),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      t.shadesHint,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Shade.textFaint,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _Ramp(
+                base: HexColor.tryParse(_hex) ?? widget.original,
+                selected: _hex,
+                onPick: (color) =>
+                    _setHsv(HSVColor.fromColor(toFlutter(color))),
+              ),
+              for (final group in widget.quickPicks)
+                if (group.colors.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Text(group.source, style: theme.textTheme.labelSmall),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final named in group.colors)
+                        // الاسم في التلميح لا تحته: صفٌّ من مربّعات صغيرة
+                        // أسرع مسحًا بالعين من صفٍّ من بطاقات معنونة.
+                        Tooltip(
+                          message: '${named.name} · ${named.hex.value}',
+                          child: Swatch(
+                            color: named.hex,
+                            size: 26,
+                            selected: named.hex.value == _hex,
+                            onTap: () => _setHsv(
+                              HSVColor.fromColor(toFlutter(named.hex)),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              ],
-              if (widget.suggestions.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Text(t.fromSavedIdentities, style: theme.textTheme.labelSmall),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final color in widget.suggestions)
-                      Swatch(
-                        color: color,
-                        size: 26,
-                        selected: color.value == _hex,
-                        onTap: () =>
-                            _setHsv(HSVColor.fromColor(toFlutter(color))),
-                      ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
               const SizedBox(height: 22),
               Row(
                 children: [
@@ -418,4 +428,58 @@ class _HuePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_HuePainter old) => old.hue != hue;
+}
+
+/// سلَّم درجات اللون الحالي.
+///
+/// يُحسب في المحرّك (`tonalRamp`) لا هنا: حسابُ لونٍ منطقٌ قابل للاختبار بلا
+/// واجهة، ومكانه حيث تُختبَر بقيّة حسابات الألوان.
+class _Ramp extends StatelessWidget {
+  const _Ramp({
+    required this.base,
+    required this.selected,
+    required this.onPick,
+  });
+
+  final HexColor base;
+
+  /// اللون المختار الآن، بصيغة `#RRGGBB`.
+  final String selected;
+
+  final ValueChanged<HexColor> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final ramp = tonalRamp(base);
+    return Row(
+      children: [
+        for (final tone in ramp)
+          Expanded(
+            child: Tooltip(
+              message: '${tone.step} · ${tone.color.value}',
+              child: GestureDetector(
+                onTap: () => onPick(tone.color),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: AnimatedContainer(
+                    duration: Motion.instant,
+                    height: tone.isSource ? 40 : 32,
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                    decoration: BoxDecoration(
+                      color: toFlutter(tone.color),
+                      borderRadius: BorderRadius.circular(3),
+                      // الأصل أطول وله حدّ: يجب أن يرى المستخدم لونه هو
+                      // داخل السلَّم، وإلّا بدا السلَّم غريبًا عنه.
+                      border: tone.color.value == selected || tone.isSource
+                          ? Border.all(color: Shade.mirror, width: 2)
+                          : null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }

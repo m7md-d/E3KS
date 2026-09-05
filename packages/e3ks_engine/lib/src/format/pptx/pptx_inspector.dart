@@ -37,12 +37,8 @@ final class PptxInspector {
     final warnings = scanXmlParts(
       package,
       classifyPptxPart,
-      (element, partName, partClass) => _scan(
-        element,
-        ScanContext(partName, partClass),
-        colors,
-        fonts,
-      ),
+      (element, partName, partClass) =>
+          _scan(element, ScanContext(partName, partClass), colors, fonts),
       scannedParts: scanned,
     );
 

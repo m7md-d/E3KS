@@ -9,9 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('الإصدار المعروض يطابق pubspec', () {
     // رقمان للإصدار في مكانين ينحرفان حتمًا، فيكذب «عن التطبيق» بصمت.
-    final line = File('pubspec.yaml')
-        .readAsLinesSync()
-        .firstWhere((l) => l.startsWith('version:'));
+    final line = File(
+      'pubspec.yaml',
+    ).readAsLinesSync().firstWhere((l) => l.startsWith('version:'));
     expect(line.split(':')[1].trim(), equals(appVersion));
   });
 

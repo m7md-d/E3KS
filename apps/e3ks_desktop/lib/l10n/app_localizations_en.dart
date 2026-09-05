@@ -447,6 +447,77 @@ class LEn extends L {
   String get back => 'Back';
 
   @override
+  String get focusedColor => 'Tracking colour';
+
+  @override
+  String get clearFocus => 'Stop tracking';
+
+  @override
+  String get noMatches => 'No matches';
+
+  @override
+  String get tapColorHint => 'Tap any colour on the page to track it';
+
+  @override
+  String get nextMatch => 'Next match';
+
+  @override
+  String get previousMatch => 'Previous match';
+
+  @override
+  String get extractIdentity => 'Extract identity from an open file';
+
+  @override
+  String get extractIdentityHint =>
+      'Reads the file\'s colours ordered by use and names them';
+
+  @override
+  String extractFrom(String file) {
+    return 'Extract from: $file';
+  }
+
+  @override
+  String get noOtherFiles => 'Open another file carrying the identity you want';
+
+  @override
+  String get quickPick => 'Quick pick';
+
+  @override
+  String get quickPickHint =>
+      'Colours from identities extracted from open files';
+
+  @override
+  String get labelPrimary => 'Primary';
+
+  @override
+  String get labelText => 'Text colour';
+
+  @override
+  String get labelBackground => 'Background';
+
+  @override
+  String get labelAccent => 'Accent';
+
+  @override
+  String get goToPage => 'Go to page';
+
+  @override
+  String get showChangeMarks => 'Show change marks';
+
+  @override
+  String get pickColorToTrack => 'Track a colour';
+
+  @override
+  String get stopTracking => 'Stop tracking';
+
+  @override
+  String get shadesOf => 'Shades of this colour';
+
+  @override
+  String get shadesHint =>
+      'Computed from the chosen colour — the marked step is it';
+
+  @override
   String get settings => 'Settings';
 
   @override

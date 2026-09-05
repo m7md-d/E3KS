@@ -901,6 +901,138 @@ abstract class L {
   /// **'رجوع'**
   String get back;
 
+  /// No description provided for @focusedColor.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة اللون'**
+  String get focusedColor;
+
+  /// No description provided for @clearFocus.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقف المتابعة'**
+  String get clearFocus;
+
+  /// No description provided for @noMatches.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا مواضع'**
+  String get noMatches;
+
+  /// No description provided for @tapColorHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط أي لون في الصفحة لمتابعته'**
+  String get tapColorHint;
+
+  /// No description provided for @nextMatch.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموضع التالي'**
+  String get nextMatch;
+
+  /// No description provided for @previousMatch.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموضع السابق'**
+  String get previousMatch;
+
+  /// No description provided for @extractIdentity.
+  ///
+  /// In ar, this message translates to:
+  /// **'استخرج الهوية من ملف مفتوح'**
+  String get extractIdentity;
+
+  /// No description provided for @extractIdentityHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'يقرأ ألوان الملف مرتّبةً بالأكثر استعمالًا ويسمّيها'**
+  String get extractIdentityHint;
+
+  /// No description provided for @extractFrom.
+  ///
+  /// In ar, this message translates to:
+  /// **'استخرج من: {file}'**
+  String extractFrom(String file);
+
+  /// No description provided for @noOtherFiles.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح ملفًا آخر يحمل الهوية التي تريدها'**
+  String get noOtherFiles;
+
+  /// No description provided for @quickPick.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار سريع'**
+  String get quickPick;
+
+  /// No description provided for @quickPickHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألوان الهويات المستخرَجة من الملفات المفتوحة'**
+  String get quickPickHint;
+
+  /// No description provided for @labelPrimary.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأساسي'**
+  String get labelPrimary;
+
+  /// No description provided for @labelText.
+  ///
+  /// In ar, this message translates to:
+  /// **'لون النصّ'**
+  String get labelText;
+
+  /// No description provided for @labelBackground.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخلفية'**
+  String get labelBackground;
+
+  /// No description provided for @labelAccent.
+  ///
+  /// In ar, this message translates to:
+  /// **'مُكمّل'**
+  String get labelAccent;
+
+  /// No description provided for @goToPage.
+  ///
+  /// In ar, this message translates to:
+  /// **'اذهب إلى صفحة'**
+  String get goToPage;
+
+  /// No description provided for @showChangeMarks.
+  ///
+  /// In ar, this message translates to:
+  /// **'أظهِر علامات التغيير'**
+  String get showChangeMarks;
+
+  /// No description provided for @pickColorToTrack.
+  ///
+  /// In ar, this message translates to:
+  /// **'تتبّع لونًا'**
+  String get pickColorToTrack;
+
+  /// No description provided for @stopTracking.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقف التتبّع'**
+  String get stopTracking;
+
+  /// No description provided for @shadesOf.
+  ///
+  /// In ar, this message translates to:
+  /// **'درجات هذا اللون'**
+  String get shadesOf;
+
+  /// No description provided for @shadesHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'محسوبة من اللون المختار — الدرجة المُعلَّمة هي هو'**
+  String get shadesHint;
+
   /// No description provided for @settings.
   ///
   /// In ar, this message translates to:
