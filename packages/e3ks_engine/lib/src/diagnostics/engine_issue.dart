@@ -37,6 +37,15 @@ enum IssueCode {
 
   /// فشل بناء الأرشيف.
   encodeFailed,
+
+  /// الحاوية ليست من صيغة يعرفها المحرّك.
+  unsupportedFormat,
+
+  /// صيغةٌ كتبت في جزء لا تملكه — حارس العزل بين الصيغ.
+  ///
+  /// خطأ برمجي عندنا لا خطأ في ملف المستخدم، ولذلك يوقف الكتابة فورًا:
+  /// صيغة تلمس أجزاء غيرها قد تُخرج ملفًّا يفتحه Word ويرفضه PowerPoint.
+  foreignPartTouched,
 }
 
 enum IssueSeverity { error, warning }

@@ -27,6 +27,7 @@ extension ColorRoleText on ColorRole {
     ColorRole.runFill => t.roleRunFill,
     ColorRole.shadingPattern => t.roleShadingPattern,
     ColorRole.border => t.roleBorder,
+    ColorRole.shapeFill => t.roleShapeFill,
     ColorRole.pageBackground => t.rolePageBackground,
     ColorRole.graphics => t.roleGraphics,
     ColorRole.themePalette => t.roleThemePalette,
@@ -82,6 +83,7 @@ extension PreviewSectionKindText on PreviewSectionKind {
     PreviewSectionKind.footnotes => t.sectionFootnotes,
     PreviewSectionKind.endnotes => t.sectionEndnotes,
     PreviewSectionKind.comments => t.sectionComments,
+    PreviewSectionKind.slides => t.sectionSlides,
   };
 }
 
@@ -135,6 +137,8 @@ String issueText(L t, EngineIssue issue) => switch (issue.code) {
   IssueCode.unmatchedMapping => t.errUnmatchedMapping(
     (issue.args['colors'] as List?)?.join('، ') ?? '',
   ),
+  IssueCode.unsupportedFormat => t.errUnsupportedFormat,
+  IssueCode.foreignPartTouched => t.errForeignPartTouched,
 };
 
 /// أسباب الفشل التي حُفظت وقت التحميل، مصاغةً الآن بلغة المستخدم.

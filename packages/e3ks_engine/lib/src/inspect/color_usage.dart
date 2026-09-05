@@ -1,7 +1,7 @@
 /// استعمال لون واحد في المستند: كم مرّة، وأين، وبأي دور، وعلى أي نصّ.
 library;
 
-import '../ooxml/part_classes.dart';
+import 'part_class.dart';
 import 'hex_color.dart';
 
 /// دور اللون — أين يقع بصريًا. الدور هو ما يجعل جدول الأثر مفهومًا:
@@ -15,6 +15,10 @@ enum ColorRole {
   runFill,
   shadingPattern,
   border,
+
+  /// تعبئة شكل على شريحة — أكثر أدوار اللون ظهورًا في العروض التقديمية.
+  shapeFill,
+
   pageBackground,
   graphics,
   themePalette,

@@ -120,12 +120,36 @@ final class PreviewRow {
   final bool isHeader;
 }
 
+/// موضع كتلة على الصفحة بالنقاط.
+///
+/// **الفرق الجوهري بين Word وPowerPoint.** مستند Word تدفّق: الفقرة تلي التي
+/// قبلها. والشريحة **لوحة**: كل شكل يعلن موضعه ومقاسه صراحةً. عرض الشريحة
+/// تدفّقًا رأسيًّا يجعل المعاينة كذبًا.
+///
+/// `null` تعني «هذا المستند تدفّق» — فيبقى Word على ما هو.
+final class BlockFrame {
+  const BlockFrame({
+    required this.leftPt,
+    required this.topPt,
+    required this.widthPt,
+    required this.heightPt,
+  });
+
+  final double leftPt;
+  final double topPt;
+  final double widthPt;
+  final double heightPt;
+}
+
 /// كتلة في المستند: فقرة أو جدول.
 sealed class PreviewBlock {
   const PreviewBlock();
 
   /// تبدأ هذه الكتلة صفحةً جديدة حسب ترقيم Word المخزَّن.
   bool get startsPage;
+
+  /// موضعها المعلَن، أو `null` إن كانت في تدفّق.
+  BlockFrame? get frame => null;
 }
 
 final class ParagraphBlock extends PreviewBlock {
@@ -142,7 +166,11 @@ final class TableBlock extends PreviewBlock {
     this.isRtl = false,
     this.startsPage = false,
     this.columnFractions = const [],
+    this.frame,
   });
+
+  @override
+  final BlockFrame? frame;
 
   final List<PreviewRow> rows;
 
@@ -161,9 +189,45 @@ final class TableBlock extends PreviewBlock {
   final bool startsPage;
 }
 
+/// شكل على شريحة: فقرات داخل إطار معلَن.
+///
+/// وحدة PowerPoint ليست الفقرة بل **الشكل**: صندوق له موضع ومقاس وخلفية،
+/// تتدفّق الفقرات داخله. تفكيكه إلى فقرات مستقلّة يُضيّع التخطيط كلّه.
+final class ShapeBlock extends PreviewBlock {
+  const ShapeBlock({
+    required this.paragraphs,
+    this.frame,
+    this.fill,
+    this.startsPage = false,
+  });
+
+  final List<PreviewParagraph> paragraphs;
+
+  @override
+  final BlockFrame? frame;
+
+  /// تعبئة الشكل — أكثر أدوار اللون ظهورًا في العروض التقديمية.
+  final HexColor? fill;
+
+  @override
+  final bool startsPage;
+
+  bool get isEmpty => paragraphs.every((p) => p.isEmpty);
+}
+
 /// معاينة جزء واحد من المستند (المتن أو ترويسة أو تذييل).
 /// نوع القسم. **بلا نصّ معروض** — تسميته شأن الواجهة (`01`).
-enum PreviewSectionKind { body, header, footer, footnotes, endnotes, comments }
+enum PreviewSectionKind {
+  body,
+  header,
+  footer,
+  footnotes,
+  endnotes,
+  comments,
+
+  /// شرائح العرض التقديمي.
+  slides,
+}
 
 /// مقاس الصفحة وهوامشها كما صرّح بها المستند (`w:sectPr`).
 ///

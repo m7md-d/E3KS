@@ -11,6 +11,11 @@ bool blockChanged(
   required Set<String> colors,
   required Set<String> fonts,
 }) => switch (block) {
+  ShapeBlock(:final paragraphs, :final fill) =>
+    _hit(fill, colors) ||
+        paragraphs.any(
+          (p) => paragraphChanged(p, colors: colors, fonts: fonts),
+        ),
   ParagraphBlock(:final paragraph) => paragraphChanged(
     paragraph,
     colors: colors,

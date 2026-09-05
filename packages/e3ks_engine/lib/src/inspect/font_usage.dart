@@ -1,7 +1,7 @@
 /// استعمال خط واحد في المستند.
 library;
 
-import '../ooxml/part_classes.dart';
+import 'part_class.dart';
 
 /// أي فتحة خط — العربية تُقرأ من [complexScript]، وإغفالها خطأ شائع (`02` §7).
 enum FontSlot { ascii, highAnsi, complexScript, eastAsian, drawing }

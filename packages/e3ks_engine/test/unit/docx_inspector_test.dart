@@ -9,12 +9,19 @@ import 'package:test/test.dart';
 
 import '../fixtures/docx_fixture.dart';
 
+/// يمرّ عبر الواجهة العامة لا عبر أصناف الصيغة مباشرةً: هكذا يستدعيها
+/// التطبيق، وهكذا يُختبَر التعرّف على الصيغة مع كل اختبار.
+DocumentFormat formatOrFail(DocumentPackage package) {
+  final detected = formatFor(package);
+  if (detected case Failed(:final issues)) fail('الصيغة: ${issues.join("، ")}');
+  return (detected as Ok<DocumentFormat>).value;
+}
+
 InspectionReport inspectOrFail(Uint8List bytes) {
   final opened = DocumentPackage.open(bytes);
   if (opened case Failed(:final issues)) fail('فتح: ${issues.join("، ")}');
-  final result = const DocxInspector().inspect(
-    (opened as Ok<DocumentPackage>).value,
-  );
+  final package = (opened as Ok<DocumentPackage>).value;
+  final result = formatOrFail(package).inspect(package);
   if (result case Failed(:final issues)) fail('فحص: ${issues.join("، ")}');
   return (result as Ok<InspectionReport>).value;
 }

@@ -32,7 +32,13 @@ final class GoogleFontFetcher implements FontFetcher {
   Future<FetchResult> fetch(String family) async {
     final client = HttpClient()..connectionTimeout = _timeout;
     try {
-      final url = await _resolveTtfUrl(client, family);
+      // Word يكتب اسم النمط داخل اسم العائلة («IBM Plex Sans Light»)، وGoogle
+      // تعرف العائلة وحدها. نجرّب المكتوب أولًا ثم المجرَّد من لاحقة النمط.
+      var url = await _resolveTtfUrl(client, family);
+      final bare = familyWithoutStyleSuffix(family);
+      if (url == null && bare != null) {
+        url = await _resolveTtfUrl(client, bare);
+      }
       if (url == null) return (outcome: FetchOutcome.notFound, bytes: null);
 
       final request = await client.getUrl(Uri.parse(url));
@@ -77,11 +83,37 @@ final class GoogleFontFetcher implements FontFetcher {
     final body = await response
         .transform(const SystemEncoding().decoder)
         .join();
-    final match = RegExp(
-      r'src:\s*url\((https://[^)]+\.ttf)\)',
-    ).firstMatch(body);
-    return match?.group(1);
+
+    return ttfUrlFromCss(body);
   }
+
+  /// لاحقات الأنماط التي يلحقها Word باسم العائلة.
+  static const List<String> styleSuffixes = [
+    'Extra Light',
+    'ExtraLight',
+    'SemiBold',
+    'Semi Bold',
+    'DemiBold',
+    'Demi Bold',
+    'ExtraBold',
+    'Extra Bold',
+    'UltraLight',
+    'Ultra Light',
+    'Thin',
+    'Light',
+    'Regular',
+    'Medium',
+    'Bold',
+    'Black',
+    'Heavy',
+    'Italic',
+    'Oblique',
+    'Condensed',
+    'Narrow',
+    'Display',
+    'Text',
+    'Caption',
+  ];
 
   bool _looksLikeFont(Uint8List bytes) {
     if (bytes.length < 4) return false;
@@ -98,4 +130,35 @@ final class GoogleFontFetcher implements FontFetcher {
     }
     return false;
   }
+}
+
+/// رابط ملفّ TrueType من ورقة أنماط Google Fonts.
+///
+/// **لا يُشترَط أن ينتهي الرابط بـ`.ttf`.** الخطوط المكافئة مقاسيًّا التي
+/// تخدمها Google بدل خطوط Microsoft (‏Calibri و Cambria و MS Gothic و
+/// Courier …) تأتي من `/l/font?kit=…` بلا امتداد أصلًا. اشتراط الامتداد كان
+/// يجعل التطبيق يقول «غير متاح» عن أربعة خطوط من ستّة **يستطيع جلبها فعلًا**،
+/// وهذا أسوأ من العجز: عجزٌ يدّعي معرفة سببه.
+///
+/// المعيار الصحيح ما تعلنه الورقة عن الملفّ: `format('truetype')`.
+String? ttfUrlFromCss(String css) => RegExp(
+  r"url\((https?://[^)]+)\)\s*format\('truetype'\)",
+).firstMatch(css)?.group(1);
+
+/// الاسم بلا لاحقة النمط، أو `null` إن لم تكن فيه لاحقة.
+///
+/// Word يكتب النمط داخل اسم العائلة («IBM Plex Sans Light»)، وGoogle تعرف
+/// العائلة وحدها. نشترط بقاء كلمتين على الأقلّ: «Light» وحده عائلة قائمة،
+/// و«Arial Black» بلا «Black» عائلة أخرى — ولذلك هذه محاولة **ثانية** بعد
+/// فشل الاسم كما كُتب، لا استبدال له.
+String? familyWithoutStyleSuffix(String family) {
+  final trimmed = family.trim();
+  for (final suffix in GoogleFontFetcher.styleSuffixes) {
+    if (!trimmed.toLowerCase().endsWith(' ${suffix.toLowerCase()}')) continue;
+    final bare = trimmed
+        .substring(0, trimmed.length - suffix.length - 1)
+        .trim();
+    if (bare.contains(' ')) return bare;
+  }
+  return null;
 }

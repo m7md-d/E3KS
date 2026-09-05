@@ -5,19 +5,16 @@ library;
 
 import 'package:xml/xml.dart';
 
-import '../diagnostics/engine_issue.dart';
-import '../diagnostics/engine_result.dart';
-import '../ooxml/ooxml_names.dart';
-import '../ooxml/part_classes.dart';
-import '../package/document_package.dart';
-import 'color_usage.dart';
-import 'font_usage.dart';
-import 'hex_color.dart';
-import 'inspection_report.dart';
-
-/// أقصى عدد عيّنات نصّية نحفظها لكل لون. ثلاث تكفي لفهم الدور، والمزيد ضجيج.
-const int _maxSamples = 3;
-const int _sampleLength = 60;
+import '../../diagnostics/engine_result.dart';
+import '../../inspect/color_usage.dart';
+import '../../inspect/font_usage.dart';
+import '../../inspect/hex_color.dart';
+import '../../inspect/inspection_report.dart';
+import '../../inspect/usage_accumulator.dart';
+import '../../ooxml/ooxml_names.dart';
+import '../../package/document_package.dart';
+import '../xml_part_pass.dart';
+import 'docx_parts.dart';
 
 /// دور خلفية `w:shd` يُحدَّد من العنصر الأب.
 const Map<String, ColorRole> _shadingRoleByParent = {
@@ -32,54 +29,28 @@ final class DocxInspector {
   const DocxInspector();
 
   EngineResult<InspectionReport> inspect(DocumentPackage package) {
-    final colors = <HexColor, _ColorAccumulator>{};
-    final fonts = <String, _FontAccumulator>{};
+    final colors = <HexColor, ColorAccumulator>{};
+    final fonts = <String, FontAccumulator>{};
     final highlights = <String, int>{};
     final scanned = <String>[];
-    final warnings = <EngineIssue>[];
 
-    for (final partName in package.partNames) {
-      final partClass = classifyDocxPart(partName);
-      if (partClass == PartClass.other) continue;
-
-      final text = package.textOf(partName);
-      if (text == null) continue;
-
-      final XmlDocument document;
-      try {
-        document = XmlDocument.parse(text);
-      } on XmlException catch (e) {
-        // جزء تالف لا يُسقط الفحص كلّه، لكنه لا يُبتلع صامتًا (`03`).
-        warnings.add(
-          EngineIssue(
-            code: IssueCode.malformedXml,
-            severity: IssueSeverity.warning,
-            part: partName,
-            detail: '$e',
-          ),
-        );
-        continue;
-      }
-
-      scanned.add(partName);
-      final context = _ScanContext(partName, partClass);
-      for (final element in document.descendants.whereType<XmlElement>()) {
-        _scanElement(element, context, colors, fonts, highlights);
-      }
-    }
-
-    final colorList = [
-      for (final entry in colors.entries) entry.value.build(entry.key),
-    ]..sort((a, b) => b.count.compareTo(a.count));
-
-    final fontList = [
-      for (final entry in fonts.entries) entry.value.build(entry.key),
-    ]..sort((a, b) => b.count.compareTo(a.count));
+    final warnings = scanXmlParts(
+      package,
+      classifyDocxPart,
+      (element, partName, partClass) => _scanElement(
+        element,
+        ScanContext(partName, partClass),
+        colors,
+        fonts,
+        highlights,
+      ),
+      scannedParts: scanned,
+    );
 
     return Ok(
       InspectionReport(
-        colors: colorList,
-        fonts: fontList,
+        colors: buildColors(colors),
+        fonts: buildFonts(fonts),
         highlights: highlights,
         scannedParts: scanned,
       ),
@@ -89,9 +60,9 @@ final class DocxInspector {
 
   void _scanElement(
     XmlElement element,
-    _ScanContext context,
-    Map<HexColor, _ColorAccumulator> colors,
-    Map<String, _FontAccumulator> fonts,
+    ScanContext context,
+    Map<HexColor, ColorAccumulator> colors,
+    Map<String, FontAccumulator> fonts,
     Map<String, int> highlights,
   ) {
     final name = element.name.local;
@@ -101,7 +72,7 @@ final class DocxInspector {
       final color = HexColor.tryParse(raw);
       if (color == null) return; // ومنها `auto` — تفويض لا لون (`02` §5).
       colors
-          .putIfAbsent(color, _ColorAccumulator.new)
+          .putIfAbsent(color, ColorAccumulator.new)
           .record(context, role, themed: themed, sample: _sampleFor(element));
     }
 
@@ -172,7 +143,7 @@ final class DocxInspector {
             typeface.isNotEmpty &&
             !typeface.startsWith('+')) {
           fonts
-              .putIfAbsent(typeface, _FontAccumulator.new)
+              .putIfAbsent(typeface, FontAccumulator.new)
               .record(context, FontSlot.drawing, themed: false);
         }
       }
@@ -181,8 +152,8 @@ final class DocxInspector {
 
   void _scanFonts(
     XmlElement element,
-    _ScanContext context,
-    Map<String, _FontAccumulator> fonts,
+    ScanContext context,
+    Map<String, FontAccumulator> fonts,
   ) {
     final themed = fontThemeAttributes.any(
       (a) => element.getAttribute(a, namespace: wNs) != null,
@@ -199,7 +170,7 @@ final class DocxInspector {
       final value = element.getAttribute(attribute, namespace: wNs);
       if (value == null || value.isEmpty) continue;
       fonts
-          .putIfAbsent(value, _FontAccumulator.new)
+          .putIfAbsent(value, FontAccumulator.new)
           .record(context, slots[attribute]!, themed: themed);
     }
   }
@@ -219,7 +190,7 @@ final class DocxInspector {
       for (final node in ancestor.descendants.whereType<XmlElement>()) {
         if (node.name.namespaceUri == wNs && node.name.local == 't') {
           buffer.write(node.innerText);
-          if (buffer.length >= _sampleLength) break;
+          if (buffer.length >= colorSampleLength) break;
         }
       }
       final text = buffer.toString().trim();
@@ -227,79 +198,10 @@ final class DocxInspector {
         if (isParagraph) return null;
         continue; // الـ run بلا نص: نجرّب الفقرة.
       }
-      return text.length <= _sampleLength
+      return text.length <= colorSampleLength
           ? text
-          : '${text.substring(0, _sampleLength)}…';
+          : '${text.substring(0, colorSampleLength)}…';
     }
     return null;
   }
-}
-
-/// موضع الفحص الحالي: أي جزء وأي تصنيف.
-final class _ScanContext {
-  const _ScanContext(this.partName, this.partClass);
-  final String partName;
-  final PartClass partClass;
-}
-
-final class _ColorAccumulator {
-  int count = 0;
-  final Map<ColorRole, int> byRole = {};
-  final Map<String, int> byPart = {};
-  final Set<PartClass> partClasses = {};
-  final List<String> samples = [];
-  bool themeLinked = false;
-
-  void record(
-    _ScanContext context,
-    ColorRole role, {
-    required bool themed,
-    String? sample,
-  }) {
-    count++;
-    byRole[role] = (byRole[role] ?? 0) + 1;
-    byPart[context.partName] = (byPart[context.partName] ?? 0) + 1;
-    partClasses.add(context.partClass);
-    if (themed) themeLinked = true;
-    if (sample != null &&
-        samples.length < _maxSamples &&
-        !samples.contains(sample)) {
-      samples.add(sample);
-    }
-  }
-
-  ColorUsage build(HexColor color) => ColorUsage(
-    color: color,
-    count: count,
-    byRole: Map.unmodifiable(byRole),
-    byPart: Map.unmodifiable(byPart),
-    partClasses: Set.unmodifiable(partClasses),
-    themeLinked: themeLinked,
-    samples: List.unmodifiable(samples),
-  );
-}
-
-final class _FontAccumulator {
-  int count = 0;
-  final Map<FontSlot, int> bySlot = {};
-  final Map<String, int> byPart = {};
-  final Set<PartClass> partClasses = {};
-  bool themeLinked = false;
-
-  void record(_ScanContext context, FontSlot slot, {required bool themed}) {
-    count++;
-    bySlot[slot] = (bySlot[slot] ?? 0) + 1;
-    byPart[context.partName] = (byPart[context.partName] ?? 0) + 1;
-    partClasses.add(context.partClass);
-    if (themed) themeLinked = true;
-  }
-
-  FontUsage build(String name) => FontUsage(
-    name: name,
-    count: count,
-    bySlot: Map.unmodifiable(bySlot),
-    byPart: Map.unmodifiable(byPart),
-    partClasses: Set.unmodifiable(partClasses),
-    themeLinked: themeLinked,
-  );
 }

@@ -27,7 +27,8 @@ class LEn extends L {
   String get chooseFile => 'Choose a file…';
 
   @override
-  String get supported => 'Supports .docx files from Microsoft Word';
+  String get supported =>
+      'Supports .docx and .pptx files from Word and PowerPoint';
 
   @override
   String get reading => 'Reading the document…';
@@ -390,6 +391,36 @@ class LEn extends L {
   String get language => 'Language';
 
   @override
+  String get aboutSection => 'About';
+
+  @override
+  String get aboutCopyright => '© 2026 m7md-d';
+
+  @override
+  String get aboutLicense =>
+      'Free software under the GNU General Public License, version 3. Distributed with no warranty.';
+
+  @override
+  String get componentLicenses => 'Component licenses';
+
+  @override
+  String get sourceCode => 'Source code';
+
+  @override
+  String get roleShapeFill => 'Shape fill';
+
+  @override
+  String get sectionSlides => 'Slides';
+
+  @override
+  String get errUnsupportedFormat =>
+      'This format is not supported. Supported today: Word (.docx) and PowerPoint (.pptx).';
+
+  @override
+  String get errForeignPartTouched =>
+      'Internal fault: the format tried to write a part it does not own, so the export was stopped.';
+
+  @override
   String get settings => 'Settings';
 
   @override
@@ -453,8 +484,7 @@ class LEn extends L {
   String get originFetched => 'Just fetched';
 
   @override
-  String get originUnavailable =>
-      'Unavailable — likely a commercial or private font';
+  String get originUnavailable => 'Not found on Google Fonts';
 
   @override
   String get originOffline => 'Could not connect';

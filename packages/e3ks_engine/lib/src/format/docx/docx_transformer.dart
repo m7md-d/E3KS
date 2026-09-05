@@ -7,15 +7,15 @@ library;
 
 import 'package:xml/xml.dart';
 
-import '../diagnostics/engine_issue.dart';
-import '../diagnostics/engine_result.dart';
-import '../inspect/hex_color.dart';
-import '../ooxml/ooxml_entity_mapping.dart';
-import '../ooxml/ooxml_names.dart';
-import '../ooxml/part_classes.dart';
-import '../package/document_package.dart';
-import 'style_plan.dart';
-import 'transform_report.dart';
+import '../../diagnostics/engine_issue.dart';
+import '../../diagnostics/engine_result.dart';
+import '../../inspect/hex_color.dart';
+import '../../ooxml/ooxml_names.dart';
+import '../../package/document_package.dart';
+import '../../transform/style_plan.dart';
+import '../../transform/transform_report.dart';
+import '../xml_part_pass.dart';
+import 'docx_parts.dart';
 
 final class DocxTransformer {
   const DocxTransformer();
@@ -25,37 +25,9 @@ final class DocxTransformer {
     final state = _TransformState(plan);
     final warnings = <EngineIssue>[];
 
-    for (final partName in package.partNames) {
-      if (classifyDocxPart(partName) == PartClass.other) continue;
-
-      final original = package.textOf(partName);
-      if (original == null) continue;
-
-      final XmlDocument document;
-      try {
-        document = XmlDocument.parse(original);
-      } on XmlException catch (e) {
-        return Failed([
-          EngineIssue(
-            code: IssueCode.malformedXml,
-            part: partName,
-            detail: '$e',
-          ),
-        ]);
-      }
-
-      for (final element in document.descendants.whereType<XmlElement>()) {
-        state.visit(element);
-      }
-
-      final rebuilt = serializeOoxml(document);
-      // المقارنة بالبايتات لا بالنيّة: لا نكتب إلا ما تغيّر فعلًا.
-      if (rebuilt == original) continue;
-
-      final written = package.putText(partName, rebuilt);
-      if (written case Failed(:final issues)) return Failed(issues);
-      state.changedParts.add(partName);
-    }
+    final rewritten = rewriteXmlParts(package, classifyDocxPart, state.visit);
+    if (rewritten case Failed(:final issues)) return Failed(issues);
+    state.changedParts.addAll((rewritten as Ok<List<String>>).value);
 
     final unmatched = {
       for (final from in plan.colors.keys)

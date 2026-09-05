@@ -10,8 +10,8 @@ library;
 
 import 'package:xml/xml.dart';
 
-import '../ooxml/ooxml_names.dart';
-import '../package/document_package.dart';
+import '../../ooxml/ooxml_names.dart';
+import '../../package/document_package.dart';
 
 /// أقصى عمق لسلسلة `w:basedOn` — حارس ضدّ الدور المغلق في مستند تالف.
 const int _maxInheritance = 12;

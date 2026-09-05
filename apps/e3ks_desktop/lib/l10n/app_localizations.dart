@@ -136,7 +136,7 @@ abstract class L {
   /// No description provided for @supported.
   ///
   /// In ar, this message translates to:
-  /// **'يدعم ملفات ‎.docx‎ من Microsoft Word'**
+  /// **'يدعم ملفات ‎.docx‎ و‎.pptx‎ من Word و PowerPoint'**
   String get supported;
 
   /// No description provided for @reading.
@@ -811,6 +811,60 @@ abstract class L {
   /// **'اللغة'**
   String get language;
 
+  /// No description provided for @aboutSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'عن التطبيق'**
+  String get aboutSection;
+
+  /// No description provided for @aboutCopyright.
+  ///
+  /// In ar, this message translates to:
+  /// **'© 2026 m7md-d'**
+  String get aboutCopyright;
+
+  /// No description provided for @aboutLicense.
+  ///
+  /// In ar, this message translates to:
+  /// **'برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُوزَّع بلا أيّ ضمان.'**
+  String get aboutLicense;
+
+  /// No description provided for @componentLicenses.
+  ///
+  /// In ar, this message translates to:
+  /// **'رخص المكوّنات'**
+  String get componentLicenses;
+
+  /// No description provided for @sourceCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشيفرة المصدرية'**
+  String get sourceCode;
+
+  /// No description provided for @roleShapeFill.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعبئة شكل'**
+  String get roleShapeFill;
+
+  /// No description provided for @sectionSlides.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشرائح'**
+  String get sectionSlides;
+
+  /// No description provided for @errUnsupportedFormat.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الصيغة غير مدعومة. المدعوم اليوم: Word ‏(.docx) و PowerPoint ‏(.pptx).'**
+  String get errUnsupportedFormat;
+
+  /// No description provided for @errForeignPartTouched.
+  ///
+  /// In ar, this message translates to:
+  /// **'خلل داخلي: حاولت الصيغة الكتابة في جزء لا تملكه، فأُوقف التصدير.'**
+  String get errForeignPartTouched;
+
   /// No description provided for @settings.
   ///
   /// In ar, this message translates to:
@@ -928,7 +982,7 @@ abstract class L {
   /// No description provided for @originUnavailable.
   ///
   /// In ar, this message translates to:
-  /// **'غير متاح — خطّ تجاري أو خاص غالبًا'**
+  /// **'لم نجده على Google Fonts'**
   String get originUnavailable;
 
   /// No description provided for @originOffline.

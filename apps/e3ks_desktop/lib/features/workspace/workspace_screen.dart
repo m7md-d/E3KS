@@ -18,6 +18,7 @@ import '../../app/theme.dart';
 import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
 import '../../data/identity_store.dart';
+import '../../data/openable_files.dart';
 import '../../data/settings_store.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/panel.dart';
@@ -67,7 +68,12 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 
   Future<void> _browse() async {
-    const type = XTypeGroup(label: 'Word', extensions: ['docx']);
+    // الامتدادات هنا للحوار وحده؛ الصيغة الفعلية يقرّرها المحرّك من محتوى
+    // الملفّ (`formatFor`)، فملفّ أُعيدت تسميته لا يُعالَج بالاسم الخطأ.
+    const type = XTypeGroup(
+      label: 'E3KS', // e3ks:not-ui
+      extensions: openableExtensions,
+    );
     final file = await openFile(acceptedTypeGroups: const [type]);
     if (file != null) await _open(file.path);
   }
@@ -75,7 +81,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   void _dropped(DropDoneDetails details) {
     setState(() => _dragging = false);
     for (final file in details.files) {
-      if (file.path.toLowerCase().endsWith('.docx')) {
+      final name = file.path.toLowerCase();
+      if (openableExtensions.any((e) => name.endsWith('.$e'))) {
         _open(file.path);
         return;
       }
@@ -86,10 +93,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     final document = widget.store.document;
     if (document == null) return;
 
-    final suggested = document.fileName.replaceAll(
-      RegExp(r'\.docx$', caseSensitive: false),
-      '_E3KS.docx',
-    );
+    // الامتداد يبقى امتداد المصدر: العرض يخرج عرضًا والمستند مستندًا.
+    final suggested = suggestedOutputName(document.fileName);
     final location = await getSaveLocation(suggestedName: suggested);
     if (location == null) return;
 

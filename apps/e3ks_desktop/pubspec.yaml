@@ -1,6 +1,8 @@
 name: e3ks_desktop
 description: E3KS — اعكس. تطبيق سطح مكتب لعكس الهوية البصرية في المستندات.
 publish_to: none
+repository: https://github.com/m7md-d/E3KS
+issue_tracker: https://github.com/m7md-d/E3KS/issues
 version: 0.1.0
 
 environment:
@@ -36,6 +38,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+
+  # نصّ رخصة الخطّ يُشحَن **ويُقرأ**: يُسجَّل في سجلّ رخص Flutter فيظهر
+  # للمستخدم في «رخص المكوّنات». شحنه بلا عرضه يفي بالحرف لا بالغرض.
+  assets:
+    - assets/fonts/OFL.txt
 
   # الخط المعتمد، مضمَّن في التطبيق لا مطلوب من النظام: البرنامج يجب أن
   # يبدو واحدًا على كل جهاز. رخصة OFL 1.1 تجيز التضمين (assets/fonts/OFL.txt).

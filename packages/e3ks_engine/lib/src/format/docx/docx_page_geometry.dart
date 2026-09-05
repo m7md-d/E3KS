@@ -5,8 +5,8 @@ library;
 
 import 'package:xml/xml.dart';
 
-import '../ooxml/ooxml_names.dart';
-import 'preview_model.dart';
+import '../../ooxml/ooxml_names.dart';
+import '../../preview/preview_model.dart';
 
 /// مقاس الصفحة لكل عنصر من عناصر المتن.
 ///

@@ -154,6 +154,70 @@ void main() {
     });
   });
 
+  group('قراءة ورقة أنماط Google', () {
+    // خللٌ حقيقي: كان الشرط أن ينتهي الرابط بـ`.ttf`، فقال التطبيق «غير
+    // متاح» عن أربعة خطوط من ستّة يستطيع جلبها. لا شبكة هنا — نصّ ثابت
+    // منسوخ من ردّ الخدمة.
+    test('الرابط المنتهي بـ.ttf يُقرأ', () {
+      const css = """
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url(https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYY.ttf) format('truetype');
+}""";
+      expect(
+        ttfUrlFromCss(css),
+        equals('https://fonts.gstatic.com/s/ibmplexsans/v23/zYXGKVElMYY.ttf'),
+      );
+    });
+
+    test('الرابط بلا امتداد يُقرأ أيضًا — وهذا هو الخلل الذي وقع', () {
+      // ما تخدمه Google بدل خطوط Microsoft: مكافئ مقاسيًّا من `/l/font`.
+      const css = """
+@font-face {
+  font-family: 'Calibri';
+  src: url(https://fonts.gstatic.com/l/font?kit=J7afnpV-BGl&skey=a10&v=v15) format('truetype');
+}""";
+      expect(
+        ttfUrlFromCss(css),
+        equals(
+          'https://fonts.gstatic.com/l/font?kit=J7afnpV-BGl&skey=a10&v=v15',
+        ),
+      );
+    });
+
+    test('صيغة غير truetype تُرفض — Flutter لا يقرأ woff2', () {
+      const css =
+          "src: url(https://fonts.gstatic.com/s/a/b.woff2) format('woff2');";
+      expect(ttfUrlFromCss(css), isNull);
+    });
+
+    test('ردّ فارغ أو رسالة خطأ لا تُنتج رابطًا', () {
+      expect(ttfUrlFromCss(''), isNull);
+      expect(ttfUrlFromCss('Not Found'), isNull);
+    });
+  });
+
+  group('لاحقة النمط داخل اسم العائلة', () {
+    test('تُجرَّد حين يبقى بعدها اسم عائلة', () {
+      // Word يكتب «IBM Plex Sans Light»، وGoogle تعرف «IBM Plex Sans».
+      expect(
+        familyWithoutStyleSuffix('IBM Plex Sans Light'),
+        equals('IBM Plex Sans'),
+      );
+      expect(
+        familyWithoutStyleSuffix('Noto Naskh Arabic SemiBold'),
+        equals('Noto Naskh Arabic'),
+      );
+    });
+
+    test('لا تُجرَّد حين تكون هي العائلة أو نصفها', () {
+      // «Light» وحده عائلة، و«Arial Black» بلا Black عائلة أخرى.
+      expect(familyWithoutStyleSuffix('Light'), isNull);
+      expect(familyWithoutStyleSuffix('Arial Black'), isNull);
+      expect(familyWithoutStyleSuffix('Cairo'), isNull);
+    });
+  });
+
   group('المخزن', () {
     test('يحصي المساحة ويحذف ما يُطلَب', () async {
       final cache = freshCache();

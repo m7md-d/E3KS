@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../app/about.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/font_cache.dart';
@@ -153,6 +154,10 @@ class _SettingsBodyState extends State<_SettingsBody> {
                 for (final status in widget.fonts.statuses)
                   _StatusRow(status: status),
               ],
+
+              const SizedBox(height: 26),
+              SectionHeader(title: t.aboutSection),
+              const _About(),
             ],
           ),
         ),
@@ -233,6 +238,55 @@ class _StatusRow extends StatelessWidget {
           Text(
             status.origin.label(t),
             style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// الحقوق والرخصة.
+///
+/// ‏GPL‑3 §5 تُلزم البرنامج التفاعلي بعرض إشعاراته، فهذا شرطُ ترخيص لا زينة.
+/// ورخصة الخطّ المضمَّن مسجَّلة في `registerBundledLicenses` فتظهر مع البقيّة.
+class _About extends StatelessWidget {
+  const _About();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final text = Theme.of(context).textTheme;
+    return Panel(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(t.aboutCopyright, style: text.bodyMedium)),
+              Text(appVersion, style: text.labelSmall),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(t.aboutLicense, style: text.labelSmall),
+          const SizedBox(height: 4),
+          SelectableText(
+            sourceUrl,
+            style: text.labelSmall?.copyWith(color: Shade.mirror),
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: () => showLicensePage(
+                context: context,
+                applicationName: t.appName,
+                applicationVersion: appVersion,
+                applicationLegalese: '${t.aboutCopyright}\n${t.aboutLicense}',
+              ),
+              icon: const Icon(LucideIcons.scale, size: 14),
+              label: Text(t.componentLicenses),
+            ),
           ),
         ],
       ),

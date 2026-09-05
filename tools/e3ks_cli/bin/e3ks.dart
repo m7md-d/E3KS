@@ -1,3 +1,8 @@
+// E3KS — اعكس. واجهة سطر الأوامر.
+// Copyright (C) 2026  m7md-d
+//
+// برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث أو أيّ إصدار
+// لاحق. يُوزَّع بلا أيّ ضمان. النصّ الكامل في `LICENSE` بجذر المشروع.
 /// واجهة سطر أوامر رفيعة. كل المنطق في المحرّك — القاعدة `01`.
 library;
 
@@ -40,14 +45,16 @@ Uint8List _readOrExit(String path) {
   return Uint8List.fromList(file.readAsBytesSync());
 }
 
+Never _failWith(List<EngineIssue> issues) {
+  for (final issue in issues) {
+    stderr.writeln('✖ ${m.describeIssue(issue)}');
+  }
+  exit(65);
+}
+
 DocumentPackage _openOrExit(Uint8List bytes) {
   final opened = DocumentPackage.open(bytes);
-  if (opened case Failed(:final issues)) {
-    for (final issue in issues) {
-      stderr.writeln('✖ ${m.describeIssue(issue)}');
-    }
-    exit(65);
-  }
+  if (opened case Failed(:final issues)) _failWith(issues);
   return (opened as Ok<DocumentPackage>).value;
 }
 
@@ -57,7 +64,9 @@ void _inspect(List<String> args) {
     exit(64);
   }
   final package = _openOrExit(_readOrExit(args.first));
-  final result = const DocxInspector().inspect(package);
+  final detected = formatFor(package);
+  if (detected case Failed(:final issues)) _failWith(issues);
+  final result = (detected as Ok<DocumentFormat>).value.inspect(package);
   final report = (result as Ok<InspectionReport>).value;
 
   if (args.contains('--json')) {
@@ -140,7 +149,7 @@ void _restyle(List<String> args) {
   }
 
   final plan = _parsePlan(utf8.decode(_readOrExit(planPath)));
-  final result = restyleDocx(_readOrExit(args.first), plan);
+  final result = restyle(_readOrExit(args.first), plan);
 
   if (result case Failed(:final issues)) {
     stderr.writeln('✖ ${m.ui["writeCancelled"]}');

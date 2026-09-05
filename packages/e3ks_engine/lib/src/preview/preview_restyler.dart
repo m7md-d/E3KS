@@ -34,6 +34,13 @@ DocumentPreview restylePreview(DocumentPreview preview, StylePlan plan) =>
     );
 
 PreviewBlock _block(PreviewBlock block, StylePlan plan) => switch (block) {
+  ShapeBlock(:final paragraphs, :final frame, :final fill, :final startsPage) =>
+    ShapeBlock(
+      paragraphs: [for (final p in paragraphs) _paragraph(p, plan)],
+      frame: frame,
+      fill: _color(fill, plan),
+      startsPage: startsPage,
+    ),
   ParagraphBlock(:final paragraph) => ParagraphBlock(
     _paragraph(paragraph, plan),
   ),
@@ -42,6 +49,7 @@ PreviewBlock _block(PreviewBlock block, StylePlan plan) => switch (block) {
     :final isRtl,
     :final startsPage,
     :final columnFractions,
+    :final frame,
   ) =>
     TableBlock(
       [
@@ -63,6 +71,7 @@ PreviewBlock _block(PreviewBlock block, StylePlan plan) => switch (block) {
       isRtl: isRtl,
       startsPage: startsPage,
       columnFractions: columnFractions,
+      frame: frame,
     ),
 };
 

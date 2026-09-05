@@ -6,12 +6,12 @@ library;
 
 import 'package:xml/xml.dart';
 
-import '../inspect/hex_color.dart';
-import '../ooxml/ooxml_names.dart';
-import '../package/document_package.dart';
-import 'page_geometry_reader.dart';
-import 'preview_model.dart';
-import 'style_book.dart';
+import '../../inspect/hex_color.dart';
+import '../../ooxml/ooxml_names.dart';
+import '../../package/document_package.dart';
+import '../../preview/preview_model.dart';
+import 'docx_page_geometry.dart';
+import 'docx_style_book.dart';
 
 /// صمّام أمان لا حدّ عرض: الواجهة تعرض الصفحات على دفعات، فلا تكلفة على
 /// المستند الطويل. ما بعد هذا الحدّ يُعلَن للمستخدم ولا يُخفى (`00` §5).
@@ -26,8 +26,8 @@ const Map<String, PreviewSectionKind> _sectionKinds = {
   'comments': PreviewSectionKind.comments,
 };
 
-final class PreviewExtractor {
-  const PreviewExtractor();
+final class DocxPreviewExtractor {
+  const DocxPreviewExtractor();
 
   DocumentPreview extract(DocumentPackage package) {
     final sections = <PreviewSection>[];

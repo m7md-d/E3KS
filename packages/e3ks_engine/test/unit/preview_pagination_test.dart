@@ -12,9 +12,10 @@ import '../fixtures/docx_fixture.dart';
 DocumentPreview extractOrFail(Uint8List bytes) {
   final opened = DocumentPackage.open(bytes);
   if (opened case Failed(:final issues)) fail('فتح: ${issues.join("، ")}');
-  return const PreviewExtractor().extract(
-    (opened as Ok<DocumentPackage>).value,
-  );
+  final package = (opened as Ok<DocumentPackage>).value;
+  final detected = formatFor(package);
+  if (detected case Failed(:final issues)) fail('الصيغة: ${issues.join("، ")}');
+  return (detected as Ok<DocumentFormat>).value.preview(package);
 }
 
 void main() {

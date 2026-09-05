@@ -61,41 +61,84 @@ class DocumentPaper extends StatelessWidget {
         ? (_gutterPt * _scale).clamp(0.0, geometry.marginLeftPt * _scale)
         : 0.0;
 
-    final children = <Widget>[
-      for (var i = 0; i < page.blocks.length; i++)
-        _numbered(
-          index: startNumber + i,
-          gutter: gutter,
-          child: _block(page.blocks[i]),
+    // مستند Word تدفّق، والشريحة لوحة. الصفحة الواحدة قد تحمل النوعين،
+    // فنرسم المتدفّق عمودًا ونضع المؤطَّر فوقه في موضعه المعلَن.
+    final flowing = <Widget>[];
+    final placed = <Widget>[];
+    for (var i = 0; i < page.blocks.length; i++) {
+      final block = page.blocks[i];
+      final frame = block.frame;
+      if (frame == null) {
+        flowing.add(
+          _numbered(
+            index: startNumber + i,
+            gutter: gutter,
+            child: _block(block),
+          ),
+        );
+        continue;
+      }
+      placed.add(
+        Positioned(
+          left: frame.leftPt * _scale,
+          top: frame.topPt * _scale,
+          width: frame.widthPt * _scale,
+          // الارتفاع حدٌّ أدنى لا سقف: نصٌّ أطول من صندوقه يُعرَض ولا يُقصّ.
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: frame.heightPt * _scale),
+            child: _block(block),
+          ),
         ),
-    ];
+      );
+    }
+
+    // **لوحة أم تدفّق؟** وجود إطار معلَن يحسم الأمر، والفرق ليس تقنيًّا:
+    //
+    // الشريحة لوحة محدودة — ما خرج عن حدّها لا يظهر في PowerPoint نفسه،
+    // فقصّه هنا **صدقٌ لا إخفاء**، وارتفاعها ثابت لا يمتدّ.
+    //
+    // وصفحة Word تدفّق — وفيضها منّا لا من المستند، لأننا لا نحسب انكسار
+    // السطر كما يحسبه Word. فتُمدّ ويُعلَّم حدّها، ولا تُقصّ (`02` §7/1).
+    final isCanvas = placed.isNotEmpty;
+
+    final content = Container(
+      color: Paper.sheet,
+      padding: EdgeInsets.fromLTRB(
+        geometry.marginLeftPt * _scale - gutter,
+        geometry.marginTopPt * _scale,
+        geometry.marginRightPt * _scale,
+        geometry.marginBottomPt * _scale,
+      ),
+      child: Stack(
+        clipBehavior: isCanvas ? Clip.hardEdge : Clip.none,
+        children: [
+          // طفل غير مُوضَّع يمنح الـStack مقاسه. بدونه لا يعرف ارتفاعه.
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: flowing,
+          ),
+          ...placed,
+        ],
+      ),
+    );
 
     // الاتجاه هنا فيزيائي لا منطقي: هوامش `w:pgMar` يمين ويسار الورقة، وكل
     // نصّ يحمل اتجاهه بنفسه. بلا هذا التثبيت تنقلب الصفحة في واجهة عربية.
     return Directionality(
       textDirection: TextDirection.ltr,
       child: CustomPaint(
-        foregroundPainter: _PageEdge(height),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: width,
-            maxWidth: width,
-            minHeight: height,
-          ),
-          child: Container(
-            color: Paper.sheet,
-            padding: EdgeInsets.fromLTRB(
-              geometry.marginLeftPt * _scale - gutter,
-              geometry.marginTopPt * _scale,
-              geometry.marginRightPt * _scale,
-              geometry.marginBottomPt * _scale,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: children,
-            ),
-          ),
-        ),
+        foregroundPainter: isCanvas ? null : _PageEdge(height),
+        child: isCanvas
+            ? SizedBox(width: width, height: height, child: content)
+            : ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: width,
+                  maxWidth: width,
+                  minHeight: height,
+                ),
+                child: content,
+              ),
       ),
     );
   }
@@ -132,6 +175,7 @@ class DocumentPaper extends StatelessWidget {
   }
 
   Widget _block(PreviewBlock block) => switch (block) {
+    ShapeBlock(:final paragraphs, :final fill) => _shape(paragraphs, fill),
     ParagraphBlock(:final paragraph) => _paragraph(paragraph),
     TableBlock(:final rows, :final isRtl, :final columnFractions) => _table(
       rows,
@@ -139,6 +183,37 @@ class DocumentPaper extends StatelessWidget {
       columnFractions,
     ),
   };
+
+  /// شكل على شريحة: تعبئته وفقراته المتدفّقة داخله.
+  Widget _shape(List<PreviewParagraph> paragraphs, HexColor? fill) {
+    final content = Container(
+      color: fill == null ? null : toFlutter(fill),
+      padding: EdgeInsets.symmetric(
+        horizontal: 7.2 * _scale,
+        vertical: 3.6 * _scale,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final paragraph in paragraphs)
+            _paragraph(paragraph, inCell: true),
+        ],
+      ),
+    );
+
+    final changed =
+        highlightChanged &&
+        (_hitColor(fill) ||
+            paragraphs.any(
+              (p) => paragraphChanged(
+                p,
+                colors: changedColors,
+                fonts: changedFonts,
+              ),
+            ));
+    return changed ? _ChangedFrame(scale: _scale, child: content) : content;
+  }
 
   Widget _paragraph(PreviewParagraph paragraph, {bool inCell = false}) {
     // فقرة فارغة ليست عدمًا: تشغل سطرًا وحده ومسافاتها، وWord يعدّها صفحةً.

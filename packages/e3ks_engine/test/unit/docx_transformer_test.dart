@@ -12,7 +12,7 @@ import '../fixtures/docx_fixture.dart';
 HexColor hex(String v) => HexColor.tryParse(v)!;
 
 RestyleOutcome restyleOrFail(Uint8List source, StylePlan plan) {
-  final result = restyleDocx(source, plan);
+  final result = restyle(source, plan);
   if (result case Failed(:final issues)) fail('تحويل: ${issues.join("، ")}');
   return (result as Ok<RestyleOutcome>).value;
 }
@@ -21,6 +21,20 @@ DocumentPackage openOrFail(Uint8List bytes) {
   final opened = DocumentPackage.open(bytes);
   if (opened case Failed(:final issues)) fail('فتح: ${issues.join("، ")}');
   return (opened as Ok<DocumentPackage>).value;
+}
+
+/// البوابة كما يستدعيها المسار: فحوص الحاوية المشتركة ثم فحوص الصيغة.
+List<EngineIssue> gateOf(DocumentPackage package) => [
+  ...checkPackage(package),
+  ...formatOrFail(package).validate(package),
+];
+
+/// يمرّ عبر الواجهة العامة لا عبر أصناف الصيغة مباشرةً: هكذا يستدعيها
+/// التطبيق، وهكذا يُختبَر التعرّف على الصيغة مع كل اختبار.
+DocumentFormat formatOrFail(DocumentPackage package) {
+  final detected = formatFor(package);
+  if (detected case Failed(:final issues)) fail('الصيغة: ${issues.join("، ")}');
+  return (detected as Ok<DocumentFormat>).value;
 }
 
 void main() {
@@ -169,7 +183,7 @@ void main() {
 
   group('التقرير لا يصمت', () {
     test('لون في الخطة بلا مقابل في المستند يُبلَّغ', () {
-      final result = restyleDocx(
+      final result = restyle(
         buildFixtureDocx(),
         StylePlan(colors: {hex('ABCDEF'): hex('123456')}),
       );
@@ -205,7 +219,7 @@ void main() {
           );
       package.putText('word/header1.xml', broken);
 
-      final issues = const OutputGate().check(package);
+      final issues = gateOf(package);
       expect(issues, hasLength(1));
       expect(issues.single.code, equals(IssueCode.emptyTextNode));
       expect(issues.single.part, equals('word/header1.xml'));
@@ -218,13 +232,13 @@ void main() {
           .replaceAll('<w:r><w:fldChar w:fldCharType="end"/></w:r>', '');
       package.putText('word/footer1.xml', broken);
 
-      final issues = const OutputGate().check(package);
+      final issues = gateOf(package);
       expect(issues.single.code, equals(IssueCode.unbalancedField));
     });
 
     test('مخرج سليم يمرّ بلا اعتراض', () {
       final package = openOrFail(buildFixtureDocx());
-      expect(const OutputGate().check(package), isEmpty);
+      expect(gateOf(package), isEmpty);
     });
   });
 
@@ -265,10 +279,10 @@ void main() {
       // المخرج يُفتح ويحوي نفس عدد الأجزاء، والبوابة راضية عنه.
       final after = openOrFail(outcome.bytes);
       expect(after.partNames, equals(openOrFail(source).partNames));
-      expect(const OutputGate().check(after), isEmpty);
+      expect(gateOf(after), isEmpty);
 
       // ما لم يكن في الخطة لم يُمَس.
-      final report = const DocxInspector().inspect(after);
+      final report = formatOrFail(after).inspect(after);
       final colors = (report as Ok<InspectionReport>).value.colors.map(
         (c) => c.color.value,
       );

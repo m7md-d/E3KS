@@ -27,7 +27,7 @@ class LAr extends L {
   String get chooseFile => 'اختر ملفًا…';
 
   @override
-  String get supported => 'يدعم ملفات ‎.docx‎ من Microsoft Word';
+  String get supported => 'يدعم ملفات ‎.docx‎ و‎.pptx‎ من Word و PowerPoint';
 
   @override
   String get reading => 'نقرأ المستند…';
@@ -388,6 +388,36 @@ class LAr extends L {
   String get language => 'اللغة';
 
   @override
+  String get aboutSection => 'عن التطبيق';
+
+  @override
+  String get aboutCopyright => '© 2026 m7md-d';
+
+  @override
+  String get aboutLicense =>
+      'برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُوزَّع بلا أيّ ضمان.';
+
+  @override
+  String get componentLicenses => 'رخص المكوّنات';
+
+  @override
+  String get sourceCode => 'الشيفرة المصدرية';
+
+  @override
+  String get roleShapeFill => 'تعبئة شكل';
+
+  @override
+  String get sectionSlides => 'الشرائح';
+
+  @override
+  String get errUnsupportedFormat =>
+      'هذه الصيغة غير مدعومة. المدعوم اليوم: Word ‏(.docx) و PowerPoint ‏(.pptx).';
+
+  @override
+  String get errForeignPartTouched =>
+      'خلل داخلي: حاولت الصيغة الكتابة في جزء لا تملكه، فأُوقف التصدير.';
+
+  @override
   String get settings => 'الإعدادات';
 
   @override
@@ -449,7 +479,7 @@ class LAr extends L {
   String get originFetched => 'جُلب الآن';
 
   @override
-  String get originUnavailable => 'غير متاح — خطّ تجاري أو خاص غالبًا';
+  String get originUnavailable => 'لم نجده على Google Fonts';
 
   @override
   String get originOffline => 'تعذّر الاتصال';
