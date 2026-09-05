@@ -102,8 +102,8 @@ class _PreviewPanelState extends State<PreviewPanel> {
     await Scrollable.ensureVisible(
       settled,
       alignment: 0.05,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+      duration: Motion.slow,
+      curve: Motion.emphasized,
     );
   }
 
@@ -702,7 +702,7 @@ class _Segmented extends StatelessWidget {
             child: GestureDetector(
               onTap: enabled ? () => onSelect(i) : null,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 130),
+                duration: Motion.quick,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 7,

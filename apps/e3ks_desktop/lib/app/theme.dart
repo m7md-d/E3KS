@@ -73,7 +73,7 @@ ThemeData buildTheme() {
         borderRadius: BorderRadius.circular(Metrics.radiusSmall),
       ),
       textStyle: body(12),
-      waitDuration: const Duration(milliseconds: 400),
+      waitDuration: Motion.tooltipDelay,
     ),
     scrollbarTheme: ScrollbarThemeData(
       thickness: WidgetStateProperty.all(8),

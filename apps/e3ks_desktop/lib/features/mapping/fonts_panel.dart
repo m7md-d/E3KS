@@ -127,7 +127,7 @@ class _FontChip extends StatelessWidget {
     child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
+        duration: Motion.quick,
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
         decoration: BoxDecoration(
           color: selected ? Shade.mirrorDeep : Shade.canvas,

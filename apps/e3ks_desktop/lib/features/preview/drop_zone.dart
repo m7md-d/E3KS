@@ -12,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
+import '../../shared/widgets/mirror_mark.dart';
 
 class DropZone extends StatelessWidget {
   const DropZone({
@@ -49,12 +50,12 @@ class DropZone extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _MirrorMark(name: t.appName),
+                MirrorMark(name: t.appName),
                 const SizedBox(height: 8),
                 Text(t.tagline, style: theme.textTheme.bodySmall),
                 const SizedBox(height: 36),
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
+                  duration: Motion.normal,
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 48),
                   decoration: BoxDecoration(
@@ -120,40 +121,6 @@ class DropZone extends StatelessWidget {
 }
 
 /// اسم التطبيق وتحته انعكاسه — المرآة في التفصيلة لا في الشعار.
-class _MirrorMark extends StatelessWidget {
-  const _MirrorMark({required this.name});
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    const style = TextStyle(
-      fontSize: 42,
-      fontWeight: Type.display,
-      color: Shade.text,
-      letterSpacing: 8,
-      height: 1,
-    );
-
-    return Column(
-      children: [
-        Text(name, style: style),
-        SizedBox(
-          height: 24,
-          child: ShaderMask(
-            shaderCallback: (rect) => const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Shade.mirror, Colors.transparent],
-            ).createShader(rect),
-            blendMode: BlendMode.srcIn,
-            child: Transform.flip(flipY: true, child: Text(name, style: style)),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _ErrorNote extends StatelessWidget {
   const _ErrorNote({required this.lines});
   final List<String> lines;

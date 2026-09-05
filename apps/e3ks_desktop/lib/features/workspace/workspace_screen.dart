@@ -21,6 +21,7 @@ import '../../data/identity_store.dart';
 import '../../data/openable_files.dart';
 import '../../data/settings_store.dart';
 import '../../data/workspace_store.dart';
+import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
 import '../identity/identities_panel.dart';
 import '../mapping/colors_panel.dart';
@@ -130,14 +131,16 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         onDragDone: _dropped,
         child: Column(
           children: [
-            _TopBar(
-              store: store,
-              settings: widget.settings,
-              onSettings: () => showSettings(context, widget.fonts),
-              exporting: _exporting,
-              onExport: _export,
-              onBrowse: _browse,
-              onClose: store.closeDocument,
+            Entrance(
+              child: _TopBar(
+                store: store,
+                settings: widget.settings,
+                onSettings: () => showSettings(context, widget.fonts),
+                exporting: _exporting,
+                onExport: _export,
+                onBrowse: _browse,
+                onClose: store.closeDocument,
+              ),
             ),
             DocumentTabs(store: store, onAdd: _browse),
             Expanded(
@@ -148,31 +151,46 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                   final width = constraints.maxWidth;
                   final compactSidebar = width < 1340;
                   final controlsWidth = width < 1280 ? 370.0 : 430.0;
+                  // اللوحات تتشكّل بالترتيب الذي تُقرأ به: التنقّل، ثم
+                  // أدوات العمل، ثم المعاينة. مرّةً واحدة عند الدخول —
+                  // `Entrance` لا يعيد الحركة مع إعادة البناء.
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Sidebar(store: store, compact: compactSidebar),
-                      SizedBox(width: controlsWidth, child: _controls(store)),
+                      Entrance(
+                        order: 1,
+                        child: Sidebar(store: store, compact: compactSidebar),
+                      ),
+                      Entrance(
+                        order: 2,
+                        child: SizedBox(
+                          width: controlsWidth,
+                          child: _controls(store),
+                        ),
+                      ),
                       const VerticalDivider(width: 1, color: Shade.border),
                       Expanded(
-                        child: Column(
-                          children: [
-                            // إشعار الخطوط فوق المعاينة مباشرةً: مكانه حيث
-                            // يقع أثره، لا في ركن بعيد.
-                            if (store.hasDocument)
-                              FontNotice(
-                                service: widget.fonts,
-                                onDetails: () =>
-                                    showSettings(context, widget.fonts),
+                        child: Entrance(
+                          order: 3,
+                          child: Column(
+                            children: [
+                              // إشعار الخطوط فوق المعاينة مباشرةً: مكانه حيث
+                              // يقع أثره، لا في ركن بعيد.
+                              if (store.hasDocument)
+                                FontNotice(
+                                  service: widget.fonts,
+                                  onDetails: () =>
+                                      showSettings(context, widget.fonts),
+                                ),
+                              Expanded(
+                                child: PreviewPanel(
+                                  store: store,
+                                  onOpen: _open,
+                                  dragging: _dragging,
+                                ),
                               ),
-                            Expanded(
-                              child: PreviewPanel(
-                                store: store,
-                                onOpen: _open,
-                                dragging: _dragging,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],

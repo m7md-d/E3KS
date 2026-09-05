@@ -13,7 +13,7 @@ import 'dart:typed_data';
 /// دونها. وFlutter لا يقرأ `woff2`.
 const String _legacyAgent = 'Mozilla/4.0';
 
-const Duration _timeout = Duration(seconds: 20);
+const Duration _timeout = Duration(seconds: 20); // e3ks:not-motion
 
 enum FetchOutcome { fetched, notFound, offline, failed }
 

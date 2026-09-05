@@ -26,6 +26,10 @@ String _hex(Color c) {
   return '#${two(c.r)}${two(c.g)}${two(c.b)}'.toUpperCase();
 }
 
+/// ‏`Duration(...)` بأي وحدة، و`Curves.<اسم>` — كلاهما قرار حركة.
+final RegExp _durationLiteral = RegExp(r'\bDuration\s*\(');
+final RegExp _curveLiteral = RegExp(r'\bCurves\s*\.');
+
 void main() {
   test('لا لون مؤلَّف خارج ملف الرموز', () {
     final offenders = <String>[];
@@ -50,6 +54,38 @@ void main() {
       offenders,
       isEmpty,
       reason: 'لون خارج $_tokensFile:\n${offenders.join("\n")}',
+    );
+  });
+
+  test('لا زمن ولا منحنى حركة مؤلَّف خارج ملف الرموز', () {
+    // الحركة لغة كالألوان. أزمنة متناثرة (‏120 هنا و‎130‎ هناك) تُنتج واجهةً
+    // تبدو مصنوعة على دفعات، والعين تلتقط ذلك قبل أن يسمّيه صاحبها.
+    //
+    // ما ليس حركةً — كمهلة طلب شبكة — يُعلَّم بـ`// e3ks:not-motion` في سطره.
+    // الاستثناء سطريّ لا ملفّيّ، فيبقى ظاهرًا وقابلًا للتدقيق بـgrep.
+    final offenders = <String>[];
+
+    for (final entity in Directory('lib').listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      final path = entity.path;
+      if (path.endsWith(_tokensFile) || path.contains('/l10n/')) continue;
+
+      final lines = entity.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        final trimmed = line.trim();
+        if (trimmed.startsWith('//') || trimmed.startsWith('///')) continue;
+        if (trimmed.contains('e3ks:not-motion')) continue;
+        if (_durationLiteral.hasMatch(line) || _curveLiteral.hasMatch(line)) {
+          offenders.add('$path:${i + 1}  $trimmed');
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason: 'حركة خارج $_tokensFile:\n${offenders.join("\n")}',
     );
   });
 

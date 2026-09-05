@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../shared/widgets/app_dialog.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/identity.dart';
@@ -65,9 +66,9 @@ class IdentitiesPanel extends StatelessWidget {
 
   Future<void> _save(BuildContext context) async {
     final t = context.l10n;
-    final name = await showDialog<String>(
-      context: context,
-      builder: (_) => const _NameDialog(),
+    final name = await showAppDialog<String>(
+      context,
+      (_) => const _NameDialog(),
     );
     if (name == null || name.trim().isEmpty) return;
 

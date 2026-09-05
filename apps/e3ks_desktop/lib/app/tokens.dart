@@ -13,8 +13,10 @@
 ///   [Shade]  سطح التطبيق — داكن، ولمسة المرآة السماوية.
 ///   [Paper]  سطح المستند المعروض — أبيض دائمًا، لا يتبع ثيم التطبيق.
 ///   [Brand]  الرمز — انظر `brand/README.md`، ومطابقته مضمونة باختبار.
+///   [Motion] الحركة — أزمنتها ومنحنياتها. لا رقم زمن في ودجة.
 library;
 
+import 'package:flutter/animation.dart';
 import 'package:flutter/painting.dart';
 
 /// الخطّ المعتمد وأوزانه.
@@ -40,6 +42,12 @@ abstract final class Type {
 
 /// ألوان واجهة التطبيق.
 abstract final class Shade {
+  /// شفّاف تامّ — طرف تدرّج الانعكاس في الشعار.
+  static const transparent = Color(0x00000000);
+
+  /// حجاب ما خلف الحوار: داكن بما يكفي ليعزل، شفّاف بما يبقي السياق مرئيًّا.
+  static const scrim = Color(0x9904090B);
+
   /// خلفية النافذة — شبه أسود بميل أزرق، لا رمادي ميّت.
   static const canvas = Color(0xFF0B1013);
 
@@ -114,4 +122,60 @@ abstract final class Picker {
   static const cursor = Color(0xFFFFFFFF);
   static const cursorRing = Color(0x44000000);
   static const transparent = Color(0x00000000);
+}
+
+/// **مرجع الحقيقة الواحد للحركة.**
+///
+/// لا `Duration` ولا `Curve` يُؤلَّف في ودجة. الحركة لغةٌ كالألوان: أزمنة
+/// متناثرة (‏120 هنا و‎130‎ هناك و‎160‎ ثالثة) تُنتج واجهةً تبدو مصنوعة على
+/// دفعات — والعين تلتقط ذلك قبل أن يسمّيه صاحبها.
+///
+/// **المبدأ الحاكم: الحركة تشرح ولا تستعرض.** كل حركة هنا تجيب سؤالًا واحدًا
+/// عند المستخدم — «من أين جاء هذا؟» أو «ما الذي تغيّر؟». الحركة التي لا
+/// تجيب سؤالًا زينةٌ تُبطئ العمل، ويشيخ ظرفها بعد الأسبوع الأول.
+///
+/// ولذلك **الأزمنة قصيرة**: أطولها [entrance] وهي تقع مرّة واحدة عند الفتح.
+/// أداةٌ مكتبية تُستعمل ساعات، والحركة الطويلة فيها ضريبة تُدفع كل مرّة.
+abstract final class Motion {
+  /// تغيّر حالة فوري تقريبًا: تظليل، وتحديد، وحدّ يظهر. أقصر من أن يُلاحَظ
+  /// وأطول من أن يقفز.
+  static const Duration instant = Duration(milliseconds: 90);
+
+  /// الاستجابة القياسية للمس: زرّ، ومفتاح، ومبدّل «قبل/بعد».
+  static const Duration quick = Duration(milliseconds: 140);
+
+  /// انتقال عنصر أو ظهور لوحة: قائمة منسدلة، حوار، تبويب.
+  static const Duration normal = Duration(milliseconds: 220);
+
+  /// انتقال مساحة كبيرة: صفحة كاملة، أو تمرير موجَّه إلى صفحة بعيدة.
+  static const Duration slow = Duration(milliseconds: 320);
+
+  /// دخول التطبيق مرّة واحدة. الوحيدة التي يُسمح لها أن تُلاحَظ.
+  static const Duration entrance = Duration(milliseconds: 420);
+
+  /// فارق بدء العناصر المتتابعة. يوحي بالترتيب دون أن يؤخّر آخرها.
+  ///
+  /// ‏٥ عناصر × ‎55ms‎ = ‎275ms‎ قبل بدء الأخير — لا يزال تحت عتبة الانتظار.
+  static const Duration stagger = Duration(milliseconds: 55);
+
+  /// المنحنى الافتراضي: يبدأ سريعًا ويستقرّ. مناسب لما **يدخل** المشهد.
+  static const Curve enter = Curves.easeOutCubic;
+
+  /// لما **يخرج** من المشهد: يتسارع مغادرًا فلا يُبطئ المستخدم.
+  static const Curve exit = Curves.easeInCubic;
+
+  /// لتغيّر في مكانه: لون، أو حجم، أو حدّ. متماثل الطرفين.
+  static const Curve standard = Curves.easeInOut;
+
+  /// حركة تحمل مسافة كبيرة: تبدأ ببطء وتنتهي بحسم. تُستعمل بحساب.
+  static const Curve emphasized = Curves.easeOutQuart;
+
+  /// مهلة ظهور التلميح. أطول من الحركات لأنها **انتظار مقصود**: تلميح
+  /// يظهر فور المرور يقفز في وجه من يمرّ مارًّا لا سائلًا.
+  static const Duration tooltipDelay = Duration(milliseconds: 400);
+
+  /// مسافة الانزلاق عند الدخول، بالبكسل المنطقي.
+  ///
+  /// صغيرة عمدًا: الانزلاق يدلّ على الاتجاه، ولا يُقطع مسافة تُشاهَد.
+  static const double slideIn = 12;
 }

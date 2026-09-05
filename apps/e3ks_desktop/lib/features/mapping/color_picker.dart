@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../shared/widgets/app_dialog.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../shared/widgets/swatch.dart';
@@ -23,9 +24,9 @@ Future<HexColor?> pickColor(
   HexColor? current,
   List<HexColor> suggestions = const [],
   List<ColorUsage> reference = const [],
-}) => showDialog<HexColor?>(
-  context: context,
-  builder: (_) => _ColorDialog(
+}) => showAppDialog<HexColor?>(
+  context,
+  (_) => _ColorDialog(
     original: original,
     current: current,
     suggestions: suggestions,

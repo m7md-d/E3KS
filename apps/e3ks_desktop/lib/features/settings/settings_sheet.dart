@@ -7,17 +7,19 @@ library;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../shared/widgets/app_dialog.dart';
 import '../../app/about.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/font_cache.dart';
 import '../../data/font_service.dart';
 import '../../shared/widgets/panel.dart';
+import 'licenses_screen.dart';
 
 Future<void> showSettings(BuildContext context, FontService fonts) =>
-    showDialog<void>(
-      context: context,
-      builder: (_) => Dialog(
+    showAppDialog<void>(
+      context,
+      (_) => Dialog(
         backgroundColor: Shade.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Metrics.radius),
@@ -278,12 +280,14 @@ class _About extends StatelessWidget {
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
-              onPressed: () => showLicensePage(
-                context: context,
-                applicationName: t.appName,
-                applicationVersion: appVersion,
-                applicationLegalese: '${t.aboutCopyright}\n${t.aboutLicense}',
-              ),
+              onPressed: () {
+                // نُغلق الحوار أولًا: شاشةٌ كاملة تفتح فوق حوارٍ مفتوح تترك
+                // الحوار معتمًا خلفها — وهو التداخل بعينه. ونمسك بالملاح
+                // قبل الإغلاق لأن سياق الزرّ يبطل بعده.
+                final navigator = Navigator.of(context);
+                navigator.pop();
+                navigator.push(licensesRoute());
+              },
               icon: const Icon(LucideIcons.scale, size: 14),
               label: Text(t.componentLicenses),
             ),

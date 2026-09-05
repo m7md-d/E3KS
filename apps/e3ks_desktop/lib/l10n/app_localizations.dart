@@ -865,6 +865,42 @@ abstract class L {
   /// **'خلل داخلي: حاولت الصيغة الكتابة في جزء لا تملكه، فأُوقف التصدير.'**
   String get errForeignPartTouched;
 
+  /// No description provided for @licensesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'رخص المكوّنات'**
+  String get licensesTitle;
+
+  /// No description provided for @licensesHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتبات المفتوحة التي يقوم عليها التطبيق'**
+  String get licensesHint;
+
+  /// No description provided for @licensesLoading.
+  ///
+  /// In ar, this message translates to:
+  /// **'نجمع الرخص…'**
+  String get licensesLoading;
+
+  /// No description provided for @licensesEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا رخص مسجَّلة'**
+  String get licensesEmpty;
+
+  /// No description provided for @licenseEntries.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{رخصة واحدة} =2{رخصتان} other{{count} رخص}}'**
+  String licenseEntries(int count);
+
+  /// No description provided for @back.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع'**
+  String get back;
+
   /// No description provided for @settings.
   ///
   /// In ar, this message translates to:

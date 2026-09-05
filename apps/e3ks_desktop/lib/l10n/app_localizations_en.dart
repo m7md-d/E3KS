@@ -421,6 +421,32 @@ class LEn extends L {
       'Internal fault: the format tried to write a part it does not own, so the export was stopped.';
 
   @override
+  String get licensesTitle => 'Component licenses';
+
+  @override
+  String get licensesHint => 'The open-source libraries this app is built on';
+
+  @override
+  String get licensesLoading => 'Collecting licenses…';
+
+  @override
+  String get licensesEmpty => 'No licenses registered';
+
+  @override
+  String licenseEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count licenses',
+      one: 'One license',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get back => 'Back';
+
+  @override
   String get settings => 'Settings';
 
   @override

@@ -418,6 +418,33 @@ class LAr extends L {
       'خلل داخلي: حاولت الصيغة الكتابة في جزء لا تملكه، فأُوقف التصدير.';
 
   @override
+  String get licensesTitle => 'رخص المكوّنات';
+
+  @override
+  String get licensesHint => 'المكتبات المفتوحة التي يقوم عليها التطبيق';
+
+  @override
+  String get licensesLoading => 'نجمع الرخص…';
+
+  @override
+  String get licensesEmpty => 'لا رخص مسجَّلة';
+
+  @override
+  String licenseEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count رخص',
+      two: 'رخصتان',
+      one: 'رخصة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get back => 'رجوع';
+
+  @override
   String get settings => 'الإعدادات';
 
   @override
