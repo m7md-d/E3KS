@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import 'app_directory.dart';
 import 'identity.dart';
 
 class IdentityStore extends ChangeNotifier {
@@ -17,12 +18,7 @@ class IdentityStore extends ChangeNotifier {
   List<Identity> get items => List.unmodifiable(_items);
 
   static Future<IdentityStore> open() async {
-    final home = Platform.environment['HOME'] ?? Directory.current.path;
-    final directory = Directory(
-      '$home/Library/Application Support/E3KS/identities',
-    );
-    if (!directory.existsSync()) directory.createSync(recursive: true);
-    final store = IdentityStore(directory);
+    final store = IdentityStore(appDataSubdirectory('identities'));
     await store.reload();
     return store;
   }

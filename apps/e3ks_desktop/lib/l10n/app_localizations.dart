@@ -688,7 +688,7 @@ abstract class L {
   /// No description provided for @documentFacts.
   ///
   /// In ar, this message translates to:
-  /// **'حصيلة الفحص'**
+  /// **'نتائج الفحص'**
   String get documentFacts;
 
   /// No description provided for @factDesignColors.

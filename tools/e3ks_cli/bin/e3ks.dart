@@ -185,7 +185,7 @@ void _restyle(List<String> args) {
     stdout.writeln('  ${m.ui["fontsProtected"]}  : ${report.preservedFonts}');
   }
   for (final issue in result.issues) {
-    stdout.writeln('  ⚠ ${m.describeIssue(issue)}');
+    stdout.writeln('  ! ${m.describeIssue(issue)}');
   }
 }
 

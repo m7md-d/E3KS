@@ -317,7 +317,7 @@ class LAr extends L {
   String get noIdentities => 'لا هويات محفوظة.';
 
   @override
-  String get documentFacts => 'حصيلة الفحص';
+  String get documentFacts => 'نتائج الفحص';
 
   @override
   String get factDesignColors => 'ألوان التصميم';
