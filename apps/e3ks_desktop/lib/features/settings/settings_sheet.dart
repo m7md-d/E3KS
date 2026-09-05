@@ -249,7 +249,7 @@ class _StatusRow extends StatelessWidget {
 
 /// الحقوق والرخصة.
 ///
-/// ‏GPL‑3 §5 تُلزم البرنامج التفاعلي بعرض إشعاراته، فهذا شرطُ ترخيص لا زينة.
+/// GPL‑3 §5 تُلزم البرنامج التفاعلي بعرض إشعاراته، فهذا شرطُ ترخيص لا زينة.
 /// ورخصة الخطّ المضمَّن مسجَّلة في `registerBundledLicenses` فتظهر مع البقيّة.
 class _About extends StatelessWidget {
   const _About();

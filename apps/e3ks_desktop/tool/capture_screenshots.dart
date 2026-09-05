@@ -45,7 +45,7 @@ const _plan = {
   '#F2F2F2': '#EAF4F2',
 };
 
-/// ‏`!` مضمون: القيم أعلاه مكتوبة بصيغة `#RRGGBB` صحيحة.
+/// `!` مضمون: القيم أعلاه مكتوبة بصيغة `#RRGGBB` صحيحة.
 HexColor _hex(String value) => HexColor.tryParse(value)!;
 
 /// جذر حزمة من `package_config.json` — أدقّ من تخمين مسار مخزن الحزم.

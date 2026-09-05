@@ -13,7 +13,8 @@
 
 set -uo pipefail
 
-root="$(cd "$(dirname "$0")/.." && pwd)"
+self="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+root="$(cd "$(dirname "$self")/.." && pwd)"
 cd "$root" || exit 1
 
 build=1
@@ -21,7 +22,7 @@ for arg in "$@"; do
   case "$arg" in
     --no-build) build=0 ;;
     -h|--help)
-      sed -n '3,13p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '3,13p' "$self" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -65,7 +66,7 @@ step() {
   fi
 }
 
-# ‏`--enforce-lockfile`: نفس نسخ الحزم الملتزَمة بالضبط، فلا يختلف المبنيّ
+# `--enforce-lockfile`: نفس نسخ الحزم الملتزَمة بالضبط، فلا يختلف المبنيّ
 # عمّا اختُبر. وحلّ الحزم يسبق التنسيق لأن `dart format` يقرأ إصدار اللغة
 # من `package_config.json`؛ بلا ذلك يختلف ناتجه.
 resolve() {

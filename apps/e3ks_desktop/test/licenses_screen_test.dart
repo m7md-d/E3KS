@@ -43,7 +43,7 @@ void main() {
     final tag = locale.languageCode;
 
     testWidgets('لا تداخل ولا تجاوز عند أضيق نافذة — $tag', (tester) async {
-      // ‏1180×720 هي أضيق نافذة مسموحة، مفروضة في MainFlutterWindow.
+      // 1180×720 هي أضيق نافذة مسموحة، مفروضة في MainFlutterWindow.
       await tester.binding.setSurfaceSize(const Size(1180, 720));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -107,7 +107,7 @@ void main() {
   });
 
   testWidgets('الحركة كلّها تنتهي — لا حركة معلَّقة', (tester) async {
-    // ‏`pumpAndSettle` يفشل إن بقيت حركة تعمل، فهذا يحرس من حركة لا تنتهي.
+    // `pumpAndSettle` يفشل إن بقيت حركة تعمل، فهذا يحرس من حركة لا تنتهي.
     await tester.binding.setSurfaceSize(const Size(1180, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 

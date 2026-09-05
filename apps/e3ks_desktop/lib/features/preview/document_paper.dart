@@ -35,7 +35,7 @@ class DocumentPaper extends StatefulWidget {
   /// صفحة واحدة. القائمة تبني المرئي منها فقط — وهذا سرّ خفّة المعاينة.
   final PreviewPage page;
 
-  /// تكبير. ‏١٫٠ = مقاس الورقة الحقيقي.
+  /// تكبير. ١٫٠ = مقاس الورقة الحقيقي.
   final double zoom;
 
   /// رقم أول كتلة في هذه الصفحة ضمن المستند كلّه.
@@ -62,7 +62,7 @@ class DocumentPaper extends StatefulWidget {
 class _DocumentPaperState extends State<DocumentPaper> {
   /// مُلتقِط ضغطة لكل لون، يُعاد استعماله عبر إعادات البناء.
   ///
-  /// ‏`TapGestureRecognizer` داخل `TextSpan` يجب أن يُتخلَّص منه، وإنشاؤه في
+  /// `TapGestureRecognizer` داخل `TextSpan` يجب أن يُتخلَّص منه، وإنشاؤه في
   /// كل رسمة تسريبٌ صامت. الألوان عشرات لا آلاف، فخريطةٌ واحدة تكفي.
   final Map<String, TapGestureRecognizer> _taps = {};
 
@@ -353,7 +353,7 @@ class _DocumentPaperState extends State<DocumentPaper> {
             : (run.shading == null ? null : toFlutter(run.shading!)),
         // حجم المقطع بالنقاط كما صرّح به المستند، محوَّلًا إلى بكسل.
         fontSize: (run.sizePt ?? 11) * headingScale * _scale,
-        // ارتفاع السطر من `w:spacing/@w:line`. ‏1.15 احتياطي «مفرد» في Word.
+        // ارتفاع السطر من `w:spacing/@w:line`. 1.15 احتياطي «مفرد» في Word.
         fontWeight: run.bold || paragraph.isHeading ? Type.bold : Type.regular,
         fontStyle: run.italic ? FontStyle.italic : FontStyle.normal,
         decoration: run.underline ? TextDecoration.underline : null,
@@ -430,7 +430,7 @@ class _DocumentPaperState extends State<DocumentPaper> {
             ));
     final content = Container(
       color: cell.fill == null ? null : toFlutter(cell.fill!),
-      // هوامش خلية Word الافتراضية: ‏5.4pt جانبًا ولا شيء رأسيًّا.
+      // هوامش خلية Word الافتراضية: 5.4pt جانبًا ولا شيء رأسيًّا.
       padding: EdgeInsets.symmetric(
         horizontal: 5.4 * _scale,
         vertical: 1 * _scale,

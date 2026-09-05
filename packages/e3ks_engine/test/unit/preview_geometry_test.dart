@@ -40,12 +40,12 @@ void main() {
       final pages = bodyOf(preview).pages;
       expect(pages, hasLength(2), reason: 'فاصل الصفحة يفصل القسمين');
 
-      // ‏Letter = 12240×15840 twip.
+      // Letter = 12240×15840 twip.
       expect(pages[0].geometry.widthPt, closeTo(612, 0.01));
       expect(pages[0].geometry.heightPt, closeTo(792, 0.01));
       expect(pages[0].geometry.isLandscape, isFalse);
 
-      // ‏A4 أفقي = 16838×11906 twip.
+      // A4 أفقي = 16838×11906 twip.
       expect(pages[1].geometry.widthPt, closeTo(841.9, 0.01));
       expect(pages[1].geometry.heightPt, closeTo(595.3, 0.01));
       expect(pages[1].geometry.isLandscape, isTrue);

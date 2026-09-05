@@ -10,11 +10,11 @@
 //   dart tools/release/bump_version.dart --set 0.4.2  رقم صريح
 //   dart tools/release/bump_version.dart --next v0.3.1 رقمُ الإصدار القادم
 //
-// ‏`--next` استعلام لا يكتب شيئًا: يأخذ آخر وسم منشور ويطبع ما يُصدَر بعده.
+// `--next` استعلام لا يكتب شيئًا: يأخذ آخر وسم منشور ويطبع ما يُصدَر بعده.
 // إن كان رقم الشجرة أعلى منه فهو المطلوب — رفعه المالك بيده لإصدار أكبر.
 // وإلا فالخانة الأخيرة وحدها ترتفع. **الآلة لا تقرّر أكثر من هذا** (`08` §6).
 //
-// ‏Dart خالص بلا حزم: يعمل في أي بيئة فيها Dart، ومنها منصّة التكامل.
+// Dart خالص بلا حزم: يعمل في أي بيئة فيها Dart، ومنها منصّة التكامل.
 
 import 'dart:io';
 
@@ -128,7 +128,7 @@ int _compare(List<int> a, List<int> b) {
 String _next(String current, List<String> arguments) {
   if (arguments.first == '--set') {
     if (arguments.length < 2 || !_semver.hasMatch(arguments[1])) {
-      stderr.writeln('‏--set يحتاج رقمًا بصيغة X.Y.Z');
+      stderr.writeln('--set يحتاج رقمًا بصيغة X.Y.Z');
       exit(1);
     }
     return arguments[1];
@@ -148,7 +148,7 @@ String _next(String current, List<String> arguments) {
     'minor' => '$major.${minor + 1}.0',
     'patch' => '$major.$minor.${patch + 1}',
     _ => () {
-      stderr.writeln('الخانة: major أو minor أو patch أو ‎--set X.Y.Z');
+      stderr.writeln('الخانة: major أو minor أو patch أو --set X.Y.Z');
       exit(1);
     }(),
   };

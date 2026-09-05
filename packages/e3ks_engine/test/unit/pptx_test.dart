@@ -229,7 +229,7 @@ void main() {
       expect(preview.sections.first.kind, equals(PreviewSectionKind.slides));
       expect(preview.pageCount, equals(1));
 
-      // ‏12192000×6858000 EMU = 960×540 نقطة.
+      // 12192000×6858000 EMU = 960×540 نقطة.
       final geometry = preview.sections.first.pages.first.geometry;
       expect(geometry.widthPt, closeTo(960, 0.01));
       expect(geometry.heightPt, closeTo(540, 0.01));
@@ -241,7 +241,7 @@ void main() {
       final body = blocks.whereType<ShapeBlock>().firstWhere(
         (b) => b.fill?.value == '#EEF3F2',
       );
-      // ‏838200 EMU = 66pt، و‎2286000‎ = 180pt.
+      // 838200 EMU = 66pt، و2286000 = 180pt.
       expect(body.frame!.leftPt, closeTo(66, 0.01));
       expect(body.frame!.topPt, closeTo(180, 0.01));
       expect(body.frame!.widthPt, closeTo(828, 0.01));

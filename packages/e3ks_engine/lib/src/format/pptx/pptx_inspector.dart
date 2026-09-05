@@ -46,7 +46,7 @@ final class PptxInspector {
       InspectionReport(
         colors: buildColors(colors),
         fonts: buildFonts(fonts),
-        // ‏PowerPoint بلا `w:highlight`: التمييز تعبئةُ شكل كأي تعبئة.
+        // PowerPoint بلا `w:highlight`: التمييز تعبئةُ شكل كأي تعبئة.
         highlights: const {},
         scannedParts: scanned,
       ),
