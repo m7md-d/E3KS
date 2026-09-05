@@ -11,11 +11,28 @@ import '../inspect/hex_color.dart';
 /// الفصل بين اللاتيني والعربي مقصود: توحيدهما في اسم واحد يكسر أحدهما غالبًا،
 /// والعربية تُقرأ من فتحة `cs` لا من `ascii` (`02` §7).
 final class FontPlan {
-  const FontPlan({this.latin, this.arabic, this.eastAsian});
+  const FontPlan({String? latin, String? arabic, String? eastAsian})
+    : _latin = latin,
+      _arabic = arabic,
+      _eastAsian = eastAsian;
 
-  final String? latin;
-  final String? arabic;
-  final String? eastAsian;
+  final String? _latin;
+  final String? _arabic;
+  final String? _eastAsian;
+
+  String? get latin => _named(_latin);
+  String? get arabic => _named(_arabic);
+  String? get eastAsian => _named(_eastAsian);
+
+  /// اسمٌ فارغ أو مسافات = «لا تلمس»، لا «امسح الاسم».
+  ///
+  /// **هذا حارس المخرَج:** المحوّل لا يلمس خانة فارغة أصلًا، والطريق الوحيد
+  /// إلى كتابة `typeface=""` خطةٌ تحمل اسمًا فارغًا. وخانة بلا اسم تُسقط
+  /// النصّ إلى خطّ افتراضي بلا إشعار.
+  static String? _named(String? value) {
+    final name = value?.trim();
+    return (name == null || name.isEmpty) ? null : name;
+  }
 
   bool get isEmpty => latin == null && arabic == null && eastAsian == null;
 }

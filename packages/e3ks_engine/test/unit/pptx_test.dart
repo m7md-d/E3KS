@@ -192,6 +192,36 @@ void main() {
       expect(after.fonts.map((f) => f.name), contains('DejaVu Sans Mono'));
     });
 
+    test('خانة خطّ فارغة في الثيم لا تمنع الكتابة', () {
+      // ثيم Office القياسي يكتب `<a:ea typeface=""/>` في كل عرض. كانت
+      // البوابة ترفضه، فيسقط أول عرض حقيقي يمرّ على المحرّك بعيبٍ لم نصنعه.
+      final result = restyle(
+        buildFixturePptx(),
+        const StylePlan(fonts: FontPlan(latin: 'Inter')),
+      );
+      expect(result, isA<Ok<RestyleOutcome>>());
+
+      // وتبقى الخانة الفارغة كما جاءت: لا نملؤها ولا نحذفها.
+      final after = openOrFail((result as Ok<RestyleOutcome>).value.bytes);
+      final theme = after.textOf('ppt/theme/theme1.xml')!;
+      expect(theme, contains('<a:ea typeface=""/>'));
+    });
+
+    test('اسم خطّ فارغ في الخطة لا يمسح الخانة', () {
+      // الطريق الوحيد إلى `typeface=""` من عندنا خطةٌ باسم فارغ.
+      const blank = FontPlan(latin: '   ', arabic: '');
+      expect(blank.latin, isNull);
+      expect(blank.arabic, isNull);
+      expect(blank.isEmpty, isTrue);
+
+      final result = restyle(buildFixturePptx(), const StylePlan(fonts: blank));
+      final after = openOrFail((result as Ok<RestyleOutcome>).value.bytes);
+      expect(
+        after.textOf('ppt/slides/slide1.xml'),
+        contains('typeface="Cairo"'),
+      );
+    });
+
     test('إحالة الثيم تبقى إحالة', () {
       // `+mj-lt` تعني «اتبع الثيم»؛ استبدالها باسم صريح يفصل الشكل عن ثيمه.
       final result = restyle(

@@ -3,6 +3,12 @@
 /// **نطاقها محدّد: ما قد نكسره نحن.** لا نفحص عيوبًا في ملفّ المستخدم لم
 /// نصنعها — رفض الكتابة بسببها يمنعه من عمله بلا ذنب منّا. ولذلك لا مقابل
 /// هنا لفحص `w:t` الفارغ: مسارنا في PowerPoint لا يلمس النصّ أصلًا.
+///
+/// **وكان هنا فحصٌ يخالف هذا الحدّ:** يرفض كل `@typeface` فارغة. وثيم Office
+/// القياسي يكتب `<a:ea typeface=""/>` و`<a:cs typeface=""/>` في كل عرض، فكان
+/// المحرّك يرفض الكتابة لأول عرض حقيقي مرّ عليه — وعيبٌ لم نصنعه. المحوّل
+/// أصلًا لا يلمس خانة فارغة، والخطر الوحيد اسمُ خطٍّ فارغ في الخطة، وحارسه
+/// في `FontPlan` لا هنا.
 library;
 
 import 'package:xml/xml.dart';
@@ -19,7 +25,6 @@ List<EngineIssue> checkPptx(DocumentPackage package) {
 
   forEachTouchedDocument(package, (partName, document) {
     var badColors = 0;
-    var emptyTypefaces = 0;
 
     for (final element in document.descendants.whereType<XmlElement>()) {
       if (element.name.namespaceUri != aNs) continue;
@@ -30,12 +35,6 @@ List<EngineIssue> checkPptx(DocumentPackage package) {
         final value = element.getAttribute('val');
         if (value == null || !_sixHex.hasMatch(value)) badColors++;
       }
-
-      // اسم خطّ فارغ يُسقط النصّ إلى خطّ افتراضي بلا إشعار.
-      if (const {'latin', 'cs', 'ea', 'sym'}.contains(element.name.local)) {
-        final typeface = element.getAttribute('typeface');
-        if (typeface != null && typeface.isEmpty) emptyTypefaces++;
-      }
     }
 
     if (badColors > 0) {
@@ -45,16 +44,6 @@ List<EngineIssue> checkPptx(DocumentPackage package) {
           part: partName,
           args: {'count': badColors},
           detail: 'a:srgbClr/@val must be exactly six hex digits',
-        ),
-      );
-    }
-    if (emptyTypefaces > 0) {
-      issues.add(
-        EngineIssue(
-          code: IssueCode.malformedXml,
-          part: partName,
-          args: {'count': emptyTypefaces},
-          detail: 'a:latin/@typeface and siblings must not be empty',
         ),
       );
     }
