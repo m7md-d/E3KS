@@ -23,6 +23,7 @@ import '../../data/settings_store.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
+import '../batch/batch_sheet.dart';
 import '../identity/identities_panel.dart';
 import '../mapping/color_picker.dart';
 import '../mapping/colors_panel.dart';
@@ -137,6 +138,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 store: store,
                 settings: widget.settings,
                 onSettings: () => showSettings(context, widget.fonts),
+                onBatch: () => showBatch(context, store, widget.identities),
                 exporting: _exporting,
                 onExport: _export,
                 onBrowse: _browse,
@@ -266,6 +268,7 @@ class _TopBar extends StatelessWidget {
     required this.store,
     required this.settings,
     required this.onSettings,
+    required this.onBatch,
     required this.exporting,
     required this.onExport,
     required this.onBrowse,
@@ -275,6 +278,7 @@ class _TopBar extends StatelessWidget {
   final WorkspaceStore store;
   final SettingsStore settings;
   final VoidCallback onSettings;
+  final VoidCallback onBatch;
   final bool exporting;
   final VoidCallback onExport;
   final VoidCallback onBrowse;
@@ -339,6 +343,14 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           _LanguageMenu(settings: settings),
           const SizedBox(width: 4),
+          // الدفعة بجوار الإعدادات: كلاهما فعلٌ يفتح حوارًا، ولا يزاحم
+          // زرَّ التصدير الذي يخصّ الملف المفتوح وحده.
+          IconButton(
+            onPressed: onBatch,
+            icon: const Icon(LucideIcons.folders, size: 16),
+            color: Shade.textMuted,
+            tooltip: t.batchTitle,
+          ),
           IconButton(
             onPressed: onSettings,
             icon: const Icon(LucideIcons.settings, size: 16),

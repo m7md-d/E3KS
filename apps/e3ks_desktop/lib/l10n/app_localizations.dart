@@ -1242,6 +1242,108 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'لا لون مطابق'**
   String get noColorMatch;
+
+  /// No description provided for @batchTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تطبيق على مجلد'**
+  String get batchTitle;
+
+  /// No description provided for @batchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطة نفسها على كل مستند في المجلد وما تحته، والبنية تُحفَظ.'**
+  String get batchHint;
+
+  /// No description provided for @batchSource.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجلد'**
+  String get batchSource;
+
+  /// No description provided for @batchOutput.
+  ///
+  /// In ar, this message translates to:
+  /// **'مجلد المخرَج'**
+  String get batchOutput;
+
+  /// No description provided for @batchChoose.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر…'**
+  String get batchChoose;
+
+  /// No description provided for @batchDocuments.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} مستندًا'**
+  String batchDocuments(int count);
+
+  /// No description provided for @batchPlan.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطة'**
+  String get batchPlan;
+
+  /// No description provided for @batchFromOpen.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطة الملف المفتوح'**
+  String get batchFromOpen;
+
+  /// No description provided for @batchRun.
+  ///
+  /// In ar, this message translates to:
+  /// **'شغّل'**
+  String get batchRun;
+
+  /// No description provided for @batchProgress.
+  ///
+  /// In ar, this message translates to:
+  /// **'{done} من {total}'**
+  String batchProgress(int done, int total);
+
+  /// No description provided for @batchWritten.
+  ///
+  /// In ar, this message translates to:
+  /// **'كُتب'**
+  String get batchWritten;
+
+  /// No description provided for @batchFailedCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'سقط'**
+  String get batchFailedCount;
+
+  /// No description provided for @batchUnchanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا تغيير'**
+  String get batchUnchanged;
+
+  /// No description provided for @batchNeverMatched.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألوان في الخطة لم تُطابق أي ملف'**
+  String get batchNeverMatched;
+
+  /// No description provided for @batchEmptyFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا مستندات مدعومة في هذا المجلد.'**
+  String get batchEmptyFolder;
+
+  /// No description provided for @batchNoPlan.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدّل ألوانًا أو اختر هوية محفوظة.'**
+  String get batchNoPlan;
+
+  /// No description provided for @batchSameFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.'**
+  String get batchSameFolder;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

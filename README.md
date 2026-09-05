@@ -38,7 +38,11 @@ replacement for each, shows the result page by page, and writes a new file.
   they are. Fonts missing from the machine are fetched from Google Fonts and
   cached.
 - **Identities** — save a palette and apply it to any document, or lift one
-  from another open file.
+  from another open file. A saved identity keeps the exact colour-to-colour
+  rules, so the next document comes out like the last one.
+- **Batch** — apply one plan to a whole folder and everything under it, keeping
+  the structure. A file that fails is named with its reason and the rest still
+  run. Also on the command line: `e3ks restyle-dir`.
 - **Two languages** — Arabic and English, with the layout direction following
   the language.
 
@@ -51,6 +55,10 @@ replacement for each, shows the result page by page, and writes a new file.
 **After applying a new palette**
 
 ![The document with the new palette applied](docs/screenshots/03-after.png)
+
+**Applying one plan to a folder**
+
+![The batch dialog](docs/screenshots/04-batch.png)
 
 The document in the screenshots is [`docs/demo/brand-guidelines.docx`](docs/demo/brand-guidelines.docx).
 
@@ -112,7 +120,7 @@ cd apps/e3ks_desktop && flutter build macos --release
 ./brand/build-appicon.sh
 ```
 
-71 engine tests and 85 app tests. Documentation and project rules are in
+78 engine tests and 96 app tests. Documentation and project rules are in
 Arabic; code is in English.
 
 ## Versioning
