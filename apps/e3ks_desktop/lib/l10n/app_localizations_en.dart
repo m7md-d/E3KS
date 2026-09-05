@@ -12,13 +12,13 @@ class LEn extends L {
   String get appName => 'E3KS';
 
   @override
-  String get tagline => 'Reverse your document\'s identity';
+  String get tagline => 'Colour and font replacement for Office documents';
 
   @override
   String get languageName => 'English';
 
   @override
-  String get dropHere => 'Drop a Word file here';
+  String get dropHere => 'Drop a Word or PowerPoint file here';
 
   @override
   String get orDivider => '— or —';
@@ -27,8 +27,7 @@ class LEn extends L {
   String get chooseFile => 'Choose a file…';
 
   @override
-  String get supported =>
-      'Supports .docx and .pptx files from Word and PowerPoint';
+  String get supported => 'Supported formats: .docx and .pptx';
 
   @override
   String get reading => 'Reading the document…';
@@ -46,18 +45,18 @@ class LEn extends L {
   String get tabIdentities => 'Saved identities';
 
   @override
-  String get identityColors => 'Colours the reader sees';
+  String get identityColors => 'Content colours';
 
   @override
   String get identityColorsHint =>
-      'These are your document\'s actual design colours. Usually the ones you want to change.';
+      'Colours that appear in the document\'s content.';
 
   @override
-  String get inheritedColors => 'Colours inherited from Word templates';
+  String get inheritedColors => 'Inherited colours';
 
   @override
   String get inheritedColorsHint =>
-      'Colours that came with built-in Word templates and never appear in the text. Normally left alone.';
+      'Colours defined in Word templates that do not appear in the content.';
 
   @override
   String get pickReplacement => 'Pick a replacement colour';
@@ -92,10 +91,10 @@ class LEn extends L {
 
   @override
   String get openReferenceHint =>
-      'Open a file that has the identity you want, and its colours appear here.';
+      'Colours from other open documents appear here.';
 
   @override
-  String get fromSavedIdentities => 'From your saved identities';
+  String get fromSavedIdentities => 'From saved identities';
 
   @override
   String contrastReadable(Object ratio) {
@@ -109,7 +108,7 @@ class LEn extends L {
 
   @override
   String get fontsHint =>
-      'Unify the document\'s fonts. Arabic and Latin are separate because merging them breaks one of the two.';
+      'Latin and Arabic fonts are separate in OOXML; each is set on its own.';
 
   @override
   String get latinFont => 'Latin font';
@@ -125,7 +124,7 @@ class LEn extends L {
 
   @override
   String get protectedFontsHint =>
-      'Fonts used for code and technical tables. Changing them ruins the alignment, so we skip them.';
+      'Monospaced fonts. Excluded from replacement because substituting them changes alignment.';
 
   @override
   String get likelyCodeFont => 'likely a code font';
@@ -297,14 +296,13 @@ class LEn extends L {
 
   @override
   String get identitiesHint =>
-      'A set of colours and fonts you save once and apply to any document.';
+      'A saved set of colours and fonts, applied to any document.';
 
   @override
   String get saveIdentity => 'Save as identity';
 
   @override
-  String get saveIdentityDisabled =>
-      'Change some colours first, then save them as an identity';
+  String get saveIdentityDisabled => 'No changes to save';
 
   @override
   String get identityName => 'Identity name';
@@ -319,11 +317,10 @@ class LEn extends L {
   String get deleteIdentity => 'Delete';
 
   @override
-  String get noIdentities =>
-      'No saved identities yet.\nChange some colours, then press \"Save as identity\".';
+  String get noIdentities => 'No saved identities.';
 
   @override
-  String get documentFacts => 'What we found in the document';
+  String get documentFacts => 'Scan results';
 
   @override
   String get factDesignColors => 'Design colours';
@@ -341,7 +338,7 @@ class LEn extends L {
   String get export => 'Export document';
 
   @override
-  String get exporting => 'Preparing the file…';
+  String get exporting => 'Exporting…';
 
   @override
   String get exported => 'Saved';
@@ -351,7 +348,7 @@ class LEn extends L {
 
   @override
   String get exportBlockedWhy =>
-      'We found a fault that could break the file when opened, so we stopped the save.';
+      'The output failed validation, so the write was cancelled.';
 
   @override
   String get reportColorsReplaced => 'Colours replaced';
@@ -367,7 +364,7 @@ class LEn extends L {
 
   @override
   String reportUnmatched(Object colors) {
-    return 'Colours you picked were not found in the document: $colors';
+    return 'Colours not found in the document: $colors';
   }
 
   @override
@@ -424,10 +421,10 @@ class LEn extends L {
   String get licensesTitle => 'Component licenses';
 
   @override
-  String get licensesHint => 'The open-source libraries this app is built on';
+  String get licensesHint => 'Open-source libraries used by the app';
 
   @override
-  String get licensesLoading => 'Collecting licenses…';
+  String get licensesLoading => 'Loading…';
 
   @override
   String get licensesEmpty => 'No licenses registered';
@@ -456,7 +453,7 @@ class LEn extends L {
   String get noMatches => 'No matches';
 
   @override
-  String get tapColorHint => 'Tap any colour on the page to track it';
+  String get tapColorHint => 'Track this colour on the page';
 
   @override
   String get nextMatch => 'Next match';
@@ -468,8 +465,7 @@ class LEn extends L {
   String get extractIdentity => 'Extract identity from an open file';
 
   @override
-  String get extractIdentityHint =>
-      'Reads the file\'s colours ordered by use and names them';
+  String get extractIdentityHint => 'The file\'s colours, ordered by use';
 
   @override
   String extractFrom(String file) {
@@ -477,14 +473,13 @@ class LEn extends L {
   }
 
   @override
-  String get noOtherFiles => 'Open another file carrying the identity you want';
+  String get noOtherFiles => 'No other files open';
 
   @override
   String get quickPick => 'Quick pick';
 
   @override
-  String get quickPickHint =>
-      'Colours from identities extracted from open files';
+  String get quickPickHint => 'Colours extracted from open files';
 
   @override
   String get labelPrimary => 'Primary';
@@ -505,17 +500,14 @@ class LEn extends L {
   String get showChangeMarks => 'Show change marks';
 
   @override
-  String get pickColorToTrack => 'Track a colour';
-
-  @override
-  String get stopTracking => 'Stop tracking';
+  String get pickColorToTrack => 'Pick a colour from the page';
 
   @override
   String get shadesOf => 'Shades of this colour';
 
   @override
   String get shadesHint =>
-      'Computed from the chosen colour — the marked step is it';
+      'Shades computed from the selected colour; the marked step is the colour itself';
 
   @override
   String get settings => 'Settings';
@@ -525,14 +517,14 @@ class LEn extends L {
 
   @override
   String get fontsSectionHint =>
-      'To show your file as it really looks we need its fonts. Whatever is not on your machine we fetch and keep here.';
+      'The preview uses the document\'s fonts. Those not installed are fetched and stored here.';
 
   @override
   String get fetchFonts => 'Fetch missing fonts';
 
   @override
   String get fetchFontsHint =>
-      'Only the font name leaves your machine — never the document\'s content or name.';
+      'Only the font name is sent; the document and its name are not.';
 
   @override
   String get cachedFonts => 'Saved fonts';
@@ -547,7 +539,7 @@ class LEn extends L {
   String get deleteFont => 'Delete';
 
   @override
-  String get noCachedFonts => 'No saved fonts yet.';
+  String get noCachedFonts => 'No stored fonts.';
 
   @override
   String get fontDeletedNote =>
@@ -563,7 +555,7 @@ class LEn extends L {
   }
 
   @override
-  String get fontsFetching => 'Fetching the document\'s fonts…';
+  String get fontsFetching => 'Fetching fonts…';
 
   @override
   String get showDetails => 'Details';
@@ -572,13 +564,13 @@ class LEn extends L {
   String get originBundled => 'Bundled with the app';
 
   @override
-  String get originSystem => 'Installed on your machine';
+  String get originSystem => 'Installed on this machine';
 
   @override
-  String get originCached => 'Saved here';
+  String get originCached => 'Stored locally';
 
   @override
-  String get originFetched => 'Just fetched';
+  String get originFetched => 'Fetched';
 
   @override
   String get originUnavailable => 'Not found on Google Fonts';
@@ -591,7 +583,7 @@ class LEn extends L {
 
   @override
   String get errNotAnArchive =>
-      'This is not a valid Word document — we could not open it.';
+      'Not a valid OOXML archive; it could not be opened.';
 
   @override
   String get errMissingContentTypes =>
@@ -607,7 +599,7 @@ class LEn extends L {
 
   @override
   String errEmptyTextNode(int count) {
-    return 'We found $count places that break opening the file in Google Docs.';
+    return '$count places break opening the file in Google Docs.';
   }
 
   @override
@@ -626,10 +618,19 @@ class LEn extends L {
   String get errPartNotFound => 'A required part is missing from the document.';
 
   @override
-  String get errEncodeFailed => 'We could not build the output file.';
+  String get errEncodeFailed => 'The output file could not be built.';
 
   @override
   String errUnmatchedMapping(Object colors) {
-    return 'Colours in your plan were not found in the document: $colors';
+    return 'Colours in the plan were not found in the document: $colors';
   }
+
+  @override
+  String get cancelPicking => 'Cancel picking';
+
+  @override
+  String get pickingHint => 'Picking a colour — Esc to cancel';
+
+  @override
+  String get noColorMatch => 'No matching colour';
 }

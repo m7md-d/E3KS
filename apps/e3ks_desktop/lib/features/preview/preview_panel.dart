@@ -13,6 +13,7 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/workspace_store.dart';
 import 'color_focus_bar.dart';
+import 'color_pick_layer.dart';
 import 'document_paper.dart';
 import 'page_index.dart';
 import 'preview_toolbar.dart';
@@ -60,6 +61,12 @@ class _PreviewPanelState extends State<PreviewPanel> {
   /// معنى حين يتغيّر لونٌ شائع: تُحاط الصفحة كلّها فلا تدلّ على شيء. ما
   /// يُبرَز افتراضًا هو **اللون المتتبَّع وحده** — ما اختاره المستخدم.
   bool _marks = false;
+
+  /// حدّ إعادة الرسم حول الورق — منه تُلتقط البكسلات في وضع الالتقاط.
+  final GlobalKey _paperKey = GlobalKey();
+
+  /// وضع التقاط اللون من الصفحة نفسها.
+  bool _picking = false;
 
   /// مفاتيح مستقرّة عبر إعادات البناء.
   ///
@@ -181,6 +188,13 @@ class _PreviewPanelState extends State<PreviewPanel> {
                 : font.name,
     };
 
+    // ألوان المستند **كما تُرسم الآن**: في عرض «بعد» هي ألوان البدائل،
+    // وإليها يقارن المنتقي بكسلات الشاشة.
+    final palette = <HexColor>[
+      for (final usage in document.report.contentColors)
+        showAfter ? (store.colorMap[usage.color] ?? usage.color) : usage.color,
+    ];
+
     final pages = flattenPages(preview);
     final changed = changedPages(pages, colors: colors, fonts: fonts);
     if (_cursor >= changed.length) _cursor = changed.length - 1;
@@ -262,6 +276,8 @@ class _PreviewPanelState extends State<PreviewPanel> {
               }),
               page: _page.clamp(1, pages.isEmpty ? 1 : pages.length),
               marks: _marks,
+              picking: _picking,
+              onPicking: (value) => setState(() => _picking = value),
               onNumbers: (value) => setState(() => _numbers = value),
               onMarks: (value) => setState(() => _marks = value),
               onGoToPage: (page) => _goToPage(page - 1, pages.length),
@@ -278,47 +294,73 @@ class _PreviewPanelState extends State<PreviewPanel> {
                     },
             ),
             Expanded(
-              child: ColoredBox(
-                color: Shade.canvas,
-                child: Scrollbar(
-                  controller: _across,
-                  thumbVisibility: contentWidth > constraints.maxWidth,
-                  child: SingleChildScrollView(
-                    controller: _across,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: contentWidth,
-                      height: constraints.maxHeight,
-                      child: Scrollbar(
-                        controller: _scroll,
-                        thumbVisibility: true,
-                        child: ListView.builder(
-                          controller: _scroll,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          // العرض المُحجَّم: مستند من ٣٧ صفحة يبني منها
-                          // المرئي فقط.
-                          itemCount: pages.length,
-                          itemBuilder: (context, i) => _PageSheet(
-                            key: _keyFor(i),
-                            entry: pages[i],
-                            zoom: zoom,
-                            startNumber: blockStart[i],
-                            showNumbers: _numbers,
-                            label: _pageLabel(t, pages[i], pages.length),
-                            highlight:
-                                _marks &&
-                                store.hasChanges &&
-                                changed.contains(i),
-                            changedColors: colors,
-                            changedFonts: fonts,
-                            focusedColor: focused,
-                            onColorTap: store.focusColor,
+              child: Stack(
+                children: [
+                  // الورق داخل حدّ إعادة رسم: منه تُلتقط البكسلات حين
+                  // يستعمل المستخدم منتقي اللون.
+                  Positioned.fill(
+                    child: RepaintBoundary(
+                      key: _paperKey,
+                      child: ColoredBox(
+                        color: Shade.canvas,
+                        child: Scrollbar(
+                          controller: _across,
+                          thumbVisibility: contentWidth > constraints.maxWidth,
+                          child: SingleChildScrollView(
+                            controller: _across,
+                            scrollDirection: Axis.horizontal,
+                            child: SizedBox(
+                              width: contentWidth,
+                              height: constraints.maxHeight,
+                              child: Scrollbar(
+                                controller: _scroll,
+                                thumbVisibility: true,
+                                child: ListView.builder(
+                                  controller: _scroll,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                  // العرض المُحجَّم: مستند من ٣٧ صفحة يبني منها
+                                  // المرئي فقط.
+                                  itemCount: pages.length,
+                                  itemBuilder: (context, i) => _PageSheet(
+                                    key: _keyFor(i),
+                                    entry: pages[i],
+                                    zoom: zoom,
+                                    startNumber: blockStart[i],
+                                    showNumbers: _numbers,
+                                    label: _pageLabel(
+                                      t,
+                                      pages[i],
+                                      pages.length,
+                                    ),
+                                    highlight:
+                                        _marks &&
+                                        store.hasChanges &&
+                                        changed.contains(i),
+                                    changedColors: colors,
+                                    changedFonts: fonts,
+                                    focusedColor: focused,
+                                    onColorTap: store.focusColor,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                  if (_picking)
+                    Positioned.fill(
+                      child: ColorPickLayer(
+                        boundary: _paperKey,
+                        candidates: palette,
+                        onPicked: store.focusColor,
+                        onCancel: () => setState(() => _picking = false),
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -421,6 +463,8 @@ class _PageSheet extends StatelessWidget {
                       changedColors.isNotEmpty || changedFonts.isNotEmpty,
                   changedColors: changedColors,
                   changedFonts: changedFonts,
+                  focusedColor: focusedColor,
+                  onColorTap: onColorTap,
                 ),
               ),
             ),

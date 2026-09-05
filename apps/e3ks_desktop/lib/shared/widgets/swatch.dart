@@ -12,6 +12,14 @@ import '../../app/theme.dart';
 Color toFlutter(HexColor hex) =>
     Color(int.parse('FF${hex.ooxmlValue}', radix: 16));
 
+/// الاتجاه المعاكس: من لون واجهة إلى لون المحرّك.
+///
+/// يلزم حين نقارن ما رُسم على الشاشة بألوان المستند — التقاط اللون من
+/// المعاينة مثلًا. القناة الشفافة تُسقَط، فالمقارنة على RGB وحده.
+HexColor fromFlutter(Color color) =>
+    // ‏`!` مضمون: ثمانية محارف سداسية دائمًا، وهو ما يقبله `tryParse`.
+    HexColor.tryParse(color.toARGB32().toRadixString(16).padLeft(8, '0'))!;
+
 class Swatch extends StatelessWidget {
   const Swatch({
     super.key,

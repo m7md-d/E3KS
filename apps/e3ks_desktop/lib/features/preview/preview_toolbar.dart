@@ -7,7 +7,6 @@
 /// مفصول عن `preview_panel.dart` لأن الملفّ تجاوز حدّ الأربعمئة سطر (`01`).
 library;
 
-import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // ‏`intl` تُصدّر `TextDirection` أيضًا، ونحن نريد التي في Flutter.
@@ -18,7 +17,6 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/arabic_digits.dart';
-import '../../shared/widgets/swatch.dart';
 
 /// درجات التكبير المعلَنة. ‏١٫٠ = مقاس الورقة الحقيقي.
 const List<double> zoomSteps = [0.5, 0.65, 0.8, 1.0, 1.25, 1.5, 2.0];
@@ -37,6 +35,8 @@ class PreviewToolbar extends StatelessWidget {
     required this.sections,
     required this.page,
     required this.marks,
+    required this.picking,
+    required this.onPicking,
     required this.onZoom,
     required this.onFit,
     required this.onNumbers,
@@ -60,6 +60,11 @@ class PreviewToolbar extends StatelessWidget {
 
   /// إظهار علامات التغيير على كل ما تغيّر.
   final bool marks;
+
+  /// وضع التقاط اللون من الصفحة.
+  final bool picking;
+
+  final ValueChanged<bool> onPicking;
 
   final ValueChanged<double> onZoom;
   final VoidCallback onFit;
@@ -112,9 +117,14 @@ class PreviewToolbar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              // منتقي اللون: يختار لونًا فيُبرَز في الصفحة ويُفتح صفّه في
-              // القائمة. الطريق الثالث إلى التتبّع بعد الصفحة والقائمة.
-              _ColorTracker(store: store),
+              // منتقي اللون: **يشير المستخدم إلى اللون في صفحته**، فيُبرَز
+              // ويُفتح صفّه في القائمة. الطريق الثالث بعد الضغط والعيّنة.
+              _IconToggle(
+                icon: LucideIcons.pipette,
+                tooltip: picking ? t.cancelPicking : t.pickColorToTrack,
+                value: picking,
+                onChanged: onPicking,
+              ),
               const SizedBox(width: 4),
               _IconToggle(
                 icon: LucideIcons.squareDashedMousePointer,
@@ -562,78 +572,6 @@ class _PageFieldState extends State<_PageField> {
           const SizedBox(width: 6),
           Text('/ $total', style: Theme.of(context).textTheme.labelSmall),
         ],
-      ),
-    );
-  }
-}
-
-/// منتقي اللون المتتبَّع.
-///
-/// الطريق الثالث إلى التتبّع: من الصفحة بالضغط، ومن القائمة بالعيّنة، ومن
-/// هنا باختيار من قائمة ألوان المستند مرتّبةً بالأكثر استعمالًا.
-class _ColorTracker extends StatelessWidget {
-  const _ColorTracker({required this.store});
-
-  final WorkspaceStore store;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.l10n;
-    final report = store.report;
-    final colors = report?.contentColors ?? const <ColorUsage>[];
-    final focused = store.focusedColor;
-
-    if (colors.isEmpty) return const SizedBox.shrink();
-
-    return PopupMenuButton<String>(
-      tooltip: focused == null ? t.pickColorToTrack : t.stopTracking,
-      color: Shade.surfaceHigh,
-      onSelected: (value) =>
-          store.focusColor(value.isEmpty ? null : HexColor.tryParse(value)),
-      itemBuilder: (_) => [
-        if (focused != null)
-          PopupMenuItem(value: '', child: Text(t.stopTracking)),
-        for (final usage in colors.take(24))
-          PopupMenuItem(
-            value: usage.color.value,
-            child: Row(
-              children: [
-                Swatch(
-                  color: usage.color,
-                  size: 18,
-                  selected: usage.color.value == focused?.value,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  usage.color.value,
-                  textDirection: TextDirection.ltr,
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  t.occurrences(usage.count),
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ],
-            ),
-          ),
-      ],
-      child: SizedBox(
-        width: 30,
-        height: 28,
-        child: Material(
-          color: focused == null ? Shade.canvas : Shade.mirrorDeep,
-          borderRadius: BorderRadius.circular(Metrics.radiusSmall),
-          child: Center(
-            child: focused == null
-                ? const Icon(
-                    LucideIcons.pipette,
-                    size: 15,
-                    color: Shade.textMuted,
-                  )
-                : Swatch(color: focused, size: 16),
-          ),
-        ),
       ),
     );
   }

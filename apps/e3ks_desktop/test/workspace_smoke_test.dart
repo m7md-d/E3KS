@@ -64,10 +64,10 @@ void main() {
       ),
     );
     // لا شاشة فتح منفصلة: الشريط الجانبي واللوحات ظاهرة، والإسقاط في المعاينة.
-    expect(find.text('اسحب ملف Word هنا'), findsOneWidget);
+    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsOneWidget);
     expect(find.text('الألوان'), findsWidgets);
     expect(find.text('الخطوط'), findsWidgets);
-    expect(find.text('ما وجدناه في المستند'), findsOneWidget);
+    expect(find.text('حصيلة الفحص'), findsOneWidget);
     expect(find.text('افتح مستندًا لعرض ألوانه.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -114,7 +114,7 @@ void main() {
     await tester.pump();
 
     // لوحة الألوان تعرض الهوية ولا تُغرق المستخدم بالموروث.
-    expect(find.text('ألوان يراها القارئ'), findsOneWidget);
+    expect(find.text('ألوان المحتوى'), findsOneWidget);
     expect(find.text('#4C2FB8'), findsOneWidget);
 
     // تبديل لون يُحدِّث العدّاد والمعاينة.
@@ -238,10 +238,10 @@ void main() {
       ),
     );
 
-    expect(find.text('Drop a Word file here'), findsOneWidget);
+    expect(find.text('Drop a Word or PowerPoint file here'), findsOneWidget);
     expect(find.text('Colours'), findsWidgets);
-    expect(find.text('What we found in the document'), findsOneWidget);
-    expect(find.text('اسحب ملف Word هنا'), findsNothing);
+    expect(find.text('Scan results'), findsOneWidget);
+    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsNothing);
 
     // الاتجاه يأتي من اللغة تلقائيًا، لا يُفرَض في الكود.
     expect(
@@ -271,13 +271,13 @@ void main() {
         ),
       ),
     );
-    expect(find.text('اسحب ملف Word هنا'), findsOneWidget);
+    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsOneWidget);
 
     await tester.runAsync(() => settings.setLocale(const Locale('en')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Drop a Word file here'), findsOneWidget);
-    expect(find.text('اسحب ملف Word هنا'), findsNothing);
+    expect(find.text('Drop a Word or PowerPoint file here'), findsOneWidget);
+    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

@@ -106,7 +106,7 @@ abstract class L {
   /// No description provided for @tagline.
   ///
   /// In ar, this message translates to:
-  /// **'اعكس هوية مستندك'**
+  /// **'تبديل ألوان المستندات وخطوطها'**
   String get tagline;
 
   /// No description provided for @languageName.
@@ -118,7 +118,7 @@ abstract class L {
   /// No description provided for @dropHere.
   ///
   /// In ar, this message translates to:
-  /// **'اسحب ملف Word هنا'**
+  /// **'أفلِت ملف Word أو PowerPoint هنا'**
   String get dropHere;
 
   /// No description provided for @orDivider.
@@ -136,13 +136,13 @@ abstract class L {
   /// No description provided for @supported.
   ///
   /// In ar, this message translates to:
-  /// **'يدعم ملفات ‎.docx‎ و‎.pptx‎ من Word و PowerPoint'**
+  /// **'الصيغ المدعومة: ‎.docx‎ و‎.pptx‎'**
   String get supported;
 
   /// No description provided for @reading.
   ///
   /// In ar, this message translates to:
-  /// **'نقرأ المستند…'**
+  /// **'جارٍ قراءة المستند…'**
   String get reading;
 
   /// No description provided for @openAnother.
@@ -172,25 +172,25 @@ abstract class L {
   /// No description provided for @identityColors.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان يراها القارئ'**
+  /// **'ألوان المحتوى'**
   String get identityColors;
 
   /// No description provided for @identityColorsHint.
   ///
   /// In ar, this message translates to:
-  /// **'هذه ألوان التصميم الفعلية في مستندك. غالبًا هي ما تريد تغييره.'**
+  /// **'ألوان تظهر في محتوى المستند.'**
   String get identityColorsHint;
 
   /// No description provided for @inheritedColors.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان موروثة من قوالب Word'**
+  /// **'ألوان موروثة'**
   String get inheritedColors;
 
   /// No description provided for @inheritedColorsHint.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان أتت مع قوالب Word الجاهزة ولا تظهر في النصّ. عادةً تُترك كما هي.'**
+  /// **'ألوان معرَّفة في قوالب Word ولا تظهر في المحتوى.'**
   String get inheritedColorsHint;
 
   /// No description provided for @pickReplacement.
@@ -250,13 +250,13 @@ abstract class L {
   /// No description provided for @openReferenceHint.
   ///
   /// In ar, this message translates to:
-  /// **'افتح ملفًا فيه الهوية التي تريدها، وستظهر ألوانه هنا.'**
+  /// **'ألوان المستندات الأخرى المفتوحة تظهر هنا.'**
   String get openReferenceHint;
 
   /// No description provided for @fromSavedIdentities.
   ///
   /// In ar, this message translates to:
-  /// **'من هوياتك المحفوظة'**
+  /// **'من الهويات المحفوظة'**
   String get fromSavedIdentities;
 
   /// No description provided for @contrastReadable.
@@ -274,7 +274,7 @@ abstract class L {
   /// No description provided for @fontsHint.
   ///
   /// In ar, this message translates to:
-  /// **'وحّد خطوط المستند. الخطوط العربية والإنجليزية منفصلة لأن دمجها يكسر أحدهما.'**
+  /// **'الخطّ اللاتيني والعربي منفصلان في OOXML، ويُضبط كلٌّ منهما وحده.'**
   String get fontsHint;
 
   /// No description provided for @latinFont.
@@ -304,7 +304,7 @@ abstract class L {
   /// No description provided for @protectedFontsHint.
   ///
   /// In ar, this message translates to:
-  /// **'خطوط الكود والجداول التقنية. تغييرها يفسد محاذاتها، فنستثنيها.'**
+  /// **'خطوط أحادية العرض. مستثناة من التبديل لأن استبدالها يغيّر المحاذاة.'**
   String get protectedFontsHint;
 
   /// No description provided for @likelyCodeFont.
@@ -640,7 +640,7 @@ abstract class L {
   /// No description provided for @identitiesHint.
   ///
   /// In ar, this message translates to:
-  /// **'مجموعة ألوان وخطوط تحفظها مرّة وتطبّقها على أي مستند.'**
+  /// **'مجموعة ألوان وخطوط محفوظة، تُطبَّق على أي مستند.'**
   String get identitiesHint;
 
   /// No description provided for @saveIdentity.
@@ -652,7 +652,7 @@ abstract class L {
   /// No description provided for @saveIdentityDisabled.
   ///
   /// In ar, this message translates to:
-  /// **'بدّل ألوانًا أولًا ثم احفظها كهويّة'**
+  /// **'لا تغييرات لحفظها'**
   String get saveIdentityDisabled;
 
   /// No description provided for @identityName.
@@ -682,13 +682,13 @@ abstract class L {
   /// No description provided for @noIdentities.
   ///
   /// In ar, this message translates to:
-  /// **'لا هويات محفوظة بعد.\nبدّل بعض الألوان ثم اضغط «احفظ كهويّة».'**
+  /// **'لا هويات محفوظة.'**
   String get noIdentities;
 
   /// No description provided for @documentFacts.
   ///
   /// In ar, this message translates to:
-  /// **'ما وجدناه في المستند'**
+  /// **'حصيلة الفحص'**
   String get documentFacts;
 
   /// No description provided for @factDesignColors.
@@ -724,7 +724,7 @@ abstract class L {
   /// No description provided for @exporting.
   ///
   /// In ar, this message translates to:
-  /// **'نُجهّز الملف…'**
+  /// **'جارٍ التصدير…'**
   String get exporting;
 
   /// No description provided for @exported.
@@ -742,7 +742,7 @@ abstract class L {
   /// No description provided for @exportBlockedWhy.
   ///
   /// In ar, this message translates to:
-  /// **'اكتشفنا خللًا قد يكسر الملف عند فتحه، فأوقفنا الحفظ.'**
+  /// **'فشل التحقّق من الملف الناتج، فأُلغيت الكتابة.'**
   String get exportBlockedWhy;
 
   /// No description provided for @reportColorsReplaced.
@@ -772,7 +772,7 @@ abstract class L {
   /// No description provided for @reportUnmatched.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان اخترتها لم توجد في المستند: {colors}'**
+  /// **'ألوان غير موجودة في المستند: {colors}'**
   String reportUnmatched(Object colors);
 
   /// No description provided for @close.
@@ -874,13 +874,13 @@ abstract class L {
   /// No description provided for @licensesHint.
   ///
   /// In ar, this message translates to:
-  /// **'المكتبات المفتوحة التي يقوم عليها التطبيق'**
+  /// **'المكتبات مفتوحة المصدر المستعملة في التطبيق'**
   String get licensesHint;
 
   /// No description provided for @licensesLoading.
   ///
   /// In ar, this message translates to:
-  /// **'نجمع الرخص…'**
+  /// **'جارٍ التحميل…'**
   String get licensesLoading;
 
   /// No description provided for @licensesEmpty.
@@ -922,7 +922,7 @@ abstract class L {
   /// No description provided for @tapColorHint.
   ///
   /// In ar, this message translates to:
-  /// **'اضغط أي لون في الصفحة لمتابعته'**
+  /// **'متابعة اللون في الصفحة'**
   String get tapColorHint;
 
   /// No description provided for @nextMatch.
@@ -946,7 +946,7 @@ abstract class L {
   /// No description provided for @extractIdentityHint.
   ///
   /// In ar, this message translates to:
-  /// **'يقرأ ألوان الملف مرتّبةً بالأكثر استعمالًا ويسمّيها'**
+  /// **'ألوان الملف مرتّبة بالأكثر استعمالًا'**
   String get extractIdentityHint;
 
   /// No description provided for @extractFrom.
@@ -958,7 +958,7 @@ abstract class L {
   /// No description provided for @noOtherFiles.
   ///
   /// In ar, this message translates to:
-  /// **'افتح ملفًا آخر يحمل الهوية التي تريدها'**
+  /// **'لا ملفات أخرى مفتوحة'**
   String get noOtherFiles;
 
   /// No description provided for @quickPick.
@@ -970,7 +970,7 @@ abstract class L {
   /// No description provided for @quickPickHint.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان الهويات المستخرَجة من الملفات المفتوحة'**
+  /// **'ألوان مستخرَجة من الملفات المفتوحة'**
   String get quickPickHint;
 
   /// No description provided for @labelPrimary.
@@ -1012,14 +1012,8 @@ abstract class L {
   /// No description provided for @pickColorToTrack.
   ///
   /// In ar, this message translates to:
-  /// **'تتبّع لونًا'**
+  /// **'التقاط لون من الصفحة'**
   String get pickColorToTrack;
-
-  /// No description provided for @stopTracking.
-  ///
-  /// In ar, this message translates to:
-  /// **'أوقف التتبّع'**
-  String get stopTracking;
 
   /// No description provided for @shadesOf.
   ///
@@ -1030,7 +1024,7 @@ abstract class L {
   /// No description provided for @shadesHint.
   ///
   /// In ar, this message translates to:
-  /// **'محسوبة من اللون المختار — الدرجة المُعلَّمة هي هو'**
+  /// **'درجات محسوبة من اللون المختار؛ الدرجة المعلَّمة هي اللون نفسه'**
   String get shadesHint;
 
   /// No description provided for @settings.
@@ -1048,7 +1042,7 @@ abstract class L {
   /// No description provided for @fontsSectionHint.
   ///
   /// In ar, this message translates to:
-  /// **'لعرض ملفّك بشكله الحقيقي نحتاج خطوطه. ما لا يوجد على جهازك نجلبه ونحفظه هنا.'**
+  /// **'المعاينة تستعمل خطوط المستند. غير المنصَّب منها يُجلب ويُحفَظ هنا.'**
   String get fontsSectionHint;
 
   /// No description provided for @fetchFonts.
@@ -1060,7 +1054,7 @@ abstract class L {
   /// No description provided for @fetchFontsHint.
   ///
   /// In ar, this message translates to:
-  /// **'يغادر جهازك اسم الخطّ فقط — لا محتوى المستند ولا اسمه.'**
+  /// **'يُرسَل اسم الخطّ فقط؛ لا يُرسَل المستند ولا اسمه.'**
   String get fetchFontsHint;
 
   /// No description provided for @cachedFonts.
@@ -1090,7 +1084,7 @@ abstract class L {
   /// No description provided for @noCachedFonts.
   ///
   /// In ar, this message translates to:
-  /// **'لا خطوط محفوظة بعد.'**
+  /// **'لا خطوط محفوظة.'**
   String get noCachedFonts;
 
   /// No description provided for @fontDeletedNote.
@@ -1114,7 +1108,7 @@ abstract class L {
   /// No description provided for @fontsFetching.
   ///
   /// In ar, this message translates to:
-  /// **'نجلب خطوط المستند…'**
+  /// **'جارٍ جلب الخطوط…'**
   String get fontsFetching;
 
   /// No description provided for @showDetails.
@@ -1132,25 +1126,25 @@ abstract class L {
   /// No description provided for @originSystem.
   ///
   /// In ar, this message translates to:
-  /// **'منصَّب على جهازك'**
+  /// **'منصَّب على الجهاز'**
   String get originSystem;
 
   /// No description provided for @originCached.
   ///
   /// In ar, this message translates to:
-  /// **'محفوظ عندنا'**
+  /// **'محفوظ محليًّا'**
   String get originCached;
 
   /// No description provided for @originFetched.
   ///
   /// In ar, this message translates to:
-  /// **'جُلب الآن'**
+  /// **'جُلب'**
   String get originFetched;
 
   /// No description provided for @originUnavailable.
   ///
   /// In ar, this message translates to:
-  /// **'لم نجده على Google Fonts'**
+  /// **'غير موجود على Google Fonts'**
   String get originUnavailable;
 
   /// No description provided for @originOffline.
@@ -1168,7 +1162,7 @@ abstract class L {
   /// No description provided for @errNotAnArchive.
   ///
   /// In ar, this message translates to:
-  /// **'الملف ليس مستند Word صالحًا — تعذّر فتحه.'**
+  /// **'الملف ليس أرشيف OOXML صالحًا؛ تعذّر فتحه.'**
   String get errNotAnArchive;
 
   /// No description provided for @errMissingContentTypes.
@@ -1192,7 +1186,7 @@ abstract class L {
   /// No description provided for @errEmptyTextNode.
   ///
   /// In ar, this message translates to:
-  /// **'وجدنا {count} موضعًا يكسر فتح الملف في Google Docs.'**
+  /// **'{count} موضعًا يكسر فتح الملف في Google Docs.'**
   String errEmptyTextNode(int count);
 
   /// No description provided for @errUnbalancedField.
@@ -1228,8 +1222,26 @@ abstract class L {
   /// No description provided for @errUnmatchedMapping.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان في خطتك لم توجد في المستند: {colors}'**
+  /// **'ألوان في الخطة غير موجودة في المستند: {colors}'**
   String errUnmatchedMapping(Object colors);
+
+  /// No description provided for @cancelPicking.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الالتقاط'**
+  String get cancelPicking;
+
+  /// No description provided for @pickingHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقاط لون — Esc للإلغاء'**
+  String get pickingHint;
+
+  /// No description provided for @noColorMatch.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا لون مطابق'**
+  String get noColorMatch;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

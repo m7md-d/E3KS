@@ -2,7 +2,6 @@
 library;
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:e3ks_desktop/data/font_cache.dart';
 import 'package:e3ks_desktop/data/font_service.dart';
@@ -10,9 +9,11 @@ import 'package:e3ks_desktop/data/identity_store.dart';
 import 'package:e3ks_desktop/data/settings_store.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
 import 'package:e3ks_desktop/app/theme.dart';
+import 'package:e3ks_desktop/features/preview/color_pick_layer.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
 import 'package:e3ks_desktop/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -125,7 +126,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('منتقي اللون في الشريط يتتبّع ويُلغي', (tester) async {
+  testWidgets('منتقي اللون يفتح طبقة الالتقاط ويُغلقها بـEsc', (tester) async {
     if (!File(_realPath).existsSync()) {
       markTestSkipped('لا يوجد مستند حقيقي');
       return;
@@ -137,14 +138,16 @@ void main() {
     await tester.pumpWidget(harness(store, const Locale('ar')));
     await tester.pump();
 
+    expect(find.byType(ColorPickLayer), findsNothing);
+
     await tester.tap(find.byIcon(LucideIcons.pipette));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    expect(find.byType(ColorPickLayer), findsOneWidget, reason: 'وضع الالتقاط');
 
-    final first = store.report!.contentColors.first.color;
-    await tester.tap(find.text(first.value).last);
-    await tester.pumpAndSettle();
-
-    expect(store.focusedColor?.value, equals(first.value));
+    // مهرب واضح: من دخل وضعًا يلتقط كل ضغطة يجب أن يستطيع الخروج منه.
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    expect(find.byType(ColorPickLayer), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
