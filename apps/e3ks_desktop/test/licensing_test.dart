@@ -7,12 +7,23 @@ import 'package:e3ks_desktop/app/about.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('الإصدار المعروض يطابق pubspec', () {
-    // رقمان للإصدار في مكانين ينحرفان حتمًا، فيكذب «عن التطبيق» بصمت.
-    final line = File(
+  test('الإصدار واحد في المواضع الأربعة', () {
+    // رقم في أربعة مواضع ينحرف حتمًا، فيكذب «عن التطبيق» بصمت — والمستخدم
+    // يبلّغ عن خلل برقم خاطئ. القاعدة `08` §3: المرجع الواحد يُحرَس آليًّا.
+    String versionOf(String pubspec) => File(pubspec)
+        .readAsLinesSync()
+        .firstWhere((line) => line.startsWith('version:'))
+        .split(':')[1]
+        .trim();
+
+    const packages = [
       'pubspec.yaml',
-    ).readAsLinesSync().firstWhere((l) => l.startsWith('version:'));
-    expect(line.split(':')[1].trim(), equals(appVersion));
+      '../../packages/e3ks_engine/pubspec.yaml',
+      '../../tools/e3ks_cli/pubspec.yaml',
+    ];
+    for (final pubspec in packages) {
+      expect(versionOf(pubspec), equals(appVersion), reason: pubspec);
+    }
   });
 
   test('نصّ رخصة الخطّ مشحون ومعلَن كأصل', () {

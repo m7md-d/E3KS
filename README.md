@@ -7,6 +7,7 @@
 <p align="center">Swap the colours and fonts of Word and PowerPoint documents.</p>
 
 <p align="center">
+  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-2A2F35">
   <img alt="Flutter 3.47" src="https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white">
   <img alt="Dart 3.9" src="https://img.shields.io/badge/Dart-3.9-0175C2?logo=dart&logoColor=white">
   <img alt="macOS" src="https://img.shields.io/badge/macOS-desktop-111111?logo=apple&logoColor=white">
@@ -111,6 +112,14 @@ cd apps/e3ks_desktop && flutter build macos --release
 
 71 engine tests and 85 app tests. Documentation and project rules are in
 Arabic; code is in English.
+
+## Versioning
+
+Current version **0.1.0**. The number describes the output contract: a patch
+release produces the same bytes for the same plan, a minor release adds a
+capability, and a major release changes what the engine writes or what a saved
+identity file looks like. 1.0 follows metadata support and a manual acceptance
+pass across Word, Google Docs and Pages.
 
 ## Licence
 
