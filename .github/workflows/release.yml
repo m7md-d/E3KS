@@ -1,0 +1,178 @@
+# إصدار آلي: يفحص، ثمّ يبني المنصّات الثلاث، **ثمّ** يضع الوسم وينشر.
+#
+# ⚠ **معطَّل عمدًا.** لا يعمل إلا يدويًّا من تبويب Actions. لتشغيله مع كل دمج
+# في `main`: أزل التعليق عن `push` أدناه. القاعدة `08` §7.
+#
+# **الترتيب مقصود: الوسم بعد البناء لا قبله.** رقمُ الإصدار يسكن داخل الملف
+# التنفيذي، فلا بدّ أن يُرفع قبل الترجمة؛ ولو وُضع الوسم أوّلًا وسقط بناءُ
+# منصّة، لبقي في التاريخ وسمٌ بلا إصدار. فنرفع الرقم في نسخة العامل ونبني،
+# ولا يُلتزَم شيء حتى تنجح الثلاث.
+#
+# البناءات **غير موقَّعة**: على macOS يمنعها Gatekeeper، وعلى Windows يعترض
+# SmartScreen. التوقيع يحتاج شهادات في أسرار المستودع، وهو قرار منفصل.
+
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "الخانة: patch أو minor أو major. فارغ ⇒ تُشتقّ من رسائل الالتزام."
+        required: false
+        default: ""
+  # ↓ للإصدار مع كل دمج في main، أزل التعليق عن هذه:
+  # push:
+  #   branches: [main]
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+
+jobs:
+  # بوابة الإصدار (`08` §4): لا رقم يرتفع واختبارٌ أحمر.
+  verify:
+    uses: ./.github/workflows/checks.yml
+
+  version:
+    name: اشتقاق الرقم
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+
+      # الخانة من مدخل التشغيل، وإلا فمن رسائل الالتزام منذ آخر وسم:
+      # ‏`feat!:` أو `BREAKING CHANGE` ⇒ major، و`feat:` ⇒ minor، وما عداه patch.
+      # وهذا هو الموضع الذي يعلن فيه الكاتب أن المخرَج تغيّر (`08` §1).
+      - name: الخانة والرقم التالي
+        id: bump
+        run: |
+          set -euo pipefail
+          KIND="${{ inputs.bump }}"
+          if [ -z "$KIND" ]; then
+            LAST=$(git describe --tags --abbrev=0 2>/dev/null || true)
+            if [ -n "$LAST" ]; then LOG=$(git log "$LAST"..HEAD --pretty=%B); else LOG=$(git log --pretty=%B); fi
+            if printf '%s' "$LOG" | grep -qE '^[a-z]+(\(.+\))?!:|BREAKING CHANGE'; then
+              KIND=major
+            elif printf '%s' "$LOG" | grep -qE '^feat(\(.+\))?:'; then
+              KIND=minor
+            else
+              KIND=patch
+            fi
+          fi
+          echo "الخانة: $KIND"
+          VERSION=$(dart tools/release/bump_version.dart "$KIND")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: بناء ${{ matrix.platform }}
+    needs: version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest, platform: macos }
+          - { os: windows-latest, platform: windows }
+          - { os: ubuntu-latest, platform: linux }
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+
+      - name: اعتماديات GTK
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev clang cmake pkg-config
+
+      # الرقم داخل الملف التنفيذي، فيُرفع في نسخة العامل قبل الترجمة.
+      # لا التزام هنا: النشر وحده يلتزم، وبعد نجاح الثلاث.
+      - name: رفع الرقم محليًّا
+        run: dart tools/release/bump_version.dart --set "$VERSION"
+        shell: bash
+
+      - name: الحزم
+        working-directory: apps/e3ks_desktop
+        run: flutter pub get --enforce-lockfile
+
+      - name: بناء
+        working-directory: apps/e3ks_desktop
+        run: flutter build ${{ matrix.platform }} --release
+
+      - name: تحزيم macOS
+        if: matrix.platform == 'macos'
+        working-directory: apps/e3ks_desktop
+        run: |
+          set -euo pipefail
+          APP=$(find build/macos/Build/Products/Release -maxdepth 1 -name '*.app' | head -1)
+          ditto -c -k --keepParent "$APP" "../../E3KS-$VERSION-macos.zip"
+
+      - name: تحزيم Windows
+        if: matrix.platform == 'windows'
+        working-directory: apps/e3ks_desktop
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath "../../E3KS-$env:VERSION-windows.zip"
+
+      - name: تحزيم Linux
+        if: matrix.platform == 'linux'
+        working-directory: apps/e3ks_desktop
+        run: tar -czf "../../E3KS-$VERSION-linux.tar.gz" -C build/linux/x64/release/bundle .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e3ks-${{ matrix.platform }}
+          path: |
+            E3KS-*.zip
+            E3KS-*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: الوسم والنشر
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: رفع الرقم والتزامه ووسمه
+        run: |
+          set -euo pipefail
+          dart tools/release/bump_version.dart --set "$VERSION"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore(release): v$VERSION [skip ci]"
+          git tag "v$VERSION"
+          git push origin HEAD --tags
+
+      - name: إنشاء الإصدار
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "v$VERSION" dist/* \
+            --title "E3KS v$VERSION" \
+            --generate-notes \
+            --notes "بناءات غير موقَّعة: على macOS افتحها بالزرّ الأيمن ← فتح، وعلى Windows اختر «مزيد من المعلومات» ← تشغيل على أي حال."

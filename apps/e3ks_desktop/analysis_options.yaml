@@ -9,3 +9,5 @@ analyzer:
   exclude:
     - build/**
     - macos/**
+    - windows/**
+    - linux/**

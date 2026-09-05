@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = e3ks_desktop
+PRODUCT_NAME = E3KS
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = sa.e3ks.e3ksDesktop
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 sa.e3ks. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 m7md-d. GNU GPL v3 or later, with no warranty.

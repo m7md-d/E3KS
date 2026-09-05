@@ -105,9 +105,11 @@ cd packages/e3ks_engine && dart pub get && dart test
 # App
 cd apps/e3ks_desktop && flutter pub get && flutter run -d macos
 
-# Release build, icon generated from brand/
-./brand/build-appicon.sh
+# Release build
 cd apps/e3ks_desktop && flutter build macos --release
+
+# Regenerate the app icon after editing brand/e3ks-icon.svg
+./brand/build-appicon.sh
 ```
 
 71 engine tests and 85 app tests. Documentation and project rules are in
