@@ -15,12 +15,7 @@ name: release
 
 on:
   workflow_dispatch:
-    inputs:
-      bump:
-        description: "الخانة: patch أو minor أو major. فارغ ⇒ تُشتقّ من رسائل الالتزام."
-        required: false
-        default: ""
-  # ↓ للإصدار مع كل دمج في main، أزل التعليق عن هذه:
+  # ↓ الإصدار مع كل دمج في main. معلَّق حتى يثبت الإصدار الأول:
   # push:
   #   branches: [main]
 
@@ -50,27 +45,17 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
 
-      # الخانة من مدخل التشغيل، وإلا فمن رسائل الالتزام منذ آخر وسم:
-      # ‏`feat!:` أو `BREAKING CHANGE` ⇒ major، و`feat:` ⇒ minor، وما عداه patch.
-      # وهذا هو الموضع الذي يعلن فيه الكاتب أن المخرَج تغيّر (`08` §1).
-      - name: الخانة والرقم التالي
+      # **الآلة ترفع الخانة الأخيرة وحدها.** الخانة الأوسط والأولى تصفان أثر
+      # التغيير على المخرَج (`08` §1)، وهذا حكمٌ لا يُشتقّ من رسالة التزام.
+      # من أراد إصدارًا أكبر رفع الرقم بيده في الفرع، والمسار يحترمه.
+      - name: الرقم التالي
         id: bump
         run: |
           set -euo pipefail
-          KIND="${{ inputs.bump }}"
-          if [ -z "$KIND" ]; then
-            LAST=$(git describe --tags --abbrev=0 2>/dev/null || true)
-            if [ -n "$LAST" ]; then LOG=$(git log "$LAST"..HEAD --pretty=%B); else LOG=$(git log --pretty=%B); fi
-            if printf '%s' "$LOG" | grep -qE '^[a-z]+(\(.+\))?!:|BREAKING CHANGE'; then
-              KIND=major
-            elif printf '%s' "$LOG" | grep -qE '^feat(\(.+\))?:'; then
-              KIND=minor
-            else
-              KIND=patch
-            fi
-          fi
-          echo "الخانة: $KIND"
-          VERSION=$(dart tools/release/bump_version.dart "$KIND")
+          LAST=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          echo "آخر وسم: ${LAST:-لا شيء}"
+          VERSION=$(dart tools/release/bump_version.dart --next "$LAST")
+          echo "الإصدار القادم: $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   build:
@@ -163,7 +148,8 @@ jobs:
           dart tools/release/bump_version.dart --set "$VERSION"
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "chore(release): v$VERSION [skip ci]"
+          # الرقم قد يكون مرفوعًا في الفرع أصلًا ⇒ لا شيء يُلتزَم، والوسم يبقى.
+          git diff --quiet || git commit -am "chore(release): v$VERSION [skip ci]"
           git tag "v$VERSION"
           git push origin HEAD --tags
 
