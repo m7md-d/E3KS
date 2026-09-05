@@ -1,0 +1,103 @@
+# آلات المصفوفة التي مزوّدها Vagrant.
+#
+# **التعريف ليس هنا**: يقرأ هذا الملف `machines.conf` ويبني منه ما كان
+# `backend = vagrant`. آلة تُعرَّف في ملفين تنحرف بينهما.
+#
+# ولا يُشغَّل هذا الملف بيدك: `../vm/run.sh` هو الواجهة، وهو يستدعي Vagrant
+# لهذه الآلات وTart لغيرها.
+
+PROJECT = File.expand_path("../..", __dir__)
+FLUTTER = "3.47.2"
+
+# ما لا يُنسَخ إلى الضيف: يُبنى هناك من جديد.
+EXCLUDE = [
+  ".git/", ".dart_tool/", "build/",
+  "apps/e3ks_desktop/build/", "packages/e3ks_engine/.dart_tool/",
+  "docs/screenshots/",
+]
+
+MACHINES = []
+# الترميز صريح: بيئة بترميز افتراضي غير UTF-8 تُسقط قراءة التعليقات العربية
+# في ملف التعريف. مقيس: `Encoding::CompatibilityError` عند أول `strip`.
+File.readlines(File.expand_path("machines.conf", __dir__), encoding: "UTF-8").each do |line|
+  line = line.strip
+  next if line.empty? || line.start_with?("#")
+
+  name, backend, os, image, cpus, memory = line.split
+  next unless backend == "vagrant"
+
+  MACHINES << {
+    name: name, os: os, box: image,
+    cpus: cpus.to_i, memory: memory.to_i,
+  }
+end
+
+Vagrant.configure("2") do |config|
+  config.vm.box_check_update = false
+
+  MACHINES.each do |m|
+    config.vm.define m[:name] do |machine|
+      machine.vm.box = m[:box]
+
+      machine.vm.provider "libvirt" do |libvirt|
+        libvirt.cpus = m[:cpus]
+        libvirt.memory = m[:memory]
+        libvirt.default_prefix = "e3ks-#{m[:name]}"
+      end
+
+      case m[:os]
+      when "linux"
+        machine.vm.hostname = "e3ks-#{m[:name]}"
+        machine.vm.synced_folder PROJECT, "/e3ks",
+          type: "rsync", rsync__exclude: EXCLUDE
+
+        machine.vm.provision "setup",
+          type: "shell", path: "setup-linux.sh", args: [FLUTTER]
+
+        # `run: never` يجعلها تعمل عند الطلب وحده، فلا تتكرّر مع كل `up`.
+        machine.vm.provision "checks",
+          type: "shell", run: "never", privileged: false, inline: <<~SHELL
+            set -e
+            export PATH="/opt/flutter/bin:$PATH"
+            cd /e3ks
+            ./tools/checks.sh
+          SHELL
+
+      when "windows"
+        machine.vm.communicator = "winrm"
+        machine.vm.synced_folder PROJECT, "C:/e3ks"
+
+        machine.vm.provision "setup",
+          type: "shell", path: "setup-windows.ps1", args: [FLUTTER]
+
+        # Git for Windows يجلب bash، فيعمل `checks.sh` نفسه هنا. قائمة فحوص
+        # واحدة على الأنظمة كلها؛ لو كُتبت بـPowerShell لانحرفت عن أختها.
+        machine.vm.provision "checks",
+          type: "shell", run: "never", inline: <<~POWERSHELL
+            $bash = "C:\\Program Files\\Git\\bin\\bash.exe"
+            & $bash -lc "export PATH=/c/flutter/bin:\\$PATH && cd /c/e3ks && ./tools/checks.sh"
+            exit $LASTEXITCODE
+          POWERSHELL
+
+      when "macos"
+        # 1. مزامنة الملفات عبر rsync
+        machine.vm.synced_folder PROJECT, "/e3ks",
+          type: "rsync", rsync__exclude: EXCLUDE
+
+        # 2. تشغيل سكربت الإعداد
+        machine.vm.provision "setup",
+          type: "shell", path: "setup-macos.sh", args: [FLUTTER]
+
+        # 3. تشغيل الفحوصات (لن تعمل إلا عند استدعائها من run.sh)
+        machine.vm.provision "checks",
+          type: "shell", run: "never", privileged: false, inline: <<~SHELL
+            set -e
+            # مسار فلاتر داخل الماك بعد تثبيته
+            export PATH="$HOME/flutter/bin:$PATH"
+            cd /e3ks
+            ./tools/checks.sh
+          SHELL
+      end
+    end
+  end
+end
