@@ -9,10 +9,10 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../app/tokens.dart';
 import 'font_cache.dart';
 import 'font_fetcher.dart';
 import 'font_probe.dart';
+import 'font_substitutes.dart';
 
 /// من أين جاء الخطّ، أو لماذا لم يأتِ.
 enum FontOrigin {
@@ -22,14 +22,17 @@ enum FontOrigin {
   /// منصَّب على جهاز المستخدم.
   system,
 
-  /// محفوظ عندنا من جلبة سابقة.
+  /// محفوظ على قرص المستخدم: جلبناه سابقًا، أو أضافه هو بنفسه.
   cached,
 
   /// جُلب الآن.
   fetched,
 
-  /// غير موجود في مصدرنا — خطّ تجاري أو خاص غالبًا.
+  /// غير موجود في مصدرنا.
   unavailable,
+
+  /// لم نجده، ورسمناه ببديل مطابق مقاسيًّا. المعاينة سليمة التخطيط.
+  substituted,
 
   /// تعذّر الاتصال.
   offline,
@@ -44,7 +47,8 @@ extension FontOriginX on FontOrigin {
       this == FontOrigin.bundled ||
       this == FontOrigin.system ||
       this == FontOrigin.cached ||
-      this == FontOrigin.fetched;
+      this == FontOrigin.fetched ||
+      this == FontOrigin.substituted;
 }
 
 typedef FontStatus = ({String family, FontOrigin origin});
@@ -105,7 +109,7 @@ class FontService extends ChangeNotifier {
   }
 
   Future<FontOrigin> _resolve(String family) async {
-    if (family == Type.family) return FontOrigin.bundled;
+    if (isBundled(family)) return FontOrigin.bundled;
 
     if (isFontAvailable(family)) return FontOrigin.system;
 
@@ -115,7 +119,7 @@ class FontService extends ChangeNotifier {
       return FontOrigin.cached;
     }
 
-    if (!fetchEnabled) return FontOrigin.disabled;
+    if (!fetchEnabled) return _lastResort(family, FontOrigin.disabled);
 
     final result = await _fetcher.fetch(family);
     switch (result.outcome) {
@@ -124,12 +128,20 @@ class FontService extends ChangeNotifier {
         await _register(family, result.bytes!);
         return FontOrigin.fetched;
       case FetchOutcome.offline:
-        return FontOrigin.offline;
+        return _lastResort(family, FontOrigin.offline);
       case FetchOutcome.notFound:
       case FetchOutcome.failed:
-        return FontOrigin.unavailable;
+        return _lastResort(family, FontOrigin.unavailable);
     }
   }
+
+  /// البديل المطابق مقاسيًّا آخر ما نجرّبه قبل إعلان العجز.
+  ///
+  /// **يُعلَن ولا يُخفى**: التخطيط سليم والحروف ليست حروف الخطّ المطلوب،
+  /// فالمستخدم يستحقّ أن يعرف (`00` §5). ويبقى [failure] لما لا بديل له —
+  /// «انقطع الاتصال» غير «لن نجده أبدًا»، والفرق يقرّر هل يعيد المحاولة.
+  FontOrigin _lastResort(String family, FontOrigin failure) =>
+      hasSubstitute(family) ? FontOrigin.substituted : failure;
 
   /// يسجّل الخطّ في محرّك الرسم كي تراه المعاينة فورًا، بلا إعادة تشغيل.
   Future<void> _register(String family, Uint8List bytes) async {
@@ -138,6 +150,23 @@ class FontService extends ChangeNotifier {
       ..addFont(Future.value(ByteData.sublistView(bytes)));
     await loader.load();
     forgetFontProbe(family);
+  }
+
+  /// يضيف خطًّا من ملفّ اختاره المستخدم من قرصه.
+  ///
+  /// **الاسم من داخل الملفّ لا من اسمه.** «Cairo-Regular.ttf» عائلتها
+  /// «Cairo»، وتسجيلها باسم الملفّ يجعل المستند الذي يطلب «Cairo» لا يجدها.
+  ///
+  /// يُرجع اسم العائلة، أو `null` إن لم يكن الملفّ خطًّا نقرأه.
+  Future<String?> addFromFile(Uint8List bytes) async {
+    final family = fontFamilyName(bytes);
+    if (family == null) return null;
+
+    await cache.write(family, bytes);
+    await _register(family, bytes);
+    _known[family] = FontOrigin.cached;
+    notifyListeners();
+    return family;
   }
 
   /// يحذف خطًّا محفوظًا. يبقى محمَّلًا حتى إعادة التشغيل — فهو في الذاكرة،

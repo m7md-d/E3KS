@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
+import '../../data/font_substitutes.dart';
 import '../../data/font_suggestions.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/panel.dart';
@@ -136,9 +137,10 @@ class _FontChip extends StatelessWidget {
         ),
         child: Text(
           name,
-          // نرسم الاسم بالخط نفسه: إن كان منصّبًا رآه المستخدم فورًا.
+          // نرسم الاسم بالخطّ نفسه، أو ببديله المطابق مقاسيًّا: ما يراه
+          // المستخدم في الرقاقة هو ما ستُرسم به المعاينة.
           style: TextStyle(
-            fontFamily: name,
+            fontFamily: previewFamily(name),
             fontSize: 13,
             color: selected ? Shade.mirror : Shade.text,
             fontWeight: selected ? Type.semiBold : Type.regular,
@@ -181,7 +183,7 @@ class _ProtectedRow extends StatelessWidget {
                 Text(
                   font.name,
                   style: TextStyle(
-                    fontFamily: font.name,
+                    fontFamily: previewFamily(font.name),
                     fontSize: 13,
                     color: Shade.text,
                   ),

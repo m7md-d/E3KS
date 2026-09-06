@@ -2,6 +2,10 @@
 ///
 /// **صغير عمدًا.** المستخدم جاء ليبدّل ألوانًا لا ليعالج خطوطًا، لكنه يستحقّ
 /// أن يعرف أن ما يراه ليس الملف تمامًا. الصمت هنا يجعل المعاينة كاذبة (`00` §5).
+///
+/// **ويُخفى بطلبه.** إشعارٌ لا سبيل إلى إغلاقه يقتطع من المعاينة في كل جلسة
+/// بعد أن أدّى غرضه من أول قراءة. والإخفاء **بأسماء الخطوط** لا بمفتاح
+/// واحد: مستندٌ تالٍ ينقصه خطٌّ آخر يستحقّ إشعاره، وإخفاءٌ شامل يبتلعه.
 library;
 
 import 'package:flutter/material.dart';
@@ -11,15 +15,24 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/font_service.dart';
 
-class FontNotice extends StatelessWidget {
+class FontNotice extends StatefulWidget {
   const FontNotice({super.key, required this.service, required this.onDetails});
 
   final FontService service;
   final VoidCallback onDetails;
 
   @override
+  State<FontNotice> createState() => _FontNoticeState();
+}
+
+class _FontNoticeState extends State<FontNotice> {
+  /// ما أخفاه المستخدم، بأسماء عائلاته.
+  final Set<String> _hidden = {};
+
+  @override
   Widget build(BuildContext context) {
     final t = context.l10n;
+    final service = widget.service;
 
     if (service.working) {
       return _Bar(
@@ -30,7 +43,10 @@ class FontNotice extends StatelessWidget {
       );
     }
 
-    final missing = service.missing;
+    final missing = [
+      for (final status in service.missing)
+        if (!_hidden.contains(status.family)) status,
+    ];
     if (missing.isEmpty) return const SizedBox.shrink();
 
     return _Bar(
@@ -39,7 +55,21 @@ class FontNotice extends StatelessWidget {
       text: missing.length == 1
           ? t.fontsMissingOne
           : t.fontsMissingMany(missing.length),
-      action: TextButton(onPressed: onDetails, child: Text(t.showDetails)),
+      action: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextButton(onPressed: widget.onDetails, child: Text(t.showDetails)),
+          IconButton(
+            onPressed: () => setState(
+              () => _hidden.addAll(missing.map((status) => status.family)),
+            ),
+            icon: const Icon(LucideIcons.x, size: 13),
+            color: Shade.textMuted,
+            visualDensity: VisualDensity.compact,
+            tooltip: t.hideNotice,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -14,6 +14,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../data/font_substitutes.dart';
 
 /// يطابق `version` في `pubspec.yaml` — واختبارٌ يحرس التطابق.
 const String appVersion = '0.1.0';
@@ -25,8 +26,13 @@ const String sourceUrl = 'https://github.com/m7md-d/E3KS';
 /// OFL 1.1 تُلزم بشحن نصّ الرخصة مع الخطّ. نشحنه ونعرضه.
 void registerBundledLicenses() {
   LicenseRegistry.addLicense(() async* {
-    yield LicenseEntryWithLineBreaks(const [
-      'IBM Plex Sans Arabic',
-    ], await rootBundle.loadString('assets/fonts/OFL.txt'));
+    for (final family in bundledFamilies) {
+      yield LicenseEntryWithLineBreaks([
+        family,
+      ], await rootBundle.loadString('assets/fonts/OFL-${_slug(family)}.txt'));
+    }
   });
 }
+
+/// اسم الملفّ من اسم العائلة: «IBM Plex Sans» ← «IBMPlexSans».
+String _slug(String family) => family.replaceAll(' ', '');

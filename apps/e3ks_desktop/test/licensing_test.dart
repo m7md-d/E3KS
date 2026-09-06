@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:e3ks_desktop/app/about.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:e3ks_desktop/data/font_substitutes.dart';
 
 void main() {
   test('الإصدار واحد في المواضع الأربعة', () {
@@ -26,16 +27,25 @@ void main() {
     }
   });
 
-  test('نصّ رخصة الخطّ مشحون ومعلَن كأصل', () {
+  test('نصّ رخصة كل خطّ مشحون ومعلَن كأصل', () {
     // OFL 1.1 تُلزم بشحن النصّ مع الخطّ. غيابه مخالفة ترخيص لا سهو تنظيمي.
-    final ofl = File('assets/fonts/OFL.txt');
-    expect(ofl.existsSync(), isTrue);
-    expect(ofl.readAsStringSync(), contains('SIL OPEN FONT LICENSE'));
-    expect(
-      File('pubspec.yaml').readAsStringSync(),
-      contains('assets/fonts/OFL.txt'),
-      reason: 'مشحون لكن غير مقروء ⇒ لا يظهر في رخص المكوّنات',
-    );
+    // وتسعة خطوط تعني تسع رخص، لا رخصةً واحدة تنوب عنها.
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    for (final family in bundledFamilies) {
+      final path = 'assets/fonts/OFL-${family.replaceAll(' ', '')}.txt';
+      final ofl = File(path);
+      expect(ofl.existsSync(), isTrue, reason: 'رخصة «$family» مفقودة');
+      expect(
+        ofl.readAsStringSync().toUpperCase(),
+        contains('SIL OPEN FONT LICENSE'),
+        reason: '«$path» ليس نصّ OFL',
+      );
+      expect(
+        pubspec,
+        contains(path),
+        reason: 'مشحون لكن غير مقروء ⇒ لا يظهر في رخص المكوّنات',
+      );
+    }
   });
 
   test('رخصة المشروع موجودة في جذره', () {

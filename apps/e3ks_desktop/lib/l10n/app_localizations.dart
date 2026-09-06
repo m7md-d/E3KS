@@ -1075,6 +1075,30 @@ abstract class L {
   /// **'احذف الكل'**
   String get deleteAllFonts;
 
+  /// No description provided for @addFont.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف خطًّا'**
+  String get addFont;
+
+  /// No description provided for @fontAdded.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُضيف {family}'**
+  String fontAdded(String family);
+
+  /// No description provided for @fontAddFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت قراءة الملفّ كخطّ'**
+  String get fontAddFailed;
+
+  /// No description provided for @hideNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'إخفاء'**
+  String get hideNotice;
+
   /// No description provided for @deleteFont.
   ///
   /// In ar, this message translates to:
@@ -1146,6 +1170,12 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'غير موجود على Google Fonts'**
   String get originUnavailable;
+
+  /// No description provided for @originSubstituted.
+  ///
+  /// In ar, this message translates to:
+  /// **'رُسم ببديل مطابق مقاسيًّا'**
+  String get originSubstituted;
 
   /// No description provided for @originOffline.
   ///

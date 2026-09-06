@@ -9,6 +9,8 @@ import 'dart:io';
 import 'package:e3ks_desktop/app/tokens.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:e3ks_desktop/data/font_suggestions.dart';
+import 'package:e3ks_desktop/data/font_substitutes.dart';
 
 const String _tokensFile = 'lib/app/tokens.dart';
 
@@ -169,8 +171,74 @@ void main() {
     final dir = Directory('assets/fonts');
     expect(dir.existsSync(), isTrue, reason: 'مجلد الخطوط مفقود');
     final files = dir.listSync().map((e) => e.path.split('/').last).toSet();
-    expect(files.where((f) => f.endsWith('.ttf')).length, equals(4));
-    expect(files, contains('OFL.txt'), reason: 'رخصة الخطّ يجب أن تُشحَن معه');
+
+    // **كل عائلة نشحنها: مصرَّحة، وملفّها موجود، ورخصتها معه.** OFL 1.1
+    // تشترط مرافقة نصّ الرخصة للخطّ، وشحنٌ بلا رخصة مخالفة ترخيص لا سهو
+    // تنسيق. وقائمة `bundledFamilies` هي المرجع، فلا تنحرف عن pubspec.
+    for (final family in bundledFamilies) {
+      final slug = family.replaceAll(' ', '');
+      expect(
+        pubspec,
+        contains('family: $family'),
+        reason: '«$family» في القائمة ولم يُصرَّح في pubspec',
+      );
+      expect(
+        files,
+        contains('$slug-Regular.ttf'),
+        reason: 'ملفّ «$family» مفقود',
+      );
+      expect(
+        files,
+        contains('OFL-$slug.txt'),
+        reason: 'رخصة «$family» يجب أن تُشحَن معه',
+      );
+      expect(
+        pubspec,
+        contains('assets/fonts/OFL-$slug.txt'),
+        reason: 'رخصة «$family» موجودة ولم تُشحَن في الحزمة',
+      );
+    }
+
+    // ولا ملفّ خطٍّ يتيم: كل ttf يعود إلى عائلة معلَنة.
+    final declared = {for (final f in bundledFamilies) f.replaceAll(' ', '')};
+    for (final file in files.where((f) => f.endsWith('.ttf'))) {
+      final stem = file.split('-').first;
+      expect(
+        declared,
+        contains(stem),
+        reason: '«$file» مشحون ولا عائلة تدّعيه',
+      );
+    }
+  });
+
+  test('كل خطّ مملوك في الاقتراحات له بديل مضمَّن', () {
+    // اقتراحٌ لا تستطيع المعاينة رسمه يجعل المستخدم يختار ثم لا يرى شيئًا.
+    // الاستثناء الوحيد خطّ نظام: يُحلّ على منصّته ويُعلَن عجزه على غيرها.
+    const systemOnly = {'Geeza Pro'};
+    for (final name in [...arabicFontSuggestions, ...latinFontSuggestions]) {
+      if (systemOnly.contains(name)) continue;
+      expect(
+        isBundled(previewFamily(name)),
+        isTrue,
+        reason: '«$name» مقترَح ولا يُرسَم: لا مضمَّن ولا له بديل',
+      );
+    }
+  });
+
+  test('لا بديل يُشحَن باسم غيره', () {
+    // Carlito تُسجَّل «Carlito»، لا «Calibri». إخفاء ما نوزّعه خلف اسم
+    // خطٍّ مملوك يخالف رخصته ويكذب على شاشة الرخص.
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    for (final proprietary in ['Calibri', 'Georgia', 'Arial', 'Helvetica']) {
+      expect(
+        pubspec,
+        isNot(contains('family: $proprietary')),
+        reason: '«$proprietary» مملوك ولا يجوز شحن شيء باسمه',
+      );
+    }
+    for (final open in substituteFamilies) {
+      expect(bundledFamilies, contains(open));
+    }
   });
 
   test('كل لون في الرموز فريد داخل نطاقه', () {

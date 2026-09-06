@@ -533,6 +533,20 @@ class LAr extends L {
   String get deleteAllFonts => 'احذف الكل';
 
   @override
+  String get addFont => 'أضف خطًّا';
+
+  @override
+  String fontAdded(String family) {
+    return 'أُضيف $family';
+  }
+
+  @override
+  String get fontAddFailed => 'تعذّرت قراءة الملفّ كخطّ';
+
+  @override
+  String get hideNotice => 'إخفاء';
+
+  @override
   String get deleteFont => 'احذف';
 
   @override
@@ -569,6 +583,9 @@ class LAr extends L {
 
   @override
   String get originUnavailable => 'غير موجود على Google Fonts';
+
+  @override
+  String get originSubstituted => 'رُسم ببديل مطابق مقاسيًّا';
 
   @override
   String get originOffline => 'تعذّر الاتصال';

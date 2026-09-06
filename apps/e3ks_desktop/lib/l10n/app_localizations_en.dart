@@ -535,6 +535,20 @@ class LEn extends L {
   String get deleteAllFonts => 'Delete all';
 
   @override
+  String get addFont => 'Add a font';
+
+  @override
+  String fontAdded(String family) {
+    return 'Added $family';
+  }
+
+  @override
+  String get fontAddFailed => 'The file could not be read as a font';
+
+  @override
+  String get hideNotice => 'Hide';
+
+  @override
   String get deleteFont => 'Delete';
 
   @override
@@ -573,6 +587,9 @@ class LEn extends L {
 
   @override
   String get originUnavailable => 'Not found on Google Fonts';
+
+  @override
+  String get originSubstituted => 'Drawn with a metric-compatible stand-in';
 
   @override
   String get originOffline => 'Could not connect';

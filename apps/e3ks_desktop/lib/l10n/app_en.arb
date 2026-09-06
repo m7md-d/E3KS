@@ -181,7 +181,13 @@
   "licensesLoading": "Loading…",
   "licensesEmpty": "No licenses registered",
   "licenseEntries": "{count, plural, =1{One license} other{{count} licenses}}",
-  "@licenseEntries": {"placeholders": {"count": {"type": "int"}}},
+  "@licenseEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "back": "Back",
   "focusedColor": "Tracking colour",
   "clearFocus": "Stop tracking",
@@ -192,7 +198,13 @@
   "extractIdentity": "Extract identity from an open file",
   "extractIdentityHint": "The file's colours, ordered by use",
   "extractFrom": "Extract from: {file}",
-  "@extractFrom": {"placeholders": {"file": {"type": "String"}}},
+  "@extractFrom": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
   "noOtherFiles": "No other files open",
   "quickPick": "Quick pick",
   "quickPickHint": "Colours extracted from open files",
@@ -213,6 +225,17 @@
   "cachedFonts": "Saved fonts",
   "cacheSize": "Space used",
   "deleteAllFonts": "Delete all",
+  "addFont": "Add a font",
+  "fontAdded": "Added {family}",
+  "@fontAdded": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "fontAddFailed": "The file could not be read as a font",
+  "hideNotice": "Hide",
   "deleteFont": "Delete",
   "noCachedFonts": "No stored fonts.",
   "fontDeletedNote": "Deleted fonts stay on screen until the app restarts.",
@@ -232,6 +255,7 @@
   "originCached": "Stored locally",
   "originFetched": "Fetched",
   "originUnavailable": "Not found on Google Fonts",
+  "originSubstituted": "Drawn with a metric-compatible stand-in",
   "originOffline": "Could not connect",
   "originDisabled": "Fetching is turned off in settings",
   "errNotAnArchive": "Not a valid OOXML archive; it could not be opened.",
@@ -271,12 +295,27 @@
   "batchOutput": "Output folder",
   "batchChoose": "Choose…",
   "batchDocuments": "{count} documents",
-  "@batchDocuments": {"placeholders": {"count": {"type": "int"}}},
+  "@batchDocuments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "batchPlan": "Plan",
   "batchFromOpen": "The open file's plan",
   "batchRun": "Run",
   "batchProgress": "{done} of {total}",
-  "@batchProgress": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@batchProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "batchWritten": "Written",
   "batchFailedCount": "Failed",
   "batchUnchanged": "Unchanged",

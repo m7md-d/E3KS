@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme.dart';
 import '../../shared/widgets/swatch.dart';
 import 'change_scan.dart';
+import '../../data/font_substitutes.dart';
 
 /// عرض عمود الترقيم بالنقاط الطباعية — يسكن **داخل** هامش الصفحة.
 const double _gutterPt = 22;
@@ -327,6 +328,10 @@ class _DocumentPaperState extends State<DocumentPaper> {
     );
   }
 
+  /// العائلة التي تُرسم بها فعلًا، أو `null` إن لم يصرّح المقطع بخطّ.
+  String? _family(String? declared) =>
+      declared == null ? null : previewFamily(declared);
+
   TextSpan _span(PreviewRun run, PreviewParagraph paragraph) {
     // تقدير أخير لحجم العنوان **حين لا يصرّح به المستند ولا نمطه**.
     // تطبيقه فوق حجم مصرَّح كان يضخّم كل عنوان ٩٠٪ ويطيل الصفحة بلا سبب.
@@ -357,12 +362,13 @@ class _DocumentPaperState extends State<DocumentPaper> {
         fontWeight: run.bold || paragraph.isHeading ? Type.bold : Type.regular,
         fontStyle: run.italic ? FontStyle.italic : FontStyle.normal,
         decoration: run.underline ? TextDecoration.underline : null,
-        // اسم الخط الحقيقي من المستند: إن كان منصّبًا رآه المستخدم فعلًا.
-        // وإن لم يكن، فآخر احتياطي خطّنا المضمَّن — وهو يرسم العربية
+        // اسم الخط من المستند، مارًّا بجدول البدائل: خطٌّ مملوك لا نشحنه
+        // يُرسَم ببديل مطابق مقاسيًّا، فيبقى التخطيط هو التخطيط.
+        // وإن لم يُحلّ، فآخر احتياطي خطّنا المضمَّن — وهو يرسم العربية
         // واللاتينية معًا، فلا ينكسر السطر المختلط في المعاينة.
-        fontFamily: run.arabicFont ?? run.latinFont,
+        fontFamily: _family(run.arabicFont ?? run.latinFont),
         fontFamilyFallback: [
-          if (run.latinFont != null) run.latinFont!,
+          if (run.latinFont != null) previewFamily(run.latinFont!),
           Type.family,
           ...Type.fallback,
         ],

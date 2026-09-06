@@ -39,14 +39,25 @@ flutter:
   uses-material-design: true
   generate: true
 
-  # نصّ رخصة الخطّ يُشحَن **ويُقرأ**: يُسجَّل في سجلّ رخص Flutter فيظهر
-  # للمستخدم في «رخص المكوّنات». شحنه بلا عرضه يفي بالحرف لا بالغرض.
+  # نصوص رخص الخطوط تُشحَن **وتُقرَأ**: تُسجَّل في سجلّ رخص Flutter فتظهر
+  # للمستخدم في «رخص المكوّنات». شحنها بلا عرضها يفي بالحرف لا بالغرض.
+  # ورخصة OFL تشترط مرافقة نصّها للخطّ، فلكلّ عائلة ملفّها.
   assets:
-    - assets/fonts/OFL.txt
+    - assets/fonts/OFL-IBMPlexSansArabic.txt
+    - assets/fonts/OFL-NotoSansArabic.txt
+    - assets/fonts/OFL-Cairo.txt
+    - assets/fonts/OFL-Tajawal.txt
+    - assets/fonts/OFL-IBMPlexSans.txt
+    - assets/fonts/OFL-Inter.txt
+    - assets/fonts/OFL-Arimo.txt
+    - assets/fonts/OFL-Carlito.txt
+    - assets/fonts/OFL-Gelasio.txt
 
-  # الخط المعتمد، مضمَّن في التطبيق لا مطلوب من النظام: البرنامج يجب أن
-  # يبدو واحدًا على كل جهاز. رخصة OFL 1.1 تجيز التضمين (assets/fonts/OFL.txt).
+  # الخطوط مضمَّنة لا مطلوبة من النظام: التطبيق يبدو واحدًا على كل جهاز،
+  # والمعاينة ترسم خطّ المستند بلا شبكة. كلّها OFL 1.1 — وهي الرخصة
+  # الوحيدة هنا التي تجيز الشحن، متحقَّقًا منها داخل كل ملفّ خطّ.
   fonts:
+    # ١ — خطّ الواجهة. أوزان أربعة لأن الواجهة تستعملها كلّها.
     - family: IBM Plex Sans Arabic
       fonts:
         - asset: assets/fonts/IBMPlexSansArabic-ExtraLight.ttf
@@ -56,4 +67,59 @@ flutter:
         - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
           weight: 600
         - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
+          weight: 700
+
+    # ٢ — خطوط المستندات المقترحة. وزنان يكفيان: المعاينة ترسم عاديًّا
+    # وعريضًا، وطلب وزن غير مضمَّن يجعل Flutter يصطنعه فيبهت.
+    - family: Noto Sans Arabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+          weight: 700
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+    - family: IBM Plex Sans
+      fonts:
+        - asset: assets/fonts/IBMPlexSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSans-Bold.ttf
+          weight: 700
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+
+    # ٣ — بدائل مطابقة مقاسيًّا لخطوط مملوكة لا يجوز شحنها.
+    # تُشحَن **بأسمائها الحقيقية**، والإحلال يقرّره `font_substitutes.dart`
+    # وحده. شحن Carlito تحت اسم «Calibri» يخفي ما نوزّعه فعلًا.
+    - family: Arimo
+      fonts:
+        - asset: assets/fonts/Arimo-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Arimo-Bold.ttf
+          weight: 700
+    - family: Carlito
+      fonts:
+        - asset: assets/fonts/Carlito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Carlito-Bold.ttf
+          weight: 700
+    - family: Gelasio
+      fonts:
+        - asset: assets/fonts/Gelasio-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Gelasio-Bold.ttf
           weight: 700

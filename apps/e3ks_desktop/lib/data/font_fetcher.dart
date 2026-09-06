@@ -162,3 +162,85 @@ String? familyWithoutStyleSuffix(String family) {
   }
   return null;
 }
+
+/// هل يعلن الخطّ نفسه أنه تحت رخصة SIL Open Font License؟
+///
+/// **يحرس ما نشحنه، لا ما نجلبه.** شحن خطٍّ داخل حزمتنا إلى كل مستخدم توزيعٌ
+/// يحتاج رخصةً تجيزه، و OFL وحدها تجيزه هنا. أمّا جلب خطّ ويب إلى قرص من
+/// طلبه فهو ما يفعله كل متصفّح مع كل صفحة، ولا شأن لنا به.
+///
+/// يقرأ الاسمين 13 (نصّ الرخصة) و14 (رابطها) من جدول `name` في OpenType،
+/// ويستعمله اختبارٌ يمرّ على كل ملفّ في `assets/fonts`.
+bool isOpenFontLicensed(Uint8List bytes) {
+  final name = _nameTable(bytes, const {13, 14});
+  if (name == null) return false;
+  final text = (name[13] ?? '').toLowerCase();
+  final url = (name[14] ?? '').toLowerCase();
+  return text.contains('sil open font license') ||
+      text.contains('openfontlicense') ||
+      url.contains('scripts.sil.org/ofl') ||
+      url.contains('openfontlicense.org');
+}
+
+/// اسم العائلة كما يعلنه الخطّ عن نفسه، أو `null` إن تعذّرت قراءته.
+///
+/// يلزمنا حين **يرفع المستخدم ملفّ خطّ من قرصه**: اسم الملفّ ليس اسم العائلة
+/// («Cairo-Regular.ttf» عائلتها «Cairo»)، وتسجيلها باسم الملفّ يجعل المستند
+/// الذي يطلب «Cairo» لا يجدها.
+///
+/// يفضّل الاسم 16 (العائلة الطباعية) على 1، فالثاني يدمج النمط في الاسم حين
+/// تتجاوز العائلةُ أربعةَ أنماط («Inter Light» بدل «Inter»).
+String? fontFamilyName(Uint8List bytes) {
+  final name = _nameTable(bytes, const {1, 16});
+  final family = name?[16] ?? name?[1];
+  final trimmed = family?.trim();
+  return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
+}
+
+/// مُدخَلات جدول `name` المطلوبة، أو `null` إن تعذّرت القراءة.
+///
+/// جدول `name` في OpenType: ترويسة، ثم سجلّ لكل اسم، ثم منطقة تخزين النصوص.
+Map<int, String>? _nameTable(Uint8List bytes, Set<int> wanted) {
+  final data = ByteData.sublistView(bytes);
+  int u16(int at) => data.getUint16(at);
+  int u32(int at) => data.getUint32(at);
+
+  try {
+    final tables = u16(4);
+    var nameOffset = -1;
+    for (var i = 0; i < tables; i++) {
+      final entry = 12 + 16 * i;
+      final tag = String.fromCharCodes(bytes, entry, entry + 4);
+      if (tag == 'name') {
+        nameOffset = u32(entry + 8);
+        break;
+      }
+    }
+    if (nameOffset < 0) return null;
+
+    final count = u16(nameOffset + 2);
+    final storage = nameOffset + u16(nameOffset + 4);
+    final out = <int, String>{};
+    for (var i = 0; i < count; i++) {
+      final record = nameOffset + 6 + 12 * i;
+      final platform = u16(record);
+      final nameId = u16(record + 6);
+      if (!wanted.contains(nameId)) continue;
+      final length = u16(record + 8);
+      final at = storage + u16(record + 10);
+      if (at + length > bytes.length) return null;
+      final raw = bytes.sublist(at, at + length);
+      // المنصّة 3 (Windows) تكتب UTF-16BE، وما عداها بايتًا للمحرف.
+      final value = platform == 3
+          ? String.fromCharCodes([
+              for (var j = 0; j + 1 < raw.length; j += 2)
+                (raw[j] << 8) | raw[j + 1],
+            ])
+          : String.fromCharCodes(raw);
+      out.putIfAbsent(nameId, () => value);
+    }
+    return out;
+  } on RangeError {
+    return null;
+  }
+}

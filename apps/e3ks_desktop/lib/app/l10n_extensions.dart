@@ -94,6 +94,7 @@ extension FontOriginText on FontOrigin {
     FontOrigin.cached => t.originCached,
     FontOrigin.fetched => t.originFetched,
     FontOrigin.unavailable => t.originUnavailable,
+    FontOrigin.substituted => t.originSubstituted,
     FontOrigin.offline => t.originOffline,
     FontOrigin.disabled => t.originDisabled,
   };

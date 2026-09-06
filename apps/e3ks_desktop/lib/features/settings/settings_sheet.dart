@@ -4,6 +4,7 @@
 /// جلبنا ملفات إلى قرصه، فمن حقّه أن يراها ويتحكّم بها.
 library;
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -42,6 +43,28 @@ class _SettingsBody extends StatefulWidget {
 }
 
 class _SettingsBodyState extends State<_SettingsBody> {
+  /// حصيلة آخر إضافة: اسم ما أُضيف، أو سبب التعذّر.
+  String? _addNote;
+
+  /// يضيف خطًّا من قرص المستخدم.
+  ///
+  /// **الخطّ ملفٌّ عنده لا خدمةٌ عندنا.** حين لا نجد خطّ المستند على الشبكة،
+  /// أو يكون خطًّا خاصًّا لا يُنشر أصلًا، يبقى عند صاحب المستند نفسه — وهذا
+  /// أقصر طريق إلى معاينة صادقة.
+  Future<void> _addFont() async {
+    const type = XTypeGroup(label: 'Fonts', extensions: ['ttf', 'otf']);
+    final file = await openFile(acceptedTypeGroups: const [type]);
+    if (file == null) return;
+
+    final family = await widget.fonts.addFromFile(await file.readAsBytes());
+    if (!mounted) return;
+    setState(() {
+      _addNote = family == null
+          ? context.l10n.fontAddFailed
+          : context.l10n.fontAdded(family);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.l10n;
@@ -118,14 +141,31 @@ class _SettingsBodyState extends State<_SettingsBody> {
                 title: t.cachedFonts,
                 count: cached.length,
                 hint: '${t.cacheSize}: ${formatBytes(total)}',
-                trailing: cached.isEmpty
-                    ? null
-                    : TextButton.icon(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton.icon(
+                      onPressed: _addFont,
+                      icon: const Icon(LucideIcons.plus, size: 14),
+                      label: Text(t.addFont),
+                    ),
+                    if (cached.isNotEmpty)
+                      TextButton.icon(
                         onPressed: () => setState(widget.fonts.forgetAll),
                         icon: const Icon(LucideIcons.trash2, size: 14),
                         label: Text(t.deleteAllFonts),
                       ),
+                  ],
+                ),
               ),
+              if (_addNote != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    _addNote!,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ),
               if (cached.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 28),

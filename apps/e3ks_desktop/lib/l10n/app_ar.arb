@@ -181,7 +181,13 @@
   "licensesLoading": "جارٍ التحميل…",
   "licensesEmpty": "لا رخص مسجَّلة",
   "licenseEntries": "{count, plural, =1{رخصة واحدة} =2{رخصتان} other{{count} رخص}}",
-  "@licenseEntries": {"placeholders": {"count": {"type": "int"}}},
+  "@licenseEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "back": "رجوع",
   "focusedColor": "متابعة اللون",
   "clearFocus": "أوقف المتابعة",
@@ -192,7 +198,13 @@
   "extractIdentity": "استخرج الهوية من ملف مفتوح",
   "extractIdentityHint": "ألوان الملف مرتّبة بالأكثر استعمالًا",
   "extractFrom": "استخرج من: {file}",
-  "@extractFrom": {"placeholders": {"file": {"type": "String"}}},
+  "@extractFrom": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
   "noOtherFiles": "لا ملفات أخرى مفتوحة",
   "quickPick": "اختيار سريع",
   "quickPickHint": "ألوان مستخرَجة من الملفات المفتوحة",
@@ -213,6 +225,17 @@
   "cachedFonts": "خطوط محفوظة",
   "cacheSize": "المساحة المستهلكة",
   "deleteAllFonts": "احذف الكل",
+  "addFont": "أضف خطًّا",
+  "fontAdded": "أُضيف {family}",
+  "@fontAdded": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "fontAddFailed": "تعذّرت قراءة الملفّ كخطّ",
+  "hideNotice": "إخفاء",
   "deleteFont": "احذف",
   "noCachedFonts": "لا خطوط محفوظة.",
   "fontDeletedNote": "المحذوف يبقى معروضًا حتى إعادة تشغيل التطبيق.",
@@ -232,6 +255,7 @@
   "originCached": "محفوظ محليًّا",
   "originFetched": "جُلب",
   "originUnavailable": "غير موجود على Google Fonts",
+  "originSubstituted": "رُسم ببديل مطابق مقاسيًّا",
   "originOffline": "تعذّر الاتصال",
   "originDisabled": "الجلب معطَّل من الإعدادات",
   "errNotAnArchive": "الملف ليس أرشيف OOXML صالحًا؛ تعذّر فتحه.",
@@ -271,12 +295,27 @@
   "batchOutput": "مجلد المخرَج",
   "batchChoose": "اختر…",
   "batchDocuments": "{count} مستندًا",
-  "@batchDocuments": {"placeholders": {"count": {"type": "int"}}},
+  "@batchDocuments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "batchPlan": "الخطة",
   "batchFromOpen": "خطة الملف المفتوح",
   "batchRun": "شغّل",
   "batchProgress": "{done} من {total}",
-  "@batchProgress": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+  "@batchProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "batchWritten": "كُتب",
   "batchFailedCount": "سقط",
   "batchUnchanged": "بلا تغيير",
