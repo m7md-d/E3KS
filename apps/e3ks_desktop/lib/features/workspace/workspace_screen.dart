@@ -344,52 +344,68 @@ class _TopBar extends StatelessWidget {
         data: theme.copyWith(visualDensity: VisualDensity.compact),
         child: Row(
           children: [
-            Text(
-              t.appName,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: Type.display,
-                letterSpacing: 4,
-                color: Shade.mirror,
+            // **الطرف الأيسر مرنٌ واحد، والفائض لا يُقسَم.**
+            //
+            // كان هنا `Flexible` لاسم الملف و`Spacer` بعده، ولكلٍّ منهما
+            // مرونة ١. و`RenderFlex` يقسم الفضاء الحرّ بينهما بالتساوي،
+            // فيأخذ الاسم حاجته وحدها ويسقط باقي نصيبه **في آخر الصفّ**:
+            // الطرف الأيمن ينزاح عن حافّته بنصف ما يفيض عن الاسم — فراغٌ
+            // يتّسع باتّساع النافذة، وقد بلغ ٣٢٣ بكسل في لقطات README حتى
+            // بدا كأنه حجزٌ لأزرار نظامٍ غائبة.
+            //
+            // مرنٌ واحد يبتلع الفضاء كلّه، فيلتصق الطرف الأيمن بحافّته
+            // مهما طال الاسم أو قصر، ويبقى القصّ داخل الصفّ الداخلي.
+            Expanded(
+              child: Row(
+                children: [
+                  Text(
+                    t.appName,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: Type.display,
+                      letterSpacing: 4,
+                      color: Shade.mirror,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 16,
+                    margin: const EdgeInsets.symmetric(horizontal: 14),
+                    color: Shade.border,
+                  ),
+                  if (document == null)
+                    Text(t.tagline, style: theme.textTheme.labelSmall)
+                  else ...[
+                    const Icon(
+                      LucideIcons.fileText,
+                      size: 14,
+                      color: Shade.textMuted,
+                    ),
+                    const SizedBox(width: 7),
+                    // اسم الملف قد يطول؛ يُقصّ ولا يدفع شيئًا خارج النافذة.
+                    Flexible(
+                      child: Text(
+                        document.fileName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    TextButton(onPressed: onBrowse, child: Text(t.openAnother)),
+                    if (store.tabs.length < 2)
+                      IconButton(
+                        onPressed: onClose,
+                        icon: const Icon(LucideIcons.x, size: 15),
+                        color: Shade.textFaint,
+                        visualDensity: VisualDensity.compact,
+                        tooltip: t.close,
+                      ),
+                  ],
+                  const SizedBox(width: 12),
+                ],
               ),
             ),
-            Container(
-              width: 1,
-              height: 16,
-              margin: const EdgeInsets.symmetric(horizontal: 14),
-              color: Shade.border,
-            ),
-            if (document == null)
-              Text(t.tagline, style: theme.textTheme.labelSmall)
-            else ...[
-              const Icon(
-                LucideIcons.fileText,
-                size: 14,
-                color: Shade.textMuted,
-              ),
-              const SizedBox(width: 7),
-              // اسم الملف قد يطول؛ يُقصّ ولا يدفع شيئًا خارج النافذة.
-              Flexible(
-                child: Text(
-                  document.fileName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall,
-                ),
-              ),
-              const SizedBox(width: 4),
-              TextButton(onPressed: onBrowse, child: Text(t.openAnother)),
-              if (store.tabs.length < 2)
-                IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(LucideIcons.x, size: 15),
-                  color: Shade.textFaint,
-                  visualDensity: VisualDensity.compact,
-                  tooltip: t.close,
-                ),
-            ],
-            const SizedBox(width: 12),
-            const Spacer(),
             _LanguageMenu(settings: settings),
             const SizedBox(width: 4),
             // الدفعة بجوار الإعدادات: كلاهما فعلٌ يفتح حوارًا، ولا يزاحم

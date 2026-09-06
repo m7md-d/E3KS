@@ -2,6 +2,7 @@
 library;
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:e3ks_desktop/app/theme.dart';
 import 'package:e3ks_desktop/data/font_cache.dart';
@@ -30,7 +31,22 @@ final SettingsStore _settings = SettingsStore(
 final FontService _fonts = FontService(FontCache(Directory.systemTemp))
   ..fetchEnabled = false;
 
-Widget harness(WindowFrame frame) => MaterialApp(
+/// مستند العرض المشحون مع المستودع — موجود دائمًا، فلا اختبار يُتخطّى.
+const String _demo = '../../docs/demo/brand-guidelines.docx';
+
+Future<WorkspaceStore> openDemo(WidgetTester tester) async {
+  final store = WorkspaceStore();
+  await tester.runAsync(
+    () => store.open(
+      _demo,
+      'brand-guidelines.docx',
+      Uint8List.fromList(File(_demo).readAsBytesSync()),
+    ),
+  );
+  return store;
+}
+
+Widget harness(WindowFrame frame, {WorkspaceStore? store}) => MaterialApp(
   theme: buildTheme(),
   locale: const Locale('ar'),
   supportedLocales: L.supportedLocales,
@@ -41,7 +57,7 @@ Widget harness(WindowFrame frame) => MaterialApp(
     GlobalCupertinoLocalizations.delegate,
   ],
   home: WorkspaceScreen(
-    store: _store,
+    store: store ?? _store,
     identities: _identities,
     settings: _settings,
     fonts: _fonts,
@@ -131,6 +147,36 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(topBarPadding(tester).right, equals(_inset));
+  });
+
+  testWidgets('طرف الشريط يلتصق بحافّته مهما اتّسعت النافذة', (tester) async {
+    // **خلل حقيقي:** كان في الصفّ مرنان — `Flexible` لاسم الملف و`Spacer`
+    // بعده — و`RenderFlex` يقسم الفضاء الحرّ بين المرنَين بالتساوي. الاسم
+    // يأخذ حاجته وحدها، ونصيبه الباقي يسقط **في آخر الصفّ**: الطرف الأيمن
+    // ينزاح عن حافّته بمقدارٍ يتّسع باتّساع النافذة. بلغ ٣٢٣ بكسل في لقطات
+    // README حتى بدا كأنه حجزٌ لأزرار نظامٍ غائبة.
+    //
+    // ولذلك يُقاس على عرضين: الفراغ الثابت مع اتّساع النافذة هو الدليل.
+    // والواجهة هنا عربية، فطرف الأفعال يسارًا وآخر الصفّ عنده.
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final store = await openDemo(tester);
+    expect(store.hasDocument, isTrue, reason: 'مستند العرض لم يُفتح');
+
+    for (final width in [1400.0, 1600.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pumpWidget(harness(flatWindowFrame, store: store));
+      await tester.pumpAndSettle();
+
+      final button = tester.getRect(find.byType(FilledButton).first);
+      expect(button.top, equals(_inset), reason: 'ليس زرّ الشريط');
+      expect(
+        button.left,
+        equals(_inset),
+        reason: 'طرف الأفعال منزاح عن حافّته عند عرض $width',
+      );
+    }
   });
 
   testWidgets('نصّ أزرار الشريط لا يُقصّ عند حدوده', (tester) async {
