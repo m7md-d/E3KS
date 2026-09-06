@@ -1,10 +1,10 @@
-/// شريط متابعة اللون.
+/// شريط المتابعة: لونٌ متتبَّع أو علامة متتبَّعة.
 ///
-/// **الحاجة التي يخدمها:** لون سقط سهوًا في زاوية من مستند من أربعين صفحة.
-/// جدول الألوان يقول «٣ مواضع»، لكنه لا يقول **أين**. هذا الشريط يتنقّل
-/// بينها كما يتنقّل `Ctrl+F` بين المطابقات.
+/// **الحاجة التي يخدمه:** لون سقط سهوًا في زاوية من مستند من أربعين صفحة،
+/// أو أثر تمييزٍ بقي في موضعٍ لا يُرى. الجدول يقول «٣ مواضع»، ولا يقول
+/// **أين**. هذا الشريط يتنقّل بينها كما يتنقّل `Ctrl+F` بين المطابقات.
 ///
-/// يظهر فقط عند متابعة لون — شريطٌ دائم يأكل من مساحة الورقة بلا مقابل.
+/// يظهر فقط أثناء المتابعة — شريطٌ دائم يأكل من مساحة الورقة بلا مقابل.
 library;
 
 import 'package:e3ks_engine/e3ks_engine.dart';
@@ -37,6 +37,73 @@ class ColorFocusBar extends StatelessWidget {
   final VoidCallback onClear;
 
   @override
+  Widget build(BuildContext context) => _FocusBar(
+    swatch: Swatch(color: color, size: 22),
+    title: color.value,
+    caption: context.l10n.focusedColor,
+    matches: matches,
+    cursor: cursor,
+    onStep: onStep,
+    onClear: onClear,
+  );
+}
+
+/// نفس الشريط لعلامة على النصّ.
+///
+/// **العنوان مفتاح العلامة كما يعلنه المستند** — `yellow` لقلم Word،
+/// والسداسي لما سواه. واللون في العيّنة إلى جانبه.
+class MarkFocusBar extends StatelessWidget {
+  const MarkFocusBar({
+    super.key,
+    required this.mark,
+    required this.matches,
+    required this.cursor,
+    required this.onStep,
+    required this.onClear,
+  });
+
+  final TextMark mark;
+  final int matches;
+  final int cursor;
+  final void Function(int delta)? onStep;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    final color = mark.color;
+    return _FocusBar(
+      swatch: Swatch(color: color, size: 22, dashed: color == null),
+      title: mark.key,
+      caption: '${mark.kind.label(t)} · ${t.focusedMark}',
+      matches: matches,
+      cursor: cursor,
+      onStep: onStep,
+      onClear: onClear,
+    );
+  }
+}
+
+class _FocusBar extends StatelessWidget {
+  const _FocusBar({
+    required this.swatch,
+    required this.title,
+    required this.caption,
+    required this.matches,
+    required this.cursor,
+    required this.onStep,
+    required this.onClear,
+  });
+
+  final Widget swatch;
+  final String title;
+  final String caption;
+  final int matches;
+  final int cursor;
+  final void Function(int delta)? onStep;
+  final VoidCallback onClear;
+
+  @override
   Widget build(BuildContext context) {
     final t = context.l10n;
     final text = Theme.of(context).textTheme;
@@ -51,17 +118,17 @@ class ColorFocusBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Swatch(color: color, size: 22),
+          swatch,
           const SizedBox(width: 10),
           Text(
-            color.value,
+            title,
             textDirection: TextDirection.ltr,
             style: text.bodyMedium?.copyWith(fontWeight: Type.semiBold),
           ),
           const SizedBox(width: 10),
           Flexible(
             child: Text(
-              t.focusedColor,
+              caption,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: text.labelSmall?.copyWith(color: Shade.mirror),

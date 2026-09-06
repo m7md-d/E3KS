@@ -41,12 +41,13 @@ List<int> changedPages(
   List<FlatPage> pages, {
   required Set<String> colors,
   required Set<String> fonts,
+  Set<TextMark> marks = const {},
 }) {
-  if (colors.isEmpty && fonts.isEmpty) return const [];
+  if (colors.isEmpty && fonts.isEmpty && marks.isEmpty) return const [];
   return [
     for (final entry in pages)
       if (entry.page.blocks.any(
-        (b) => blockChanged(b, colors: colors, fonts: fonts),
+        (b) => blockChanged(b, colors: colors, fonts: fonts, marks: marks),
       ))
         entry.index,
   ];
@@ -59,4 +60,10 @@ List<int> changedPages(
 List<int> pagesWithColor(List<FlatPage> pages, String value) => [
   for (final entry in pages)
     if (entry.page.blocks.any((b) => blockHasColor(b, value))) entry.index,
+];
+
+/// فهارس الصفحات التي تظهر فيها [mark] — وحدة التنقّل عند تتبّع علامة.
+List<int> pagesWithMark(List<FlatPage> pages, TextMark mark) => [
+  for (final entry in pages)
+    if (entry.page.blocks.any((b) => blockHasMark(b, mark))) entry.index,
 ];

@@ -10,6 +10,7 @@ import 'package:xml/xml.dart';
 import '../../diagnostics/engine_issue.dart';
 import '../../diagnostics/engine_result.dart';
 import '../../inspect/hex_color.dart';
+import '../../inspect/text_mark.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
 import '../../transform/style_plan.dart';
@@ -59,7 +60,7 @@ final class _TransformState {
   final Map<String, int> preservedFonts = {};
   final List<String> changedParts = [];
   int themeAttributesRemoved = 0;
-  int highlightsRemoved = 0;
+  final Map<TextMark, int> markRemovals = {};
 
   void visit(XmlElement element) {
     final namespace = element.name.namespaceUri;
@@ -75,6 +76,8 @@ final class _TransformState {
       case 'color':
         _replaceColorAttribute(element, 'val');
       case 'shd':
+        // الرفع يسبق التبديل: علامةٌ ذاهبة لا يُبدَّل لونها ثم تُحذف.
+        if (_removeShading(element)) return;
         _replaceColorAttribute(element, 'fill');
         _replaceColorAttribute(element, 'color');
       case 'background':
@@ -82,13 +85,10 @@ final class _TransformState {
       case 'rFonts':
         _replaceFonts(element);
       case 'highlight':
-        if (plan.removeHighlight) {
-          final value = element.getAttribute('val', namespace: wNs);
-          if (value != null && value != 'none') {
-            element.parent?.children.remove(element);
-            highlightsRemoved++;
-          }
-        }
+        final value = element.getAttribute('val', namespace: wNs);
+        if (value == null || value == 'none') return;
+        final pen = TextMark(MarkKind.highlight, value);
+        if (plan.removes(pen)) _lift(element, pen);
       default:
         if (borderElements.contains(element.name.local) ||
             element.name.local == 'bdr') {
@@ -105,6 +105,30 @@ final class _TransformState {
     if (target == null) return;
     element.setAttribute('val', target.ooxmlValue);
     _countColor(current);
+  }
+
+  /// يرفع تظليل خلفية النصّ إن طلبته الخطة.
+  ///
+  /// **الحذف كامل لا تفريغ:** `w:shd` يحمل `val` و`color` و`fill`، وترك
+  /// بعضها يترك أثرًا مرئيًا. و`w:rPr` بلا `w:shd` صحيحٌ بلا شرط، فالحذف
+  /// آمن بالبناء.
+  ///
+  /// وتظليل الفقرة والخلية والجدول **لا يُمسّ**: قرار تصميم لا أثر لصق.
+  bool _removeShading(XmlElement element) {
+    if (element.parentElement?.name.local != 'rPr') return false;
+    final fill = HexColor.tryParse(
+      element.getAttribute('fill', namespace: wNs),
+    );
+    if (fill == null) return false;
+    final mark = TextMark.shading(fill);
+    if (!plan.removes(mark)) return false;
+    _lift(element, mark);
+    return true;
+  }
+
+  void _lift(XmlElement element, TextMark mark) {
+    element.parent?.children.remove(element);
+    markRemovals[mark] = (markRemovals[mark] ?? 0) + 1;
   }
 
   void _replaceColorAttribute(XmlElement element, String attribute) {
@@ -173,7 +197,7 @@ final class _TransformState {
     colorReplacements: Map.unmodifiable(colorReplacements),
     fontReplacements: Map.unmodifiable(fontReplacements),
     themeAttributesRemoved: themeAttributesRemoved,
-    highlightsRemoved: highlightsRemoved,
+    markRemovals: Map.unmodifiable(markRemovals),
     changedParts: List.unmodifiable(changedParts),
     unmatchedColors: Set.unmodifiable(unmatched),
     preservedFonts: Map.unmodifiable(preservedFonts),

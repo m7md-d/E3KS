@@ -7,6 +7,7 @@ library;
 import 'package:xml/xml.dart';
 
 import '../../inspect/hex_color.dart';
+import '../../inspect/text_mark.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
 import '../../preview/preview_model.dart';
@@ -344,6 +345,7 @@ final class DocxPreviewExtractor {
       italic: _isOn(properties, 'i'),
       underline: properties?.getElement('u', namespace: wNs) != null,
       shading: _shadingFill(properties),
+      highlight: _pen(properties),
     );
   }
 
@@ -370,6 +372,16 @@ final class DocxPreviewExtractor {
     if (element == null) return false;
     final value = element.getAttribute('val', namespace: wNs);
     return value != '0' && value != 'false';
+  }
+
+  /// قلم التمييز باسمه الثابت. `none` قولٌ صريح بلا تمييز.
+  TextMark? _pen(XmlElement? properties) {
+    final value = properties
+        ?.getElement('highlight', namespace: wNs)
+        ?.getAttribute('val', namespace: wNs);
+    return (value == null || value == 'none')
+        ? null
+        : TextMark(MarkKind.highlight, value);
   }
 
   HexColor? _shadingFill(XmlElement? properties) => HexColor.tryParse(

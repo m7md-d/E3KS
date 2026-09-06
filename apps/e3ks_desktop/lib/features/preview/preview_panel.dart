@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/workspace_store.dart';
-import 'color_focus_bar.dart';
+import 'focus_bar.dart';
 import 'color_pick_layer.dart';
 import 'document_paper.dart';
 import 'page_index.dart';
@@ -49,8 +49,8 @@ class _PreviewPanelState extends State<PreviewPanel> {
   bool _numbers = true;
   int _cursor = -1;
 
-  /// مؤشّر التنقّل بين مواضع اللون المتتبَّع — مستقلّ عن مؤشّر التغييرات،
-  /// فالمستخدم قد يتتبّع لونًا وهو في وسط مراجعة تغييراته.
+  /// مؤشّر التنقّل بين مواضع المتتبَّع — لونًا كان أو علامة. مستقلّ عن
+  /// مؤشّر التغييرات، فالمستخدم قد يتتبّع شيئًا وهو في وسط مراجعة تغييراته.
   int _match = -1;
   String? _matchesFor;
 
@@ -196,16 +196,38 @@ class _PreviewPanelState extends State<PreviewPanel> {
     ];
 
     final pages = flattenPages(preview);
-    final changed = changedPages(pages, colors: colors, fonts: fonts);
+
+    // العلامات المرفوعة تُرى في «قبل» وحدها: «بعد» لا تحملها أصلًا.
+    final lifted = showAfter ? const <TextMark>{} : store.liftedMarks;
+    final changed = changedPages(
+      pages,
+      colors: colors,
+      fonts: fonts,
+      marks: lifted,
+    );
     if (_cursor >= changed.length) _cursor = changed.length - 1;
 
-    // مواضع اللون المتتبَّع. تُحسب عند تغيّر اللون لا في كل رسمة.
+    // مواضع المتتبَّع. تُحسب عند تغيّره لا في كل رسمة.
     final focused = store.focusedColor;
-    final matches = focused == null
-        ? const <int>[]
-        : pagesWithColor(pages, focused.value);
-    if (_matchesFor != focused?.value) {
-      _matchesFor = focused?.value;
+    final focusedMark = store.focusedMark;
+
+    // **العلامة تُطلَب من صفحات «قبل».** الرفع يمحوها من معاينة «بعد»،
+    // فالبحث عنها هناك يقول «لا مواضع» لعلامةٍ للمستخدم فيها ثلاثة.
+    // والترقيم واحد في المعاينتين: الرفع لا ينقل فقرة إلى صفحة أخرى.
+    final List<int> matches;
+    if (focused != null) {
+      matches = pagesWithColor(pages, focused.value);
+    } else if (focusedMark != null) {
+      matches = pagesWithMark(
+        showAfter ? flattenPages(document.preview) : pages,
+        focusedMark,
+      );
+    } else {
+      matches = const [];
+    }
+    final matchKey = focused?.value ?? focusedMark?.toString();
+    if (_matchesFor != matchKey) {
+      _matchesFor = matchKey;
       _match = -1;
     }
     if (_match >= matches.length) _match = matches.length - 1;
@@ -243,15 +265,18 @@ class _PreviewPanelState extends State<PreviewPanel> {
                 cursor: _match,
                 onStep: matches.isEmpty
                     ? null
-                    : (delta) {
-                        final next = (_match + delta).clamp(
-                          0,
-                          matches.length - 1,
-                        );
-                        setState(() => _match = next);
-                        _goToPage(matches[next], pages.length);
-                      },
+                    : _stepper(matches, pages.length),
                 onClear: () => store.focusColor(null),
+              )
+            else if (focusedMark != null)
+              MarkFocusBar(
+                mark: focusedMark,
+                matches: matches.length,
+                cursor: _match,
+                onStep: matches.isEmpty
+                    ? null
+                    : _stepper(matches, pages.length),
+                onClear: () => store.focusMark(null),
               ),
             PreviewToolbar(
               store: store,
@@ -341,8 +366,11 @@ class _PreviewPanelState extends State<PreviewPanel> {
                                         changed.contains(i),
                                     changedColors: colors,
                                     changedFonts: fonts,
+                                    changedMarks: lifted,
                                     focusedColor: focused,
                                     onColorTap: store.focusColor,
+                                    focusedMark: focusedMark,
+                                    onMarkTap: store.focusMark,
                                   ),
                                 ),
                               ),
@@ -370,6 +398,14 @@ class _PreviewPanelState extends State<PreviewPanel> {
     );
   }
 
+  /// التنقّل بين المطابقات — واحدٌ للّون وللعلامة، فلا ينحرف سلوكهما.
+  void Function(int delta) _stepper(List<int> matches, int pageCount) =>
+      (delta) {
+        final next = (_match + delta).clamp(0, matches.length - 1);
+        setState(() => _match = next);
+        _goToPage(matches[next], pageCount);
+      };
+
   String _pageLabel(L t, FlatPage entry, int total) =>
       entry.kind == PreviewSectionKind.body
       ? t.pageOf(entry.numberInSection, total)
@@ -389,8 +425,11 @@ class _PageSheet extends StatelessWidget {
     required this.highlight,
     required this.changedColors,
     required this.changedFonts,
+    this.changedMarks = const {},
     this.focusedColor,
     this.onColorTap,
+    this.focusedMark,
+    this.onMarkTap,
   });
 
   final FlatPage entry;
@@ -407,8 +446,11 @@ class _PageSheet extends StatelessWidget {
   final bool highlight;
   final Set<String> changedColors;
   final Set<String> changedFonts;
+  final Set<TextMark> changedMarks;
   final HexColor? focusedColor;
   final void Function(HexColor color)? onColorTap;
+  final TextMark? focusedMark;
+  final void Function(TextMark mark)? onMarkTap;
 
   @override
   Widget build(BuildContext context) => Center(
@@ -469,11 +511,16 @@ class _PageSheet extends StatelessWidget {
                   showNumbers: showNumbers,
                   highlightChanged:
                       marks &&
-                      (changedColors.isNotEmpty || changedFonts.isNotEmpty),
+                      (changedColors.isNotEmpty ||
+                          changedFonts.isNotEmpty ||
+                          changedMarks.isNotEmpty),
                   changedColors: changedColors,
                   changedFonts: changedFonts,
+                  changedMarks: changedMarks,
                   focusedColor: focusedColor,
                   onColorTap: onColorTap,
+                  focusedMark: focusedMark,
+                  onMarkTap: onMarkTap,
                 ),
               ),
             ),

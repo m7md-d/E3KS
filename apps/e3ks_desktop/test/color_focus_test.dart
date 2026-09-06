@@ -14,7 +14,7 @@ import 'package:e3ks_desktop/data/identity_store.dart';
 import 'package:e3ks_desktop/data/settings_store.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
 import 'package:e3ks_desktop/features/preview/change_scan.dart';
-import 'package:e3ks_desktop/features/preview/color_focus_bar.dart';
+import 'package:e3ks_desktop/features/preview/focus_bar.dart';
 import 'package:e3ks_desktop/features/preview/page_index.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
 import 'package:e3ks_desktop/l10n/app_localizations.dart';

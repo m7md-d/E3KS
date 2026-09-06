@@ -12,6 +12,7 @@ import '../../inspect/color_usage.dart';
 import '../../inspect/font_usage.dart';
 import '../../inspect/hex_color.dart';
 import '../../inspect/inspection_report.dart';
+import '../../inspect/text_mark.dart';
 import '../../inspect/usage_accumulator.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
@@ -32,13 +33,19 @@ final class PptxInspector {
   EngineResult<InspectionReport> inspect(DocumentPackage package) {
     final colors = <HexColor, ColorAccumulator>{};
     final fonts = <String, FontAccumulator>{};
+    final marks = <TextMark, MarkAccumulator>{};
     final scanned = <String>[];
 
     final warnings = scanXmlParts(
       package,
       classifyPptxPart,
-      (element, partName, partClass) =>
-          _scan(element, ScanContext(partName, partClass), colors, fonts),
+      (element, partName, partClass) => _scan(
+        element,
+        ScanContext(partName, partClass),
+        colors,
+        fonts,
+        marks,
+      ),
       scannedParts: scanned,
     );
 
@@ -46,8 +53,8 @@ final class PptxInspector {
       InspectionReport(
         colors: buildColors(colors),
         fonts: buildFonts(fonts),
-        // PowerPoint بلا `w:highlight`: التمييز تعبئةُ شكل كأي تعبئة.
-        highlights: const {},
+        // قلم PowerPoint `a:highlight` بلون صريح، بلا أسماء Word الثابتة.
+        marks: buildMarks(marks),
         scannedParts: scanned,
       ),
       warnings: warnings,
@@ -59,6 +66,7 @@ final class PptxInspector {
     ScanContext context,
     Map<HexColor, ColorAccumulator> colors,
     Map<String, FontAccumulator> fonts,
+    Map<TextMark, MarkAccumulator> marks,
   ) {
     if (element.name.namespaceUri != aNs) return;
 
@@ -66,6 +74,12 @@ final class PptxInspector {
       case 'srgbClr':
         final color = HexColor.tryParse(element.getAttribute('val'));
         if (color == null) return;
+        // لونٌ داخل `a:highlight` علامةٌ تُرفع، فوق كونه لونًا يُبدَّل.
+        if (element.parentElement?.name.local == 'highlight') {
+          marks
+              .putIfAbsent(TextMark.coloredPen(color), MarkAccumulator.new)
+              .record(context, sample: sampleFor(element));
+        }
         colors
             .putIfAbsent(color, ColorAccumulator.new)
             .record(
@@ -99,6 +113,9 @@ ColorRole roleOf(XmlElement element) {
         return ColorRole.themePalette;
       case 'ln':
         return ColorRole.border;
+      // قلم التمييز: خلفية النصّ لا لونه. وهو أخصّ من `a:rPr` فيسبقه.
+      case 'highlight':
+        return ColorRole.runFill;
       case 'rPr' || 'defRPr' || 'endParaRPr':
         return ColorRole.text;
       case 'tcPr':

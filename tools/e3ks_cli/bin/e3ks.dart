@@ -94,6 +94,18 @@ void _inspect(List<String> args) {
               'monospaced': f.looksMonospaced,
             },
         ],
+        'marks': [
+          for (final mark in report.marks)
+            {
+              // نفس صيغة `removeMarks` في الخطة: ما يخرج من الفحص يدخل
+              // في الخطة بلا صياغة يدوية.
+              'mark': mark.mark.toString(),
+              'kind': mark.mark.kind.name,
+              'count': mark.count,
+              'inContent': mark.isInContent,
+              'samples': mark.samples,
+            },
+        ],
       }),
     );
     return;
@@ -127,8 +139,16 @@ void _inspect(List<String> args) {
       '$slots${f.looksMonospaced ? '   ⟵ ${m.ui["suggestProtect"]}' : ''}',
     );
   }
-  if (report.highlights.isNotEmpty) {
-    stdout.writeln('\n── ${m.ui["highlights"]} ──\n  ${report.highlights}');
+  if (report.marks.isNotEmpty) {
+    stdout.writeln('\n── ${m.ui["marks"]} ──');
+    for (final mark in report.marks) {
+      final sample = mark.samples.isEmpty ? '' : '  «${mark.samples.first}»';
+      stdout.writeln(
+        '  ${mark.mark.toString().padRight(24)} '
+        '${mark.count.toString().padLeft(5)}  '
+        '${(m.markKinds[mark.mark.kind] ?? "").padRight(13)}$sample',
+      );
+    }
   }
 }
 
@@ -179,6 +199,12 @@ void _restyle(List<String> args) {
     '  ${m.ui["fontsReplaced"]} : ${report.totalFontReplacements}',
   );
   stdout.writeln('  ${m.ui["themeRemoved"]}: ${report.themeAttributesRemoved}');
+  if (report.markRemovals.isNotEmpty) {
+    stdout.writeln(
+      '  ${m.ui["marksLifted"]} : ${report.totalMarkRemovals} '
+      '${m.ui["in_"]} ${report.markRemovals.length}',
+    );
+  }
   stdout.writeln(
     '  ${m.ui["partsChanged"]}  : ${report.changedParts.length}'
     '  (${report.changedParts.join("، ")})',
@@ -230,11 +256,27 @@ StylePlan _parsePlan(String source) {
     }
   }
 
+  // علامات بعينها تُرفع: `highlight:yellow` أو `textShading:#D9D9D9`.
+  final marks = <TextMark>{};
+  final rawMarks = root['removeMarks'];
+  if (rawMarks is List) {
+    for (final item in rawMarks) {
+      final mark = TextMark.tryParse(item is String ? item : null);
+      if (mark == null) {
+        stderr.writeln('✖ ${m.ui["badMark"]}: $item');
+        exit(65);
+      }
+      marks.add(mark);
+    }
+  }
+
   return StylePlan(
     colors: colors,
     fonts: fonts,
     preserveFonts: preserve,
+    removeMarks: marks,
     removeHighlight: root['removeHighlight'] == true,
+    removeTextShading: root['removeTextShading'] == true,
   );
 }
 

@@ -59,6 +59,8 @@ Future<void> showExportDone(
             t.reportFontsReplaced,
             t.occurrences(report.totalFontReplacements),
           ),
+          if (report.markRemovals.isNotEmpty)
+            line(t.reportMarksLifted, t.occurrences(report.totalMarkRemovals)),
           line(t.reportPartsChanged, '${report.changedParts.length}'),
           if (report.preservedFonts.isNotEmpty)
             line(t.reportFontsProtected, report.preservedFonts.keys.join('، ')),

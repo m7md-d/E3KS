@@ -133,3 +133,29 @@ Uint8List buildFixturePptx() {
   }
   return ZipEncoder().encodeBytes(archive);
 }
+
+/// شريحة فيها قلم تمييز PowerPoint (`a:highlight`) بلونٍ صريح.
+const String _markedSlide = '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+<p:cSld><p:spTree>
+<p:sp>
+<p:nvSpPr><p:cNvPr id="2" name="Title"/><p:cNvSpPr/><p:nvPr><p:ph type="title" idx="0"/></p:nvPr></p:nvSpPr>
+<p:spPr/>
+<p:txBody><a:bodyPr/><a:lstStyle/>
+<a:p><a:r><a:rPr lang="en-US" sz="2000"><a:solidFill><a:srgbClr val="1B7F79"/></a:solidFill><a:highlight><a:srgbClr val="FFFF00"/></a:highlight></a:rPr><a:t>marked run</a:t></a:r></a:p>
+<a:p><a:r><a:rPr lang="en-US" sz="2000"><a:solidFill><a:srgbClr val="1B7F79"/></a:solidFill></a:rPr><a:t>plain run</a:t></a:r></a:p>
+</p:txBody>
+</p:sp>
+</p:spTree></p:cSld>
+</p:sld>''';
+
+/// عرض فيه علامة تمييز واحدة على مقطع واحد.
+Uint8List buildMarkedPptx() {
+  final archive = Archive();
+  final parts = {...pptxFixtureParts, 'ppt/slides/slide1.xml': _markedSlide};
+  for (final entry in parts.entries) {
+    archive.add(ArchiveFile.bytes(entry.key, utf8.encode(entry.value.trim())));
+  }
+  return ZipEncoder().encodeBytes(archive);
+}

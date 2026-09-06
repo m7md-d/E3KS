@@ -8,6 +8,7 @@ import 'color_usage.dart';
 import 'font_usage.dart';
 import 'hex_color.dart';
 import 'part_class.dart';
+import 'text_mark.dart';
 
 /// أقصى عدد عيّنات نصّية لكل لون. ثلاث تكفي لفهم الدور، والمزيد ضجيج.
 const int maxColorSamples = 3;
@@ -82,6 +83,32 @@ final class FontAccumulator {
   );
 }
 
+final class MarkAccumulator {
+  int count = 0;
+  final Map<String, int> byPart = {};
+  final Set<PartClass> partClasses = {};
+  final List<String> samples = [];
+
+  void record(ScanContext context, {String? sample}) {
+    count++;
+    byPart[context.partName] = (byPart[context.partName] ?? 0) + 1;
+    partClasses.add(context.partClass);
+    if (sample != null &&
+        samples.length < maxColorSamples &&
+        !samples.contains(sample)) {
+      samples.add(sample);
+    }
+  }
+
+  MarkUsage build(TextMark mark) => MarkUsage(
+    mark: mark,
+    count: count,
+    byPart: Map.unmodifiable(byPart),
+    partClasses: Set.unmodifiable(partClasses),
+    samples: List.unmodifiable(samples),
+  );
+}
+
 /// يبني قائمتَي التقرير مرتَّبتين تنازليًا بعدد الاستعمال.
 List<ColorUsage> buildColors(Map<HexColor, ColorAccumulator> colors) =>
     [for (final e in colors.entries) e.value.build(e.key)]
@@ -89,4 +116,8 @@ List<ColorUsage> buildColors(Map<HexColor, ColorAccumulator> colors) =>
 
 List<FontUsage> buildFonts(Map<String, FontAccumulator> fonts) =>
     [for (final e in fonts.entries) e.value.build(e.key)]
+      ..sort((a, b) => b.count.compareTo(a.count));
+
+List<MarkUsage> buildMarks(Map<TextMark, MarkAccumulator> marks) =>
+    [for (final e in marks.entries) e.value.build(e.key)]
       ..sort((a, b) => b.count.compareTo(a.count));

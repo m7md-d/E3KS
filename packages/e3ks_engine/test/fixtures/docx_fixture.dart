@@ -123,3 +123,32 @@ Uint8List buildSectionedDocx() {
   }
   return ZipEncoder().encodeBytes(archive);
 }
+
+/// مستند فيه علامات على النصّ: قلم تمييز وتظليل خلفية.
+///
+/// **صُنع ليحمل كل تفريق تعتمد عليه الأداة دفعةً واحدة:**
+/// قلمان مختلفا الاسم، وتظليل نصّ، وتظليل فقرة **لا يُمسّ** (قرار تصميم لا
+/// أثر لصق)، و`w:highlight w:val="none"` وهو قولٌ صريح بلا تمييز.
+const String _markedDocument = '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+<w:p><w:pPr><w:shd w:val="clear" w:fill="EEF3F2"/></w:pPr>
+<w:r><w:rPr><w:highlight w:val="yellow"/></w:rPr><w:t>marked yellow</w:t></w:r>
+<w:r><w:rPr><w:highlight w:val="green"/></w:rPr><w:t xml:space="preserve"> marked green</w:t></w:r>
+</w:p>
+<w:p><w:r><w:rPr><w:shd w:val="clear" w:color="auto" w:fill="D9D9D9"/></w:rPr><w:t>pasted shading</w:t></w:r></w:p>
+<w:p><w:r><w:rPr><w:highlight w:val="none"/></w:rPr><w:t>no highlight at all</w:t></w:r></w:p>
+<w:p><w:r><w:rPr><w:highlight w:val="yellow"/><w:shd w:val="clear" w:fill="D9D9D9"/></w:rPr><w:t>both at once</w:t></w:r></w:p>
+</w:body>
+</w:document>''';
+
+/// مستند العلامات: نفس أجزاء المرجع، بمتنٍ معلَّم.
+Uint8List buildMarkedDocx() {
+  final archive = Archive();
+  final parts = {...fixtureParts, 'word/document.xml': _markedDocument};
+  for (final entry in parts.entries) {
+    archive.add(ArchiveFile.bytes(entry.key, utf8.encode(entry.value.trim())));
+  }
+  return ZipEncoder().encodeBytes(archive);
+}

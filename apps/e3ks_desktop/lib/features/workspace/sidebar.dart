@@ -51,6 +51,15 @@ class Sidebar extends StatelessWidget {
             onTap: () => store.selectTab(WorkspaceTab.fonts),
           ),
           _NavItem(
+            icon: LucideIcons.highlighter,
+            label: t.tabMarks,
+            badge: report == null ? null : '${report.marks.length}',
+            selected: store.tab == WorkspaceTab.marks,
+            changes: store.liftedMarks.length,
+            compact: compact,
+            onTap: () => store.selectTab(WorkspaceTab.marks),
+          ),
+          _NavItem(
             icon: LucideIcons.bookmark,
             label: t.tabIdentities,
             selected: store.tab == WorkspaceTab.identities,

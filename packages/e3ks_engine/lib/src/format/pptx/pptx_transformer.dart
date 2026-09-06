@@ -13,6 +13,7 @@ import 'package:xml/xml.dart';
 import '../../diagnostics/engine_issue.dart';
 import '../../diagnostics/engine_result.dart';
 import '../../inspect/hex_color.dart';
+import '../../inspect/text_mark.dart';
 import '../../package/document_package.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../transform/style_plan.dart';
@@ -58,6 +59,7 @@ final class _PptxState {
   final Map<HexColor, int> colorReplacements = {};
   final Map<String, int> fontReplacements = {};
   final Map<String, int> preservedFonts = {};
+  final Map<TextMark, int> markRemovals = {};
   final List<String> changedParts = [];
 
   void visit(XmlElement element) {
@@ -67,13 +69,39 @@ final class _PptxState {
         _replaceColor(element);
       case 'latin' || 'cs' || 'ea':
         _replaceFont(element);
+      case 'highlight':
+        _liftHighlight(element);
       // `a:sym` خطّ الرموز: تبديله يقلب الرموز إلى مربّعات فارغة.
     }
+  }
+
+  /// قلم التمييز في PowerPoint: `a:highlight` بلونٍ صريح داخل `a:rPr`.
+  ///
+  /// يُحذف العنصر كلّه، فهو غلاف اللون. و`a:rPr` بلا `a:highlight` صحيحٌ
+  /// بلا شرط.
+  void _liftHighlight(XmlElement element) {
+    final color = HexColor.tryParse(
+      element.getElement('srgbClr', namespace: aNs)?.getAttribute('val'),
+    );
+    if (color == null) return;
+    final mark = TextMark.coloredPen(color);
+    if (!plan.removes(mark)) return;
+    element.parent?.children.remove(element);
+    markRemovals[mark] = (markRemovals[mark] ?? 0) + 1;
   }
 
   void _replaceColor(XmlElement element) {
     final current = HexColor.tryParse(element.getAttribute('val'));
     if (current == null) return;
+
+    // لونٌ داخل علامةٍ رُفعت: العنصر انفصل عن الشجرة قبل أن نبلغه، فتبديله
+    // لا يظهر في المخرَج ويُحصى في التقرير كذبًا.
+    final parent = element.parentElement;
+    if (parent != null &&
+        parent.name.local == 'highlight' &&
+        plan.removes(TextMark.coloredPen(current))) {
+      return;
+    }
     final target = plan.colors[current];
     if (target == null) return;
     // نغيّر `val` وحدها: `a:alpha` و`a:lumMod` أبناء يعدّلون اللون، وحذفهم
@@ -113,7 +141,7 @@ final class _PptxState {
     // DrawingML بلا سمات ثيم على العنصر: الإحالة عنصرٌ آخر (`a:schemeClr`)
     // لا نلمسه، فلا شيء يُحذف هنا.
     themeAttributesRemoved: 0,
-    highlightsRemoved: 0,
+    markRemovals: Map.unmodifiable(markRemovals),
     changedParts: List.unmodifiable(changedParts),
     unmatchedColors: Set.unmodifiable(unmatched),
     preservedFonts: Map.unmodifiable(preservedFonts),

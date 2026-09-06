@@ -6,12 +6,13 @@ library;
 
 import 'color_usage.dart';
 import 'font_usage.dart';
+import 'text_mark.dart';
 
 final class InspectionReport {
   const InspectionReport({
     required this.colors,
     required this.fonts,
-    required this.highlights,
+    required this.marks,
     required this.scannedParts,
   });
 
@@ -21,8 +22,11 @@ final class InspectionReport {
   /// كل الخطوط، مرتّبة تنازليًا بعدد الاستعمال.
   final List<FontUsage> fonts;
 
-  /// التمييز (`w:highlight`) بأسمائه الثابتة — ليس ألوانًا hex (`02` §5).
-  final Map<String, int> highlights;
+  /// علامات النصّ: قلم التمييز وتظليل الخلفية، مرتّبة تنازليًا بعددها.
+  ///
+  /// **منفصلة عن الألوان لأن فعلها منفصل:** اللون يُبدَّل، والعلامة تُرفع.
+  /// ولون التظليل يظهر في الجدولين معًا — في [colors] ليُبدَّل، وهنا ليُمسح.
+  final List<MarkUsage> marks;
 
   /// الأجزاء التي مرّ عليها الفحص فعلًا.
   final List<String> scannedParts;
@@ -50,6 +54,12 @@ final class InspectionReport {
   List<FontUsage> get monospacedCandidates => [
     for (final f in fonts)
       if (f.looksMonospaced) f,
+  ];
+
+  /// علامات يراها القارئ في المتن — وهي وحدها ما يعني المستخدم.
+  List<MarkUsage> get contentMarks => [
+    for (final m in marks)
+      if (m.isInContent) m,
   ];
 
   int get totalColorOccurrences => colors.fold(0, (sum, c) => sum + c.count);

@@ -322,5 +322,29 @@
   "batchNeverMatched": "Colours in the plan matched no file",
   "batchEmptyFolder": "No supported documents in this folder.",
   "batchNoPlan": "Change some colours or pick a saved identity.",
-  "batchSameFolder": "The output folder is the source; the source is never written over."
+  "batchSameFolder": "The output folder is the source; the source is never written over.",
+  "tabMarks": "Highlights",
+  "marksTitle": "Text marks",
+  "marksHint": "Highlighter pen and background shading. Removal applies to this file only.",
+  "emptyMarks": "Open a document to see its marks.",
+  "noMarks": "No marks in this document.",
+  "markHighlight": "Highlighter",
+  "markShading": "Text shading",
+  "markUsage": "{count} places · {kind} · {parts}",
+  "@markUsage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "kind": {},
+      "parts": {}
+    }
+  },
+  "liftAll": "Remove all",
+  "keepAll": "Keep all",
+  "liftMark": "Remove",
+  "markLifted": "Will be removed",
+  "focusedMark": "Tracked mark",
+  "tapMarkHint": "Tap to track its places",
+  "reportMarksLifted": "Marks removed"
 }

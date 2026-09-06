@@ -706,4 +706,52 @@ class LEn extends L {
   @override
   String get batchSameFolder =>
       'The output folder is the source; the source is never written over.';
+
+  @override
+  String get tabMarks => 'Highlights';
+
+  @override
+  String get marksTitle => 'Text marks';
+
+  @override
+  String get marksHint =>
+      'Highlighter pen and background shading. Removal applies to this file only.';
+
+  @override
+  String get emptyMarks => 'Open a document to see its marks.';
+
+  @override
+  String get noMarks => 'No marks in this document.';
+
+  @override
+  String get markHighlight => 'Highlighter';
+
+  @override
+  String get markShading => 'Text shading';
+
+  @override
+  String markUsage(int count, Object kind, Object parts) {
+    return '$count places · $kind · $parts';
+  }
+
+  @override
+  String get liftAll => 'Remove all';
+
+  @override
+  String get keepAll => 'Keep all';
+
+  @override
+  String get liftMark => 'Remove';
+
+  @override
+  String get markLifted => 'Will be removed';
+
+  @override
+  String get focusedMark => 'Tracked mark';
+
+  @override
+  String get tapMarkHint => 'Tap to track its places';
+
+  @override
+  String get reportMarksLifted => 'Marks removed';
 }

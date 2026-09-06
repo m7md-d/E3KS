@@ -5,13 +5,14 @@
 library;
 
 import '../inspect/hex_color.dart';
+import '../inspect/text_mark.dart';
 
 final class TransformReport {
   const TransformReport({
     required this.colorReplacements,
     required this.fontReplacements,
     required this.themeAttributesRemoved,
-    required this.highlightsRemoved,
+    required this.markRemovals,
     required this.changedParts,
     required this.unmatchedColors,
     required this.preservedFonts,
@@ -26,7 +27,8 @@ final class TransformReport {
   /// سمات ثيم حُذفت لئلّا تغلب على القيمة الصريحة (`02` §6 و§7).
   final int themeAttributesRemoved;
 
-  final int highlightsRemoved;
+  /// كم مرّة رُفعت كل علامة فعلًا.
+  final Map<TextMark, int> markRemovals;
 
   /// الأجزاء التي تغيّرت بايتاتها فعلًا. ما عداها نُسخ كما ورد.
   final List<String> changedParts;
@@ -42,6 +44,8 @@ final class TransformReport {
 
   int get totalFontReplacements =>
       fontReplacements.values.fold(0, (a, b) => a + b);
+
+  int get totalMarkRemovals => markRemovals.values.fold(0, (a, b) => a + b);
 
   bool get changedNothing => changedParts.isEmpty;
 }

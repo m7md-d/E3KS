@@ -24,9 +24,17 @@ E3KS — اعكس
     "colors": { "#4C2FB8": "#00635D" },
     "fonts":  { "latin": "IBM Plex Sans", "arabic": "IBM Plex Sans Arabic" },
     "preserveFonts": ["DejaVu Sans Mono"],
-    "removeHighlight": false
+    "removeMarks": ["highlight:yellow", "textShading:#D9D9D9"],
+    "removeHighlight": false,
+    "removeTextShading": false
   }
 ''';
+
+/// أنواع العلامات على النصّ — نصّ معروض، فمكانه هنا لا في المحرّك (`01`).
+const Map<MarkKind, String> markKinds = {
+  MarkKind.highlight: 'قلم تمييز',
+  MarkKind.textShading: 'تظليل نصّ',
+};
 
 const Map<String, String> ui = {
   'unknownCommand': 'أمر غير معروف',
@@ -50,7 +58,9 @@ const Map<String, String> ui = {
   'fonts': 'خطوط',
   'identityColors': 'ألوان الهوية (يراها القارئ)',
   'inheritedColors': 'موروثة من الأنماط والثيم',
-  'highlights': 'تمييز',
+  'marks': 'علامات على النصّ',
+  'marksLifted': 'علامات مرفوعة',
+  'badMark': 'علامة غير صالحة في الخطة',
   'suggestProtect': 'يُقترح حمايته',
   'colorsReplaced': 'ألوان مُبدَّلة',
   'in_': 'في',

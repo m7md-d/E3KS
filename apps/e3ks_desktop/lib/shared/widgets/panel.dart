@@ -59,7 +59,16 @@ class SectionHeader extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(title, style: theme.textTheme.titleMedium),
+                    // **العنوان يتقلّص، ولا يدفع الصفّ خارج حدوده.** اللوحة
+                    // ثابتة العرض، وقد يجاورها فعلٌ في `trailing`.
+                    Flexible(
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
                     if (count != null) ...[
                       const SizedBox(width: 8),
                       _Pill(label: '$count'),

@@ -8,6 +8,7 @@
 library;
 
 import '../inspect/hex_color.dart';
+import '../inspect/text_mark.dart';
 import '../transform/style_plan.dart';
 import 'preview_model.dart';
 
@@ -98,8 +99,22 @@ PreviewRun _run(PreviewRun run, StylePlan plan) => PreviewRun(
   bold: run.bold,
   italic: run.italic,
   underline: run.underline,
-  shading: _color(run.shading, plan),
+  shading: _shading(run.shading, plan),
+  highlight: _pen(run.highlight, plan),
 );
+
+/// خلفية النصّ: تُرفع إن طلبت الخطة رفعها، وإلّا بُدّلت كأي لون.
+///
+/// **الرفع يسبق التبديل** كما في المحوّل: اختلاف الترتيب بينهما يجعل
+/// المعاينة تَعِد بما لا يخرج.
+HexColor? _shading(HexColor? current, StylePlan plan) {
+  if (current == null) return null;
+  if (plan.removes(TextMark.shading(current))) return null;
+  return plan.colors[current] ?? current;
+}
+
+TextMark? _pen(TextMark? mark, StylePlan plan) =>
+    (mark == null || plan.removes(mark)) ? null : mark;
 
 HexColor? _color(HexColor? current, StylePlan plan) =>
     current == null ? null : plan.colors[current] ?? current;

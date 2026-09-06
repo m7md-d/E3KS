@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'document_loader.dart';
 import 'identity.dart';
 
-enum WorkspaceTab { colors, fonts, identities }
+enum WorkspaceTab { colors, fonts, marks, identities }
 
 /// مستند مفتوح ومعه خطّته. كل تبويب يحمل خطّته الخاصّة، فلا تتسرّب
 /// تعديلات ملفٍ إلى آخر.
@@ -20,6 +20,9 @@ class OpenTab {
   final LoadedDocument document;
   final Map<HexColor, HexColor> colorMap = {};
   final Set<String> preserveFonts = {};
+
+  /// علامات النصّ التي طلب المستخدم رفعها من هذا الملف.
+  final Set<TextMark> liftedMarks = {};
   String? latinFont;
   String? arabicFont;
 
@@ -30,14 +33,20 @@ class OpenTab {
   /// التنقّل بين الملفات.
   HexColor? focused;
 
+  /// العلامة المتتبَّعة. **واحدٌ يُتتبَّع في كل مرّة**: لونٌ وعلامة معًا
+  /// يعنيان شريطَي تتبّع فوق الورقة، وتمييزين متنافسين على المقطع نفسه.
+  TextMark? focusedMark;
+
   StylePlan get plan => StylePlan(
     colors: Map.of(colorMap),
     fonts: FontPlan(latin: latinFont, arabic: arabicFont),
     preserveFonts: Set.of(preserveFonts),
+    removeMarks: Set.of(liftedMarks),
   );
 
   int get changeCount =>
       colorMap.length +
+      liftedMarks.length +
       (latinFont != null ? 1 : 0) +
       (arabicFont != null ? 1 : 0);
 }
@@ -100,7 +109,25 @@ class WorkspaceStore extends ChangeNotifier {
     tab.focused = (resolved == null || resolved == tab.focused)
         ? null
         : resolved;
-    if (tab.focused != null) _tab = WorkspaceTab.colors;
+    if (tab.focused != null) {
+      tab.focusedMark = null;
+      _tab = WorkspaceTab.colors;
+    }
+    notifyListeners();
+  }
+
+  /// العلامة المتتبَّعة، بنفس بروتوكول اللون: تُبرَز في الصفحة، ويُتنقَّل
+  /// بين مواضعها، ويُمرَّر إليها في قائمة العلامات.
+  TextMark? get focusedMark => current?.focusedMark;
+
+  void focusMark(TextMark? mark) {
+    final tab = current;
+    if (tab == null) return;
+    tab.focusedMark = (mark == null || mark == tab.focusedMark) ? null : mark;
+    if (tab.focusedMark != null) {
+      tab.focused = null;
+      _tab = WorkspaceTab.marks;
+    }
     notifyListeners();
   }
 
@@ -123,6 +150,8 @@ class WorkspaceStore extends ChangeNotifier {
 
   Map<HexColor, HexColor> get colorMap =>
       Map.unmodifiable(current?.colorMap ?? const {});
+  Set<TextMark> get liftedMarks =>
+      Set.unmodifiable(current?.liftedMarks ?? const <TextMark>{});
   String? get latinFont => current?.latinFont;
   String? get arabicFont => current?.arabicFont;
   Set<String> get preserveFonts =>
@@ -154,6 +183,7 @@ class WorkspaceStore extends ChangeNotifier {
     return Object.hashAll([
       for (final entry in tab.colorMap.entries) entry.key.value,
       for (final entry in tab.colorMap.entries) entry.value.value,
+      for (final mark in tab.liftedMarks) mark.toString(),
       tab.latinFont,
       tab.arabicFont,
       tab.preserveFonts.length,
@@ -210,8 +240,37 @@ class WorkspaceStore extends ChangeNotifier {
     final tab = current;
     if (tab == null) return;
     tab.colorMap.clear();
+    tab.liftedMarks.clear();
     tab.latinFont = null;
     tab.arabicFont = null;
+    _invalidate();
+  }
+
+  /// يرفع علامة عن النصّ أو يعيدها.
+  ///
+  /// **الرفع قرار ملفٍّ لا هوية**: الهوية تصف ألوانًا وخطوطًا، وأثرُ لصقٍ
+  /// في ملفٍّ بعينه لا يوصف في هوية تُطبَّق على غيره.
+  void liftMark(TextMark mark, bool lifted) {
+    final tab = current;
+    if (tab == null) return;
+    if (lifted) {
+      tab.liftedMarks.add(mark);
+    } else {
+      tab.liftedMarks.remove(mark);
+    }
+    _invalidate();
+  }
+
+  /// يرفع كل علامات المستند دفعةً واحدة، أو يعيدها كلّها.
+  void liftAllMarks(bool lifted) {
+    final tab = current;
+    if (tab == null) return;
+    tab.liftedMarks.clear();
+    if (lifted) {
+      for (final usage in tab.document.report.marks) {
+        tab.liftedMarks.add(usage.mark);
+      }
+    }
     _invalidate();
   }
 

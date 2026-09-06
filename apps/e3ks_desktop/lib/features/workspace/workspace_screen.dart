@@ -29,6 +29,7 @@ import '../identity/identities_panel.dart';
 import '../mapping/color_picker.dart';
 import '../mapping/colors_panel.dart';
 import '../mapping/fonts_panel.dart';
+import '../mapping/marks_panel.dart';
 import '../preview/drop_zone.dart';
 import '../preview/font_notice.dart';
 import '../preview/preview_panel.dart';
@@ -239,10 +240,16 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       child = Padding(
         padding: const EdgeInsets.all(Metrics.gutter),
         child: EmptyNote(
-          text: store.tab == WorkspaceTab.colors ? t.emptyColors : t.emptyFonts,
-          icon: store.tab == WorkspaceTab.colors
-              ? LucideIcons.palette
-              : LucideIcons.type,
+          text: switch (store.tab) {
+            WorkspaceTab.colors => t.emptyColors,
+            WorkspaceTab.marks => t.emptyMarks,
+            _ => t.emptyFonts,
+          },
+          icon: switch (store.tab) {
+            WorkspaceTab.colors => LucideIcons.palette,
+            WorkspaceTab.marks => LucideIcons.highlighter,
+            _ => LucideIcons.type,
+          },
         ),
       );
     } else {
@@ -252,6 +259,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           suggestions: suggestions,
         ),
         WorkspaceTab.fonts => FontsPanel(store: store),
+        WorkspaceTab.marks => MarksPanel(store: store),
         WorkspaceTab.identities => IdentitiesPanel(
           store: store,
           identities: widget.identities,

@@ -698,4 +698,51 @@ class LAr extends L {
   @override
   String get batchSameFolder =>
       'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.';
+
+  @override
+  String get tabMarks => 'التمييز';
+
+  @override
+  String get marksTitle => 'علامات النصّ';
+
+  @override
+  String get marksHint => 'قلم التمييز وتظليل الخلفية. الرفع لهذا الملف وحده.';
+
+  @override
+  String get emptyMarks => 'افتح مستندًا لعرض علاماته.';
+
+  @override
+  String get noMarks => 'لا علامات في هذا المستند.';
+
+  @override
+  String get markHighlight => 'قلم تمييز';
+
+  @override
+  String get markShading => 'تظليل نصّ';
+
+  @override
+  String markUsage(int count, Object kind, Object parts) {
+    return '$count موضعًا · $kind · $parts';
+  }
+
+  @override
+  String get liftAll => 'امسح الكل';
+
+  @override
+  String get keepAll => 'أعد الكل';
+
+  @override
+  String get liftMark => 'امسح';
+
+  @override
+  String get markLifted => 'سيُمسح';
+
+  @override
+  String get focusedMark => 'علامة متتبَّعة';
+
+  @override
+  String get tapMarkHint => 'اضغط لتتبّع مواضعها';
+
+  @override
+  String get reportMarksLifted => 'علامات رُفعت';
 }

@@ -73,6 +73,10 @@ List<EngineIssue> scanXmlParts(
 ///
 /// جزء تالف هنا **يوقف كل شيء**: الفحص يتسامح لأنه قراءة، والتحويل لا
 /// يتسامح لأنه سيكتب (`00` §١/٢).
+///
+/// **والقائمة تُثبَّت قبل المرور.** الزائر قد يحذف عنصرًا — رفع علامة تمييز
+/// مثلًا — وحذفٌ أثناء تكرارٍ كسول على الشجرة سلوكٌ غير معرَّف: عنصر يُتخطّى
+/// أو استثناء تعديلٍ متزامن.
 EngineResult<List<String>> rewriteXmlParts(
   DocumentPackage package,
   PartClassifier classify,
@@ -95,7 +99,9 @@ EngineResult<List<String>> rewriteXmlParts(
       ]);
     }
 
-    for (final element in document.descendants.whereType<XmlElement>()) {
+    for (final element in document.descendants.whereType<XmlElement>().toList(
+      growable: false,
+    )) {
       onElement(element);
     }
 

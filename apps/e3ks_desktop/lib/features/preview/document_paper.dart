@@ -29,8 +29,11 @@ class DocumentPaper extends StatefulWidget {
     this.highlightChanged = false,
     this.changedColors = const {},
     this.changedFonts = const {},
+    this.changedMarks = const {},
     this.focusedColor,
     this.onColorTap,
+    this.focusedMark,
+    this.onMarkTap,
   });
 
   /// صفحة واحدة. القائمة تبني المرئي منها فقط — وهذا سرّ خفّة المعاينة.
@@ -49,12 +52,22 @@ class DocumentPaper extends StatefulWidget {
   final Set<String> changedColors;
   final Set<String> changedFonts;
 
+  /// علامات سيرفعها التصدير — تُؤطَّر في «قبل» كما يُؤطَّر اللون المُبدَّل.
+  final Set<TextMark> changedMarks;
+
   /// اللون المتتبَّع: يُحاط بإطار أينما ظهر، فيراه المستخدم في لمحة.
   final HexColor? focusedColor;
 
   /// ضغطة على لون في الصفحة. **هذا ما يصل الصفحة بقائمة الألوان**: كان
   /// المستخدم يرى لونًا ثم يبحث عنه في قائمة بالرقم السداسي.
   final void Function(HexColor color)? onColorTap;
+
+  /// العلامة المتتبَّعة — تُبرَز أينما ظهرت، كاللون تمامًا.
+  final TextMark? focusedMark;
+
+  /// ضغطة على نصّ معلَّم. **العلامة أخصّ من لونها**: من ضغط على تمييزٍ
+  /// أصفر يقصده هو، لا كل ما في المستند من أصفر.
+  final void Function(TextMark mark)? onMarkTap;
 
   @override
   State<DocumentPaper> createState() => _DocumentPaperState();
@@ -75,6 +88,15 @@ class _DocumentPaperState extends State<DocumentPaper> {
     super.dispose();
   }
 
+  TapGestureRecognizer? _tapForMark(TextMark mark) {
+    final onTap = widget.onMarkTap;
+    if (onTap == null) return null;
+    return _taps.putIfAbsent(
+      'mark:$mark',
+      () => TapGestureRecognizer()..onTap = () => widget.onMarkTap?.call(mark),
+    );
+  }
+
   TapGestureRecognizer? _tapFor(HexColor? color) {
     final onTap = widget.onColorTap;
     if (color == null || onTap == null) return null;
@@ -92,7 +114,9 @@ class _DocumentPaperState extends State<DocumentPaper> {
   bool get highlightChanged => widget.highlightChanged;
   Set<String> get changedColors => widget.changedColors;
   Set<String> get changedFonts => widget.changedFonts;
+  Set<TextMark> get changedMarks => widget.changedMarks;
   HexColor? get focusedColor => widget.focusedColor;
+  TextMark? get focusedMark => widget.focusedMark;
 
   /// بكسل منطقي لكل نقطة طباعية عند هذا التكبير.
   double get _scale => zoom * Metrics.pxPerPoint;
@@ -101,6 +125,9 @@ class _DocumentPaperState extends State<DocumentPaper> {
       color != null &&
       focusedColor != null &&
       color.value == focusedColor!.value;
+
+  bool _isMarkFocused(PreviewRun run) =>
+      focusedMark != null && runHasMark(run, focusedMark!);
 
   @override
   Widget build(BuildContext context) {
@@ -265,6 +292,7 @@ class _DocumentPaperState extends State<DocumentPaper> {
                 p,
                 colors: changedColors,
                 fonts: changedFonts,
+                marks: changedMarks,
               ),
             ));
     final tappable = _wrapTap(content, fill);
@@ -314,7 +342,12 @@ class _DocumentPaperState extends State<DocumentPaper> {
     final tappable = _wrapTap(content, paragraph.fill);
     final changed =
         highlightChanged &&
-        paragraphChanged(paragraph, colors: changedColors, fonts: changedFonts);
+        paragraphChanged(
+          paragraph,
+          colors: changedColors,
+          fonts: changedFonts,
+          marks: changedMarks,
+        );
     return changed ? _ChangedFrame(scale: _scale, child: tappable) : tappable;
   }
 
@@ -345,17 +378,27 @@ class _DocumentPaperState extends State<DocumentPaper> {
           };
 
     // اللون المتتبَّع يظهر على أرضية سماوية خفيفة: أدقّ من إطار حول الفقرة
-    // كلّها — يشير إلى المقطع نفسه لا إلى ما حوله.
-    final focused = _isFocused(run.color) || _isFocused(run.shading);
+    // كلّها — يشير إلى المقطع نفسه لا إلى ما حوله. والعلامة المتتبَّعة مثله.
+    final focused =
+        _isFocused(run.color) || _isFocused(run.shading) || _isMarkFocused(run);
+
+    // **قلم التمييز يعلو التظليل** كما يفعل Word: المقطع قد يحملهما معًا،
+    // والقلم هو الأحدث والأظهر.
+    final pen = run.highlight?.color;
 
     return TextSpan(
       text: run.text,
-      recognizer: _tapFor(run.color ?? run.shading),
+      // العلامة أخصّ من لونها: ضغطةٌ على نصّ معلَّم تتتبّع علامته لا لونه.
+      recognizer: run.highlight != null
+          ? _tapForMark(run.highlight!)
+          : _tapFor(run.color ?? run.shading),
       style: TextStyle(
         color: run.color == null ? Paper.ink : toFlutter(run.color!),
         backgroundColor: focused
             ? Shade.mirror.withValues(alpha: 0.28)
-            : (run.shading == null ? null : toFlutter(run.shading!)),
+            : (pen ?? run.shading) == null
+            ? null
+            : toFlutter((pen ?? run.shading)!),
         // حجم المقطع بالنقاط كما صرّح به المستند، محوَّلًا إلى بكسل.
         fontSize: (run.sizePt ?? 11) * headingScale * _scale,
         // ارتفاع السطر من `w:spacing/@w:line`. 1.15 احتياطي «مفرد» في Word.

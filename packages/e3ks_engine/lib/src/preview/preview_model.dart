@@ -9,6 +9,7 @@
 library;
 
 import '../inspect/hex_color.dart';
+import '../inspect/text_mark.dart';
 
 /// مقطع نصّي بخصائصه.
 final class PreviewRun {
@@ -22,6 +23,7 @@ final class PreviewRun {
     this.italic = false,
     this.underline = false,
     this.shading,
+    this.highlight,
   });
 
   final String text;
@@ -35,6 +37,12 @@ final class PreviewRun {
 
   /// خلفية النصّ نفسه (`w:shd` داخل `rPr`).
   final HexColor? shading;
+
+  /// قلم التمييز على هذا المقطع (`w:highlight` أو `a:highlight`).
+  ///
+  /// **يُحمَل بمفتاحه لا بلونه**: الرفع يُطابَق بالمفتاح، ولونٌ وحده لا
+  /// يفرّق بين أصفر القلم وأصفر التظليل.
+  final TextMark? highlight;
 
   PreviewRun copyWith({
     HexColor? color,
@@ -51,6 +59,7 @@ final class PreviewRun {
     italic: italic,
     underline: underline,
     shading: shading ?? this.shading,
+    highlight: highlight,
   );
 }
 

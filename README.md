@@ -34,6 +34,9 @@ replacement for each, shows the result page by page, and writes a new file.
 - **Preview** — pages at their real size, with a before/after toggle.
 - **Eyedropper** — point at a colour on the page to select it. The app follows
   it through the document and offers computed shades of it.
+- **Highlights** — the highlighter pen and the background shading that Word's
+  pen cannot lift, listed with their counts and text samples. Remove one, or
+  all of them, for the open file.
 - **Fonts** — Latin and Arabic are set separately. Monospaced fonts stay as
   they are. Fonts missing from the machine are fetched from Google Fonts and
   cached.

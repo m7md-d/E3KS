@@ -1374,6 +1374,96 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.'**
   String get batchSameFolder;
+
+  /// No description provided for @tabMarks.
+  ///
+  /// In ar, this message translates to:
+  /// **'التمييز'**
+  String get tabMarks;
+
+  /// No description provided for @marksTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'علامات النصّ'**
+  String get marksTitle;
+
+  /// No description provided for @marksHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'قلم التمييز وتظليل الخلفية. الرفع لهذا الملف وحده.'**
+  String get marksHint;
+
+  /// No description provided for @emptyMarks.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح مستندًا لعرض علاماته.'**
+  String get emptyMarks;
+
+  /// No description provided for @noMarks.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا علامات في هذا المستند.'**
+  String get noMarks;
+
+  /// No description provided for @markHighlight.
+  ///
+  /// In ar, this message translates to:
+  /// **'قلم تمييز'**
+  String get markHighlight;
+
+  /// No description provided for @markShading.
+  ///
+  /// In ar, this message translates to:
+  /// **'تظليل نصّ'**
+  String get markShading;
+
+  /// No description provided for @markUsage.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} موضعًا · {kind} · {parts}'**
+  String markUsage(int count, Object kind, Object parts);
+
+  /// No description provided for @liftAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح الكل'**
+  String get liftAll;
+
+  /// No description provided for @keepAll.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعد الكل'**
+  String get keepAll;
+
+  /// No description provided for @liftMark.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح'**
+  String get liftMark;
+
+  /// No description provided for @markLifted.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيُمسح'**
+  String get markLifted;
+
+  /// No description provided for @focusedMark.
+  ///
+  /// In ar, this message translates to:
+  /// **'علامة متتبَّعة'**
+  String get focusedMark;
+
+  /// No description provided for @tapMarkHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط لتتبّع مواضعها'**
+  String get tapMarkHint;
+
+  /// No description provided for @reportMarksLifted.
+  ///
+  /// In ar, this message translates to:
+  /// **'علامات رُفعت'**
+  String get reportMarksLifted;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

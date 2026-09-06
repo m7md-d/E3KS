@@ -322,5 +322,29 @@
   "batchNeverMatched": "ألوان في الخطة لم تُطابق أي ملف",
   "batchEmptyFolder": "لا مستندات مدعومة في هذا المجلد.",
   "batchNoPlan": "بدّل ألوانًا أو اختر هوية محفوظة.",
-  "batchSameFolder": "مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه."
+  "batchSameFolder": "مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.",
+  "tabMarks": "التمييز",
+  "marksTitle": "علامات النصّ",
+  "marksHint": "قلم التمييز وتظليل الخلفية. الرفع لهذا الملف وحده.",
+  "emptyMarks": "افتح مستندًا لعرض علاماته.",
+  "noMarks": "لا علامات في هذا المستند.",
+  "markHighlight": "قلم تمييز",
+  "markShading": "تظليل نصّ",
+  "markUsage": "{count} موضعًا · {kind} · {parts}",
+  "@markUsage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "kind": {},
+      "parts": {}
+    }
+  },
+  "liftAll": "امسح الكل",
+  "keepAll": "أعد الكل",
+  "liftMark": "امسح",
+  "markLifted": "سيُمسح",
+  "focusedMark": "علامة متتبَّعة",
+  "tapMarkHint": "اضغط لتتبّع مواضعها",
+  "reportMarksLifted": "علامات رُفعت"
 }

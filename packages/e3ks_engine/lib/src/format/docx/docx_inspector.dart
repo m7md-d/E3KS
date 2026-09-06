@@ -10,6 +10,7 @@ import '../../inspect/color_usage.dart';
 import '../../inspect/font_usage.dart';
 import '../../inspect/hex_color.dart';
 import '../../inspect/inspection_report.dart';
+import '../../inspect/text_mark.dart';
 import '../../inspect/usage_accumulator.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
@@ -31,7 +32,7 @@ final class DocxInspector {
   EngineResult<InspectionReport> inspect(DocumentPackage package) {
     final colors = <HexColor, ColorAccumulator>{};
     final fonts = <String, FontAccumulator>{};
-    final highlights = <String, int>{};
+    final marks = <TextMark, MarkAccumulator>{};
     final scanned = <String>[];
 
     final warnings = scanXmlParts(
@@ -42,7 +43,7 @@ final class DocxInspector {
         ScanContext(partName, partClass),
         colors,
         fonts,
-        highlights,
+        marks,
       ),
       scannedParts: scanned,
     );
@@ -51,7 +52,7 @@ final class DocxInspector {
       InspectionReport(
         colors: buildColors(colors),
         fonts: buildFonts(fonts),
-        highlights: highlights,
+        marks: buildMarks(marks),
         scannedParts: scanned,
       ),
       warnings: warnings,
@@ -63,7 +64,7 @@ final class DocxInspector {
     ScanContext context,
     Map<HexColor, ColorAccumulator> colors,
     Map<String, FontAccumulator> fonts,
-    Map<String, int> highlights,
+    Map<TextMark, MarkAccumulator> marks,
   ) {
     final name = element.name.local;
     final namespace = element.name.namespaceUri;
@@ -75,6 +76,10 @@ final class DocxInspector {
           .putIfAbsent(color, ColorAccumulator.new)
           .record(context, role, themed: themed, sample: _sampleFor(element));
     }
+
+    void addMark(TextMark mark) => marks
+        .putIfAbsent(mark, MarkAccumulator.new)
+        .record(context, sample: _sampleFor(element));
 
     if (namespace == wNs) {
       final hasThemeAttribute = colorThemeAttributes.any(
@@ -92,11 +97,14 @@ final class DocxInspector {
           final role =
               _shadingRoleByParent[element.parentElement?.name.local] ??
               ColorRole.other;
-          addColor(
-            element.getAttribute('fill', namespace: wNs),
-            role,
-            themed: hasThemeAttribute,
-          );
+          final fill = element.getAttribute('fill', namespace: wNs);
+          addColor(fill, role, themed: hasThemeAttribute);
+          // تظليل النصّ نفسه علامةٌ تُرفع، فوق كونه لونًا يُبدَّل: قلم Word
+          // لا يرفعه لأنه ليس تمييزًا، فيستعصي على المستخدم.
+          final shading = HexColor.tryParse(fill);
+          if (role == ColorRole.runFill && shading != null) {
+            addMark(TextMark.shading(shading));
+          }
           addColor(
             element.getAttribute('color', namespace: wNs),
             ColorRole.shadingPattern,
@@ -111,7 +119,7 @@ final class DocxInspector {
         case 'highlight':
           final value = element.getAttribute('val', namespace: wNs);
           if (value != null && value != 'none') {
-            highlights[value] = (highlights[value] ?? 0) + 1;
+            addMark(TextMark(MarkKind.highlight, value));
           }
         case 'rFonts':
           _scanFonts(element, context, fonts);

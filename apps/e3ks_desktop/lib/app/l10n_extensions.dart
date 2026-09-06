@@ -65,6 +65,13 @@ extension HexColorText on HexColor {
   String describe(L t) => '${family.label(t)} ${tone.label(t)}';
 }
 
+extension MarkKindText on MarkKind {
+  String label(L t) => switch (this) {
+    MarkKind.highlight => t.markHighlight,
+    MarkKind.textShading => t.markShading,
+  };
+}
+
 extension FontSlotText on FontSlot {
   String label(L t) => switch (this) {
     FontSlot.ascii => t.slotAscii,

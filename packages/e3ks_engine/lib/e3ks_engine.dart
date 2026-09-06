@@ -22,6 +22,7 @@ export 'src/inspect/font_usage.dart';
 export 'src/inspect/hex_color.dart';
 export 'src/inspect/inspection_report.dart';
 export 'src/inspect/part_class.dart';
+export 'src/inspect/text_mark.dart';
 export 'src/package/document_package.dart';
 export 'src/palette/tonal_ramp.dart';
 export 'src/pipeline/batch.dart';

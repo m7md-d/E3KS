@@ -5,6 +5,7 @@
 library;
 
 import '../inspect/hex_color.dart';
+import '../inspect/text_mark.dart';
 
 /// الخطوط المطلوبة لكل فتحة. `null` يعني «لا تلمس هذه الفتحة».
 ///
@@ -42,7 +43,9 @@ final class StylePlan {
     this.colors = const {},
     this.fonts,
     this.preserveFonts = const {},
+    this.removeMarks = const {},
     this.removeHighlight = false,
+    this.removeTextShading = false,
   });
 
   /// من لون إلى لون. ما ليس في الخريطة يبقى كما هو ويُذكر في التقرير (`00` §5).
@@ -54,10 +57,30 @@ final class StylePlan {
   /// المقارنة بلا حساسية لحالة الأحرف.
   final Set<String> preserveFonts;
 
+  /// علاماتٌ بعينها تُرفع عن النصّ — بمفاتيحها كما يعلنها المستند.
+  final Set<TextMark> removeMarks;
+
+  /// كل قلم تمييز مهما كان اسمه أو لونه.
+  ///
+  /// **الرايتان لازمتان مع [removeMarks]:** الدفعة تطبّق خطةً واحدة على
+  /// ملفات لا تُعرف علاماتها سلفًا، فلا يمكن تعدادها في مجموعة.
   final bool removeHighlight;
 
+  /// كل تظليل خلفية على نصّ، مهما كان لونه.
+  final bool removeTextShading;
+
   bool get isEmpty =>
-      colors.isEmpty && (fonts?.isEmpty ?? true) && !removeHighlight;
+      colors.isEmpty &&
+      (fonts?.isEmpty ?? true) &&
+      removeMarks.isEmpty &&
+      !removeHighlight &&
+      !removeTextShading;
+
+  /// هل ترفع هذه الخطة هذه العلامة؟
+  bool removes(TextMark mark) => switch (mark.kind) {
+    MarkKind.highlight => removeHighlight || removeMarks.contains(mark),
+    MarkKind.textShading => removeTextShading || removeMarks.contains(mark),
+  };
 
   bool preserves(String fontName) {
     final needle = fontName.toLowerCase();

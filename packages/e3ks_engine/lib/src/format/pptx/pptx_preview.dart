@@ -11,6 +11,7 @@ library;
 import 'package:xml/xml.dart';
 
 import '../../inspect/hex_color.dart';
+import '../../inspect/text_mark.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
 import '../../preview/preview_model.dart';
@@ -237,7 +238,19 @@ final class PptxPreviewExtractor {
       bold: properties?.getAttribute('b') == '1',
       italic: properties?.getAttribute('i') == '1',
       underline: (properties?.getAttribute('u') ?? 'none') != 'none',
+      highlight: _pen(properties),
     );
+  }
+
+  /// قلم التمييز في PowerPoint: `a:highlight` بلونٍ صريح.
+  TextMark? _pen(XmlElement? properties) {
+    final color = HexColor.tryParse(
+      properties
+          ?.getElement('highlight', namespace: aNs)
+          ?.getElement('srgbClr', namespace: aNs)
+          ?.getAttribute('val'),
+    );
+    return color == null ? null : TextMark.coloredPen(color);
   }
 
   PreviewAlign _alignOf(String? value) => switch (value) {
