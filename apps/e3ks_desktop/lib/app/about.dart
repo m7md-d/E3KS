@@ -17,7 +17,7 @@ import 'package:flutter/services.dart';
 import '../data/font_substitutes.dart';
 
 /// يطابق `version` في `pubspec.yaml` — واختبارٌ يحرس التطابق.
-const String appVersion = '0.1.0';
+const String appVersion = '0.2.0';
 
 const String sourceUrl = 'https://github.com/m7md-d/E3KS';
 

@@ -1,6 +1,6 @@
 name: e3ks_cli
 description: واجهة سطر أوامر رفيعة فوق محرّك E3KS — تُثبت المسار عمليًا.
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 repository: https://github.com/m7md-d/E3KS
 issue_tracker: https://github.com/m7md-d/E3KS/issues

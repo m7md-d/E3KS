@@ -3,7 +3,7 @@ description: E3KS — اعكس. تطبيق سطح مكتب لعكس الهوية
 publish_to: none
 repository: https://github.com/m7md-d/E3KS
 issue_tracker: https://github.com/m7md-d/E3KS/issues
-version: 0.1.0
+version: 0.2.0
 
 environment:
   sdk: ^3.9.0
