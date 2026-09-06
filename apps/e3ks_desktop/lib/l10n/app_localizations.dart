@@ -130,7 +130,7 @@ abstract class L {
   /// No description provided for @chooseFile.
   ///
   /// In ar, this message translates to:
-  /// **'اختر ملفًا…'**
+  /// **'اختر ملف…'**
   String get chooseFile;
 
   /// No description provided for @supported.
@@ -148,7 +148,7 @@ abstract class L {
   /// No description provided for @openAnother.
   ///
   /// In ar, this message translates to:
-  /// **'افتح ملفًا آخر'**
+  /// **'افتح ملف آخر'**
   String get openAnother;
 
   /// No description provided for @tabColors.
@@ -190,13 +190,13 @@ abstract class L {
   /// No description provided for @inheritedColorsHint.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان معرَّفة في قوالب Word ولا تظهر في المحتوى.'**
+  /// **'ألوان من قوالب Word لا تظهر في المحتوى.'**
   String get inheritedColorsHint;
 
   /// No description provided for @pickReplacement.
   ///
   /// In ar, this message translates to:
-  /// **'اختر لونًا بديلًا'**
+  /// **'اختر اللون البديل'**
   String get pickReplacement;
 
   /// No description provided for @colorUsage.
@@ -274,7 +274,7 @@ abstract class L {
   /// No description provided for @fontsHint.
   ///
   /// In ar, this message translates to:
-  /// **'الخطّ اللاتيني والعربي منفصلان في OOXML، ويُضبط كلٌّ منهما وحده.'**
+  /// **'الخطّ اللاتيني والعربي منفصلان في OOXML، ويُضبط كل واحد وحده.'**
   String get fontsHint;
 
   /// No description provided for @latinFont.
@@ -310,7 +310,7 @@ abstract class L {
   /// No description provided for @likelyCodeFont.
   ///
   /// In ar, this message translates to:
-  /// **'يُرجَّح أنه خط كود'**
+  /// **'الأرجح أنه خط كود'**
   String get likelyCodeFont;
 
   /// No description provided for @before.
@@ -640,7 +640,7 @@ abstract class L {
   /// No description provided for @identitiesHint.
   ///
   /// In ar, this message translates to:
-  /// **'مجموعة ألوان وخطوط محفوظة، تُطبَّق على أي مستند.'**
+  /// **'مجموعة ألوان وخطوط محفوظة، تصلح لأي مستند.'**
   String get identitiesHint;
 
   /// No description provided for @saveIdentity.
@@ -748,13 +748,13 @@ abstract class L {
   /// No description provided for @reportColorsReplaced.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان بُدِّلت'**
+  /// **'ألوان تغيّرت'**
   String get reportColorsReplaced;
 
   /// No description provided for @reportFontsReplaced.
   ///
   /// In ar, this message translates to:
-  /// **'خطوط بُدِّلت'**
+  /// **'خطوط تغيّرت'**
   String get reportFontsReplaced;
 
   /// No description provided for @reportPartsChanged.
@@ -826,7 +826,7 @@ abstract class L {
   /// No description provided for @aboutLicense.
   ///
   /// In ar, this message translates to:
-  /// **'برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُوزَّع بلا أيّ ضمان.'**
+  /// **'برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُنشر بلا أي ضمان.'**
   String get aboutLicense;
 
   /// No description provided for @componentLicenses.
@@ -886,7 +886,7 @@ abstract class L {
   /// No description provided for @licensesEmpty.
   ///
   /// In ar, this message translates to:
-  /// **'لا رخص مسجَّلة'**
+  /// **'لا رخص هنا'**
   String get licensesEmpty;
 
   /// No description provided for @licenseEntries.
@@ -946,7 +946,7 @@ abstract class L {
   /// No description provided for @extractIdentityHint.
   ///
   /// In ar, this message translates to:
-  /// **'ألوان الملف مرتّبة بالأكثر استعمالًا'**
+  /// **'ألوان الملف مرتّبة بحسب الاستعمال'**
   String get extractIdentityHint;
 
   /// No description provided for @extractFrom.
@@ -1042,7 +1042,7 @@ abstract class L {
   /// No description provided for @fontsSectionHint.
   ///
   /// In ar, this message translates to:
-  /// **'المعاينة تستعمل خطوط المستند. غير المنصَّب منها يُجلب ويُحفَظ هنا.'**
+  /// **'المعاينة تستعمل خطوط المستند. ما ليس على الجهاز يُجلب ويُحفَظ هنا.'**
   String get fontsSectionHint;
 
   /// No description provided for @fetchFonts.
@@ -1078,7 +1078,7 @@ abstract class L {
   /// No description provided for @addFont.
   ///
   /// In ar, this message translates to:
-  /// **'أضف خطًّا'**
+  /// **'أضف خط'**
   String get addFont;
 
   /// No description provided for @fontAdded.
@@ -1144,19 +1144,19 @@ abstract class L {
   /// No description provided for @originBundled.
   ///
   /// In ar, this message translates to:
-  /// **'مضمَّن في التطبيق'**
+  /// **'مشحون مع التطبيق'**
   String get originBundled;
 
   /// No description provided for @originSystem.
   ///
   /// In ar, this message translates to:
-  /// **'منصَّب على الجهاز'**
+  /// **'على الجهاز'**
   String get originSystem;
 
   /// No description provided for @originCached.
   ///
   /// In ar, this message translates to:
-  /// **'محفوظ محليًّا'**
+  /// **'محفوظ على القرص'**
   String get originCached;
 
   /// No description provided for @originFetched.
@@ -1174,7 +1174,7 @@ abstract class L {
   /// No description provided for @originSubstituted.
   ///
   /// In ar, this message translates to:
-  /// **'رُسم ببديل مطابق مقاسيًّا'**
+  /// **'رُسم ببديل مطابق في المقاسات'**
   String get originSubstituted;
 
   /// No description provided for @originOffline.
@@ -1186,13 +1186,13 @@ abstract class L {
   /// No description provided for @originDisabled.
   ///
   /// In ar, this message translates to:
-  /// **'الجلب معطَّل من الإعدادات'**
+  /// **'الجلب موقوف من الإعدادات'**
   String get originDisabled;
 
   /// No description provided for @errNotAnArchive.
   ///
   /// In ar, this message translates to:
-  /// **'الملف ليس أرشيف OOXML صالحًا؛ تعذّر فتحه.'**
+  /// **'تعذّر فتح الملف: ليس أرشيف OOXML.'**
   String get errNotAnArchive;
 
   /// No description provided for @errMissingContentTypes.

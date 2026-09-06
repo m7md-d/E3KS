@@ -24,7 +24,7 @@ class LAr extends L {
   String get orDivider => 'ــ أو ــ';
 
   @override
-  String get chooseFile => 'اختر ملفًا…';
+  String get chooseFile => 'اختر ملف…';
 
   @override
   String get supported => 'الصيغ المدعومة: ‎.docx‎ و‎.pptx‎';
@@ -33,7 +33,7 @@ class LAr extends L {
   String get reading => 'جارٍ قراءة المستند…';
 
   @override
-  String get openAnother => 'افتح ملفًا آخر';
+  String get openAnother => 'افتح ملف آخر';
 
   @override
   String get tabColors => 'الألوان';
@@ -54,11 +54,10 @@ class LAr extends L {
   String get inheritedColors => 'ألوان موروثة';
 
   @override
-  String get inheritedColorsHint =>
-      'ألوان معرَّفة في قوالب Word ولا تظهر في المحتوى.';
+  String get inheritedColorsHint => 'ألوان من قوالب Word لا تظهر في المحتوى.';
 
   @override
-  String get pickReplacement => 'اختر لونًا بديلًا';
+  String get pickReplacement => 'اختر اللون البديل';
 
   @override
   String colorUsage(int count, Object role, Object parts) {
@@ -106,7 +105,7 @@ class LAr extends L {
 
   @override
   String get fontsHint =>
-      'الخطّ اللاتيني والعربي منفصلان في OOXML، ويُضبط كلٌّ منهما وحده.';
+      'الخطّ اللاتيني والعربي منفصلان في OOXML، ويُضبط كل واحد وحده.';
 
   @override
   String get latinFont => 'الخط الإنجليزي';
@@ -125,7 +124,7 @@ class LAr extends L {
       'خطوط أحادية العرض. مستثناة من التبديل لأن استبدالها يغيّر المحاذاة.';
 
   @override
-  String get likelyCodeFont => 'يُرجَّح أنه خط كود';
+  String get likelyCodeFont => 'الأرجح أنه خط كود';
 
   @override
   String get before => 'قبل';
@@ -292,8 +291,7 @@ class LAr extends L {
   String get slotDrawing => 'رسوميات';
 
   @override
-  String get identitiesHint =>
-      'مجموعة ألوان وخطوط محفوظة، تُطبَّق على أي مستند.';
+  String get identitiesHint => 'مجموعة ألوان وخطوط محفوظة، تصلح لأي مستند.';
 
   @override
   String get saveIdentity => 'احفظ كهويّة';
@@ -348,10 +346,10 @@ class LAr extends L {
       'فشل التحقّق من الملف الناتج، فأُلغيت الكتابة.';
 
   @override
-  String get reportColorsReplaced => 'ألوان بُدِّلت';
+  String get reportColorsReplaced => 'ألوان تغيّرت';
 
   @override
-  String get reportFontsReplaced => 'خطوط بُدِّلت';
+  String get reportFontsReplaced => 'خطوط تغيّرت';
 
   @override
   String get reportPartsChanged => 'أجزاء تغيّرت';
@@ -392,7 +390,7 @@ class LAr extends L {
 
   @override
   String get aboutLicense =>
-      'برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُوزَّع بلا أيّ ضمان.';
+      'برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُنشر بلا أي ضمان.';
 
   @override
   String get componentLicenses => 'رخص المكوّنات';
@@ -424,7 +422,7 @@ class LAr extends L {
   String get licensesLoading => 'جارٍ التحميل…';
 
   @override
-  String get licensesEmpty => 'لا رخص مسجَّلة';
+  String get licensesEmpty => 'لا رخص هنا';
 
   @override
   String licenseEntries(int count) {
@@ -463,7 +461,7 @@ class LAr extends L {
   String get extractIdentity => 'استخرج الهوية من ملف مفتوح';
 
   @override
-  String get extractIdentityHint => 'ألوان الملف مرتّبة بالأكثر استعمالًا';
+  String get extractIdentityHint => 'ألوان الملف مرتّبة بحسب الاستعمال';
 
   @override
   String extractFrom(String file) {
@@ -514,7 +512,7 @@ class LAr extends L {
 
   @override
   String get fontsSectionHint =>
-      'المعاينة تستعمل خطوط المستند. غير المنصَّب منها يُجلب ويُحفَظ هنا.';
+      'المعاينة تستعمل خطوط المستند. ما ليس على الجهاز يُجلب ويُحفَظ هنا.';
 
   @override
   String get fetchFonts => 'اجلب الخطوط الناقصة';
@@ -533,7 +531,7 @@ class LAr extends L {
   String get deleteAllFonts => 'احذف الكل';
 
   @override
-  String get addFont => 'أضف خطًّا';
+  String get addFont => 'أضف خط';
 
   @override
   String fontAdded(String family) {
@@ -570,13 +568,13 @@ class LAr extends L {
   String get showDetails => 'التفاصيل';
 
   @override
-  String get originBundled => 'مضمَّن في التطبيق';
+  String get originBundled => 'مشحون مع التطبيق';
 
   @override
-  String get originSystem => 'منصَّب على الجهاز';
+  String get originSystem => 'على الجهاز';
 
   @override
-  String get originCached => 'محفوظ محليًّا';
+  String get originCached => 'محفوظ على القرص';
 
   @override
   String get originFetched => 'جُلب';
@@ -585,16 +583,16 @@ class LAr extends L {
   String get originUnavailable => 'غير موجود على Google Fonts';
 
   @override
-  String get originSubstituted => 'رُسم ببديل مطابق مقاسيًّا';
+  String get originSubstituted => 'رُسم ببديل مطابق في المقاسات';
 
   @override
   String get originOffline => 'تعذّر الاتصال';
 
   @override
-  String get originDisabled => 'الجلب معطَّل من الإعدادات';
+  String get originDisabled => 'الجلب موقوف من الإعدادات';
 
   @override
-  String get errNotAnArchive => 'الملف ليس أرشيف OOXML صالحًا؛ تعذّر فتحه.';
+  String get errNotAnArchive => 'تعذّر فتح الملف: ليس أرشيف OOXML.';
 
   @override
   String get errMissingContentTypes =>
