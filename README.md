@@ -10,7 +10,7 @@
   <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-2A2F35">
   <img alt="Flutter 3.47" src="https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white">
   <img alt="Dart 3.9" src="https://img.shields.io/badge/Dart-3.9-0175C2?logo=dart&logoColor=white">
-  <img alt="macOS" src="https://img.shields.io/badge/macOS-desktop-111111?logo=apple&logoColor=white">
+  <img alt="macOS, Windows and Linux" src="https://img.shields.io/badge/desktop-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-111111">
   <img alt="docx and pptx" src="https://img.shields.io/badge/formats-docx%20%C2%B7%20pptx-2A9D8F">
   <img alt="GPL-3.0" src="https://img.shields.io/badge/licence-GPL--3.0-4FD6E8">
 </p>
@@ -89,7 +89,7 @@ actually is.
 | | |
 |---|---|
 | Engine | Dart 3.9, pure — `archive` and `xml` |
-| UI | Flutter 3.47 on macOS |
+| UI | Flutter 3.47 — macOS, Windows, Linux |
 | Files | `file_selector`, `desktop_drop` |
 | Icons | `lucide_icons_flutter` |
 | Localisation | `flutter_localizations`, `intl`, ARB |
@@ -113,17 +113,18 @@ brand/                    The mark and its usage
 # Engine
 cd packages/e3ks_engine && dart pub get && dart test
 
-# App
+# App — swap the device for your platform: macos, windows, linux
 cd apps/e3ks_desktop && flutter pub get && flutter run -d macos
 
-# Release build
+# Release build. Each platform is built on its own operating system;
+# CI builds all three for a release.
 cd apps/e3ks_desktop && flutter build macos --release
 
 # Regenerate the app icon after editing brand/e3ks-icon.svg
 ./brand/build-appicon.sh
 ```
 
-78 engine tests and 96 app tests. Documentation and project rules are in
+96 engine tests and 143 app tests. Documentation and project rules are in
 Arabic; code is in English.
 
 ## Versioning
