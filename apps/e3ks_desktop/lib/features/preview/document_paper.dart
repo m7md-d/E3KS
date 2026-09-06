@@ -373,6 +373,9 @@ class _DocumentPaperState extends State<DocumentPaper> {
           ...Type.fallback,
         ],
         height: paragraph.lineHeight ?? 1.15,
+        // كنصّ الواجهة: بلا هذا يُقصّ ذيل الحرف، والمعاينة تَعِد بالشكل
+        // الحقيقي — فقصٌّ فيها كذبٌ صامت (`07`).
+        leadingDistribution: TextLeadingDistribution.even,
       ),
     );
   }

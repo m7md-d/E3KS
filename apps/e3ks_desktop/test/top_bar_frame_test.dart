@@ -132,4 +132,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(topBarPadding(tester).right, equals(_inset));
   });
+
+  testWidgets('نصّ أزرار الشريط لا يُقصّ عند حدوده', (tester) async {
+    // **خلل حقيقي:** `RenderParagraph` يقصّ عند حدود صندوقه متى فاض النصّ
+    // عن قيوده ولو بجزء من بكسل، والقصّ يأخذ معه ذيل الحرف النازل — راء
+    // «اختر» كانت تخرج مبتورة في هذا الزرّ وحده. ولم يظهر في زرٍّ معزول:
+    // الشريط الحقيقي بصفّه الضيّق وكثافته المضغوطة هو ما يبلغ الحدّ.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(harness(flatWindowFrame));
+
+    // النصّ نفسه في منطقة الإسقاط أيضًا، والمقصود زرّ الشريط وحده.
+    final label = tester.widget<Text>(
+      find
+          .descendant(
+            of: find.byType(FilledButton),
+            matching: find.text(
+              L.of(tester.element(find.byType(WorkspaceScreen))).chooseFile,
+            ),
+          )
+          .first,
+    );
+    expect(
+      label.overflow,
+      equals(TextOverflow.visible),
+      reason: 'القصّ يبتر ذيل الراء',
+    );
+  });
 }

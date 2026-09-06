@@ -211,6 +211,31 @@ void main() {
     }
   });
 
+  test('كل نمط يضبط ارتفاع السطر يوزّع فراغه بالتساوي', () {
+    // **خلل حقيقي:** التوزيع النِّسبي يدفع خطّ الأساس لأسفل، فيخرج ذيل
+    // الحرف عن صندوق السطر ويُقصّ. ظهر في راء «اختر» داخل الزرّ، وهو يمسّ
+    // كل حرف نازل: ر و و ي و ج. والمعاينة تَعِد بالشكل الحقيقي، فقصٌّ
+    // فيها كذبٌ صامت.
+    //
+    // نمطٌ يرث `height` بـ`copyWith` يرث التوزيع معه، فلا يُطالَب به.
+    final lineHeight = RegExp(r'height:\s*\d+\.\d');
+    for (final file
+        in Directory('lib')
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'))) {
+      final source = file.readAsStringSync();
+      for (final line in source.split('\n')) {
+        if (!lineHeight.hasMatch(line) || line.contains('copyWith')) continue;
+        expect(
+          source,
+          contains('leadingDistribution'),
+          reason: '${file.path}: يضبط ارتفاع السطر بلا توزيع متساوٍ',
+        );
+      }
+    }
+  });
+
   test('كل خطّ مملوك في الاقتراحات له بديل مضمَّن', () {
     // اقتراحٌ لا تستطيع المعاينة رسمه يجعل المستخدم يختار ثم لا يرى شيئًا.
     // الاستثناء الوحيد خطّ نظام: يُحلّ على منصّته ويُعلَن عجزه على غيرها.

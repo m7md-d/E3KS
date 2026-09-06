@@ -44,6 +44,11 @@ ThemeData buildTheme() {
     fontFamily: Type.family,
     fontFamilyFallback: Type.fallback,
     height: 1.45,
+    // **الفراغ يُوزَّع بالتساوي فوق الحرف وتحته.** التوزيع النِّسبي — وهو
+    // الافتراضي — يعطي الفراغ لأعلى الصندوق، فينزل خطّ الأساس ويخرج ذيل
+    // الحرف عن الصندوق فيُقصّ. رأينا ذلك في راء «اختر» داخل الزرّ:
+    // الذيل مبتور، وبالتوزيع المتساوي يعود كاملًا وتباعد الأسطر كما هو.
+    leadingDistribution: TextLeadingDistribution.even,
   );
 
   return ThemeData(

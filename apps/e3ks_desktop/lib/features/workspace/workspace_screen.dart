@@ -429,11 +429,16 @@ class _TopBar extends StatelessWidget {
               ),
               const SizedBox(width: 12),
             ],
+            // **`TextOverflow.visible` هنا ليست ترفًا.** `RenderParagraph`
+            // يقصّ عند حدود صندوقه متى فاض النصّ عن قيوده ولو بجزء من
+            // بكسل، **والقصّ يأخذ معه ذيل الحرف النازل** — راء «اختر»
+            // كانت تخرج مبتورة. والزرّ هنا وحده يبلغ هذا الحدّ: صفٌّ
+            // ضيّق داخل زرٍّ مضغوط الكثافة في شريط بارتفاع مضبوط.
             if (document == null)
               FilledButton.icon(
                 onPressed: store.busy ? null : onBrowse,
                 icon: const Icon(LucideIcons.folderOpen, size: 16),
-                label: Text(t.chooseFile),
+                label: Text(t.chooseFile, overflow: TextOverflow.visible),
               )
             else
               FilledButton.icon(
@@ -445,7 +450,10 @@ class _TopBar extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(LucideIcons.share, size: 16),
-                label: Text(exporting ? t.exporting : t.export),
+                label: Text(
+                  exporting ? t.exporting : t.export,
+                  overflow: TextOverflow.visible,
+                ),
               ),
           ],
         ),
