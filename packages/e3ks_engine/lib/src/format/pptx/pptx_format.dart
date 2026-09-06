@@ -18,7 +18,7 @@ import 'pptx_transformer.dart';
 /// نوع محتوى العرض في `[Content_Types].xml`.
 ///
 /// يغطّي `presentation.main+xml` و`slideshow.main+xml` و`template.main+xml`
-/// معًا: ثلاثتها عروض بالبنية نفسها، ويختلف الامتداد وحده (‏pptx / ppsx / potx).
+/// معًا: ثلاثتها عروض بالبنية نفسها، ويختلف الامتداد وحده (pptx / ppsx / potx).
 const String _presentationContentType = 'presentationml.';
 
 final class PptxFormat implements DocumentFormat {

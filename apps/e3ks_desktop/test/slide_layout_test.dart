@@ -11,7 +11,7 @@ import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// ‏16:9 بالنقاط، بلا هوامش — كما تقرأها `PptxPreviewExtractor`.
+/// 16:9 بالنقاط، بلا هوامش — كما تقرأها `PptxPreviewExtractor`.
 const _slide = PageGeometry(
   widthPt: 960,
   heightPt: 540,

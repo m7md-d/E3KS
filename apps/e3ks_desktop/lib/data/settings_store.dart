@@ -8,6 +8,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import 'app_directory.dart';
+
 class SettingsStore extends ChangeNotifier {
   SettingsStore(this._file, this._locale);
 
@@ -19,11 +21,7 @@ class SettingsStore extends ChangeNotifier {
   static const List<Locale> supported = [Locale('ar'), Locale('en')];
 
   static Future<SettingsStore> open() async {
-    final home = Platform.environment['HOME'] ?? Directory.current.path;
-    final directory = Directory('$home/Library/Application Support/E3KS');
-    if (!directory.existsSync()) directory.createSync(recursive: true);
-
-    final file = File('${directory.path}/settings.json');
+    final file = File('${appDataRoot().path}/settings.json');
     var locale = _systemDefault();
     if (file.existsSync()) {
       try {

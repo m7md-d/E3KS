@@ -38,7 +38,7 @@ final class PixelGrid {
   final int width;
   final int height;
 
-  /// ‏`0xRRGGBB` عند النقطة، أو `null` خارج الحدود.
+  /// `0xRRGGBB` عند النقطة، أو `null` خارج الحدود.
   int? rgbAt(int x, int y) {
     if (x < 0 || y < 0 || x >= width || y >= height) return null;
     final offset = (y * width + x) * 4;

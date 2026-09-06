@@ -267,8 +267,10 @@ class _ColorRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
+              // السهم يتبع اتجاه القراءة: من المصدر إلى البديل. أيقونة
+              // ثابتة الاتجاه تنقلب معناها في الإنجليزية.
               Icon(
-                LucideIcons.moveLeft,
+                LucideIcons.moveRightDir,
                 size: 16,
                 color: changed ? Shade.mirror : Shade.textFaint,
               ),

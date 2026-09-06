@@ -163,7 +163,7 @@ ParagraphStyle readParagraphProperties(XmlElement? properties) {
   }
 
   // `w:line` بالـ twip حين تكون القاعدة مقدارًا، وبالعشرينات من السطر
-  // (‏240 = سطر واحد) حين تكون `auto`. خلطهما يضاعف ارتفاع المستند.
+  // (240 = سطر واحد) حين تكون `auto`. خلطهما يضاعف ارتفاع المستند.
   final rule = spacing?.getAttribute('lineRule', namespace: wNs) ?? 'auto';
   final rawLine = double.tryParse(
     spacing?.getAttribute('line', namespace: wNs) ?? '',

@@ -268,9 +268,21 @@ class WorkspaceStore extends ChangeNotifier {
   /// ولا ينقلب عنوان داكن إلى خلفية فاتحة.
   void applyIdentity(Identity identity) {
     final tab = current;
-    if (tab == null || identity.colors.isEmpty) return;
+    if (tab == null || (identity.colors.isEmpty && identity.map.isEmpty)) {
+      return;
+    }
 
     for (final usage in tab.document.report.contentColors) {
+      // **القاعدة الصريحة تسبق كل ترجيح**، وتسبق حارس المحايدين معه: من
+      // كتب «هذا اللون يصير ذاك» قصده، ولا يُردّ عليه قصدُه بتخمين. وهي
+      // التي تجعل الملف الحادي والأربعين يخرج مطابقًا لما قبله.
+      final explicit = identity.map[usage.color];
+      if (explicit != null) {
+        tab.colorMap[usage.color] = explicit;
+        continue;
+      }
+      if (identity.colors.isEmpty) continue;
+
       // الأبيض والأسود مرجعان محايدان: تبديلهما يقلب المستند رأسًا على عقب.
       if (usage.color.value == '#FFFFFF' || usage.color.value == '#000000') {
         continue;

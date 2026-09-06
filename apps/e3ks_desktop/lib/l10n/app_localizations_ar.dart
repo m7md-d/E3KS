@@ -317,7 +317,7 @@ class LAr extends L {
   String get noIdentities => 'لا هويات محفوظة.';
 
   @override
-  String get documentFacts => 'حصيلة الفحص';
+  String get documentFacts => 'نتائج الفحص';
 
   @override
   String get factDesignColors => 'ألوان التصميم';
@@ -626,4 +626,61 @@ class LAr extends L {
 
   @override
   String get noColorMatch => 'لا لون مطابق';
+
+  @override
+  String get batchTitle => 'تطبيق على مجلد';
+
+  @override
+  String get batchHint =>
+      'الخطة نفسها على كل مستند في المجلد وما تحته، والبنية تُحفَظ.';
+
+  @override
+  String get batchSource => 'المجلد';
+
+  @override
+  String get batchOutput => 'مجلد المخرَج';
+
+  @override
+  String get batchChoose => 'اختر…';
+
+  @override
+  String batchDocuments(int count) {
+    return '$count مستندًا';
+  }
+
+  @override
+  String get batchPlan => 'الخطة';
+
+  @override
+  String get batchFromOpen => 'خطة الملف المفتوح';
+
+  @override
+  String get batchRun => 'شغّل';
+
+  @override
+  String batchProgress(int done, int total) {
+    return '$done من $total';
+  }
+
+  @override
+  String get batchWritten => 'كُتب';
+
+  @override
+  String get batchFailedCount => 'سقط';
+
+  @override
+  String get batchUnchanged => 'بلا تغيير';
+
+  @override
+  String get batchNeverMatched => 'ألوان في الخطة لم تُطابق أي ملف';
+
+  @override
+  String get batchEmptyFolder => 'لا مستندات مدعومة في هذا المجلد.';
+
+  @override
+  String get batchNoPlan => 'بدّل ألوانًا أو اختر هوية محفوظة.';
+
+  @override
+  String get batchSameFolder =>
+      'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.';
 }

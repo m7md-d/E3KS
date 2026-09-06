@@ -88,6 +88,10 @@ class IdentitiesPanel extends StatelessWidget {
       Identity(
         name: name.trim(),
         colors: colors,
+        // **ما بدّله المستخدم بيده يُحفَظ قاعدةً صريحة.** لو حُفظت الألوان
+        // وحدها لأُعيد توزيعها بالترجيح عند كل تطبيق، فيخرج الملف التالي
+        // بغير ما خرج به هذا.
+        map: Map.of(store.colorMap),
         latinFont: store.latinFont,
         arabicFont: store.arabicFont,
         preserveFonts: store.preserveFonts.toList(),

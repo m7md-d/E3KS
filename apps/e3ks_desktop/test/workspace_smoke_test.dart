@@ -63,12 +63,16 @@ void main() {
         ),
       ),
     );
+    // النصوص من ملف الترجمة لا منسوخةً هنا: نصٌّ منسوخ يُسقط الاختبار كلّما
+    // أُعيدت صياغة الواجهة، فيبدو خللًا وهو تحرير.
+    final t = await L.delegate.load(const Locale('ar'));
+
     // لا شاشة فتح منفصلة: الشريط الجانبي واللوحات ظاهرة، والإسقاط في المعاينة.
-    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsOneWidget);
-    expect(find.text('الألوان'), findsWidgets);
-    expect(find.text('الخطوط'), findsWidgets);
-    expect(find.text('حصيلة الفحص'), findsOneWidget);
-    expect(find.text('افتح مستندًا لعرض ألوانه.'), findsOneWidget);
+    expect(find.text(t.dropHere), findsOneWidget);
+    expect(find.text(t.tabColors), findsWidgets);
+    expect(find.text(t.tabFonts), findsWidgets);
+    expect(find.text(t.documentFacts), findsOneWidget);
+    expect(find.text(t.emptyColors), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -114,7 +118,8 @@ void main() {
     await tester.pump();
 
     // لوحة الألوان تعرض الهوية ولا تُغرق المستخدم بالموروث.
-    expect(find.text('ألوان المحتوى'), findsOneWidget);
+    final t = await L.delegate.load(const Locale('ar'));
+    expect(find.text(t.identityColors), findsOneWidget);
     expect(find.text('#4C2FB8'), findsOneWidget);
 
     // تبديل لون يُحدِّث العدّاد والمعاينة.
@@ -128,8 +133,8 @@ void main() {
     expect(store.previewAfter, isNotNull);
 
     // أدوات المراجعة في المعاينة: مبدّل بزرَّين، وتكبير، وترقيم، وتنقّل.
-    expect(find.text('قبل'), findsOneWidget);
-    expect(find.text('بعد'), findsOneWidget);
+    expect(find.text(t.before), findsOneWidget);
+    expect(find.text(t.after), findsOneWidget);
     // نصّ المستند نفسه فيه «100%» — نتحقّق من أزرار التكبير لا من النسبة.
     expect(find.byIcon(LucideIcons.plus), findsOneWidget);
     expect(find.byIcon(LucideIcons.minus), findsOneWidget);
@@ -197,7 +202,8 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('لا تغييرات'), findsOneWidget);
+    final t = await L.delegate.load(const Locale('ar'));
+    expect(find.text(t.noChangesYet), findsOneWidget);
 
     // لون كثير الاستعمال ⇒ عدّاد تغييرات كبير وتنقّل مفعَّل.
     final busy = store.report!.contentColors.firstWhere(
@@ -206,7 +212,7 @@ void main() {
     store.mapColor(busy.color, store.report!.contentColors.last.color);
     await tester.pump();
 
-    expect(find.text('لا تغييرات'), findsNothing);
+    expect(find.text(t.noChangesYet), findsNothing);
     // نصّ المستند نفسه يحوي "/" — نطابق صيغة العدّاد وحدها.
     expect(
       find.byWidgetPredicate(
@@ -238,14 +244,16 @@ void main() {
       ),
     );
 
-    expect(find.text('Drop a Word or PowerPoint file here'), findsOneWidget);
-    expect(find.text('Colours'), findsWidgets);
-    expect(find.text('Scan results'), findsOneWidget);
-    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsNothing);
+    final en = await L.delegate.load(const Locale('en'));
+    final ar = await L.delegate.load(const Locale('ar'));
+    expect(find.text(en.dropHere), findsOneWidget);
+    expect(find.text(en.tabColors), findsWidgets);
+    expect(find.text(en.documentFacts), findsOneWidget);
+    expect(find.text(ar.dropHere), findsNothing);
 
     // الاتجاه يأتي من اللغة تلقائيًا، لا يُفرَض في الكود.
     expect(
-      Directionality.of(tester.element(find.text('Colours').first)),
+      Directionality.of(tester.element(find.text(en.tabColors).first)),
       equals(TextDirection.ltr),
     );
     expect(tester.takeException(), isNull);
@@ -271,13 +279,15 @@ void main() {
         ),
       ),
     );
-    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsOneWidget);
+    final ar = await L.delegate.load(const Locale('ar'));
+    final en = await L.delegate.load(const Locale('en'));
+    expect(find.text(ar.dropHere), findsOneWidget);
 
     await tester.runAsync(() => settings.setLocale(const Locale('en')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Drop a Word or PowerPoint file here'), findsOneWidget);
-    expect(find.text('أفلِت ملف Word أو PowerPoint هنا'), findsNothing);
+    expect(find.text(en.dropHere), findsOneWidget);
+    expect(find.text(ar.dropHere), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

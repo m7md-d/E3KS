@@ -8,8 +8,13 @@
 //   dart tools/release/bump_version.dart minor        0.1.0 → 0.2.0
 //   dart tools/release/bump_version.dart major        0.1.0 → 1.0.0
 //   dart tools/release/bump_version.dart --set 0.4.2  رقم صريح
+//   dart tools/release/bump_version.dart --next v0.3.1 رقمُ الإصدار القادم
 //
-// ‏Dart خالص بلا حزم: يعمل في أي بيئة فيها Dart، ومنها منصّة التكامل.
+// `--next` استعلام لا يكتب شيئًا: يأخذ آخر وسم منشور ويطبع ما يُصدَر بعده.
+// إن كان رقم الشجرة أعلى منه فهو المطلوب — رفعه المالك بيده لإصدار أكبر.
+// وإلا فالخانة الأخيرة وحدها ترتفع. **الآلة لا تقرّر أكثر من هذا** (`08` §6).
+//
+// Dart خالص بلا حزم: يعمل في أي بيئة فيها Dart، ومنها منصّة التكامل.
 
 import 'dart:io';
 
@@ -52,6 +57,12 @@ void main(List<String> arguments) {
     return;
   }
 
+  if (arguments.first == '--next') {
+    final last = arguments.length > 1 ? arguments[1] : '';
+    stdout.writeln(_nextRelease(current, last));
+    return;
+  }
+
   final next = _next(current, arguments);
   for (final pubspec in _pubspecs) {
     _write(root, pubspec, _pubspecLine, 'version: $next');
@@ -83,10 +94,41 @@ void _write(Directory root, String path, RegExp pattern, String line) {
   file.writeAsStringSync(file.readAsStringSync().replaceFirst(pattern, line));
 }
 
+/// رقم الإصدار القادم بالنظر إلى آخر وسم منشور.
+///
+/// بلا وسم ⇒ الشجرة هي أول إصدار كما هي. وإن سبقت الشجرةُ آخرَ وسم فقد
+/// رفعها المالك عمدًا فتُحترم. وإلا فالخانة الأخيرة ترتفع فوق آخر منشور،
+/// فلا يتكرّر رقم ولا يتراجع.
+String _nextRelease(String current, String lastTag) {
+  final last = _parse(lastTag.replaceFirst(RegExp('^v'), ''));
+  if (last == null) return current;
+
+  final tree = _parse(current);
+  if (tree == null) {
+    stderr.writeln('الإصدار الحالي ليس بصيغة X.Y.Z: $current');
+    exit(1);
+  }
+  if (_compare(tree, last) > 0) return current;
+  return '${last[0]}.${last[1]}.${last[2] + 1}';
+}
+
+List<int>? _parse(String value) {
+  final match = _semver.firstMatch(value.trim());
+  if (match == null) return null;
+  return [for (var i = 1; i <= 3; i++) int.parse(match.group(i)!)];
+}
+
+int _compare(List<int> a, List<int> b) {
+  for (var i = 0; i < 3; i++) {
+    if (a[i] != b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
+
 String _next(String current, List<String> arguments) {
   if (arguments.first == '--set') {
     if (arguments.length < 2 || !_semver.hasMatch(arguments[1])) {
-      stderr.writeln('‏--set يحتاج رقمًا بصيغة X.Y.Z');
+      stderr.writeln('--set يحتاج رقمًا بصيغة X.Y.Z');
       exit(1);
     }
     return arguments[1];
@@ -106,7 +148,7 @@ String _next(String current, List<String> arguments) {
     'minor' => '$major.${minor + 1}.0',
     'patch' => '$major.$minor.${patch + 1}',
     _ => () {
-      stderr.writeln('الخانة: major أو minor أو patch أو ‎--set X.Y.Z');
+      stderr.writeln('الخانة: major أو minor أو patch أو --set X.Y.Z');
       exit(1);
     }(),
   };

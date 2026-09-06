@@ -7,7 +7,7 @@ import 'package:e3ks_desktop/features/preview/color_sampler.dart';
 import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// ‏`!` مضمون: القيم أدناه مكتوبة بصيغة `#RRGGBB` صحيحة.
+/// `!` مضمون: القيم أدناه مكتوبة بصيغة `#RRGGBB` صحيحة.
 HexColor hex(String value) => HexColor.tryParse(value)!;
 
 final white = hex('#FFFFFF');

@@ -57,17 +57,24 @@ Identity extractIdentity(
   final named = <NamedColor>[];
   for (final usage in colors) {
     final String label;
+    final IdentityRole role;
     if (identical(usage, colors.first)) {
       label = labels.primary;
+      role = IdentityRole.primary;
     } else if (identical(usage, textColor)) {
       label = labels.text;
+      role = IdentityRole.text;
     } else if (identical(usage, fill)) {
       label = labels.background;
+      role = IdentityRole.surface;
     } else {
       accent++;
       label = '${labels.accent} $accent';
+      role = IdentityRole.accent;
     }
-    named.add(NamedColor(name: label, hex: usage.color));
+    // **الدور يُحفَظ حقلًا لا يُرمى في اسم.** الاسم للقراءة، والدور للتطبيق:
+    // اسمٌ مترجَم لا يُقارَن به شيء، وحقلٌ معلَن يُقارَن.
+    named.add(NamedColor(name: label, hex: usage.color, role: role));
   }
 
   return Identity(

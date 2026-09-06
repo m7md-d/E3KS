@@ -192,6 +192,36 @@ void main() {
       expect(after.fonts.map((f) => f.name), contains('DejaVu Sans Mono'));
     });
 
+    test('خانة خطّ فارغة في الثيم لا تمنع الكتابة', () {
+      // ثيم Office القياسي يكتب `<a:ea typeface=""/>` في كل عرض. كانت
+      // البوابة ترفضه، فيسقط أول عرض حقيقي يمرّ على المحرّك بعيبٍ لم نصنعه.
+      final result = restyle(
+        buildFixturePptx(),
+        const StylePlan(fonts: FontPlan(latin: 'Inter')),
+      );
+      expect(result, isA<Ok<RestyleOutcome>>());
+
+      // وتبقى الخانة الفارغة كما جاءت: لا نملؤها ولا نحذفها.
+      final after = openOrFail((result as Ok<RestyleOutcome>).value.bytes);
+      final theme = after.textOf('ppt/theme/theme1.xml')!;
+      expect(theme, contains('<a:ea typeface=""/>'));
+    });
+
+    test('اسم خطّ فارغ في الخطة لا يمسح الخانة', () {
+      // الطريق الوحيد إلى `typeface=""` من عندنا خطةٌ باسم فارغ.
+      const blank = FontPlan(latin: '   ', arabic: '');
+      expect(blank.latin, isNull);
+      expect(blank.arabic, isNull);
+      expect(blank.isEmpty, isTrue);
+
+      final result = restyle(buildFixturePptx(), const StylePlan(fonts: blank));
+      final after = openOrFail((result as Ok<RestyleOutcome>).value.bytes);
+      expect(
+        after.textOf('ppt/slides/slide1.xml'),
+        contains('typeface="Cairo"'),
+      );
+    });
+
     test('إحالة الثيم تبقى إحالة', () {
       // `+mj-lt` تعني «اتبع الثيم»؛ استبدالها باسم صريح يفصل الشكل عن ثيمه.
       final result = restyle(
@@ -229,7 +259,7 @@ void main() {
       expect(preview.sections.first.kind, equals(PreviewSectionKind.slides));
       expect(preview.pageCount, equals(1));
 
-      // ‏12192000×6858000 EMU = 960×540 نقطة.
+      // 12192000×6858000 EMU = 960×540 نقطة.
       final geometry = preview.sections.first.pages.first.geometry;
       expect(geometry.widthPt, closeTo(960, 0.01));
       expect(geometry.heightPt, closeTo(540, 0.01));
@@ -241,7 +271,7 @@ void main() {
       final body = blocks.whereType<ShapeBlock>().firstWhere(
         (b) => b.fill?.value == '#EEF3F2',
       );
-      // ‏838200 EMU = 66pt، و‎2286000‎ = 180pt.
+      // 838200 EMU = 66pt، و2286000 = 180pt.
       expect(body.frame!.leftPt, closeTo(66, 0.01));
       expect(body.frame!.topPt, closeTo(180, 0.01));
       expect(body.frame!.widthPt, closeTo(828, 0.01));

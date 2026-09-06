@@ -26,7 +26,7 @@ Future<T?> showAppDialog<T>(BuildContext context, WidgetBuilder builder) =>
         return FadeTransition(
           opacity: eased,
           child: ScaleTransition(
-            // من ‎0.98‎ لا من ‎0.8‎: الحوار يستقرّ ولا يقفز. القفزة تُلاحَظ
+            // من 0.98 لا من 0.8: الحوار يستقرّ ولا يقفز. القفزة تُلاحَظ
             // مرّةً وتُزعج عشرًا.
             scale: Tween<double>(begin: 0.98, end: 1).animate(eased),
             child: child,

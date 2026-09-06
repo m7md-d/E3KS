@@ -20,9 +20,11 @@ import '../../data/identity_extract.dart';
 import '../../data/identity_store.dart';
 import '../../data/openable_files.dart';
 import '../../data/settings_store.dart';
+import '../../data/window_frame.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
+import '../batch/batch_sheet.dart';
 import '../identity/identities_panel.dart';
 import '../mapping/color_picker.dart';
 import '../mapping/colors_panel.dart';
@@ -42,12 +44,16 @@ class WorkspaceScreen extends StatefulWidget {
     required this.identities,
     required this.settings,
     required this.fonts,
+    this.frame = flatWindowFrame,
   });
 
   final WorkspaceStore store;
   final IdentityStore identities;
   final SettingsStore settings;
   final FontService fonts;
+
+  /// ما يحجزه إطار النافذة المخصّص. الافتراضي بلا حجز — للاختبارات.
+  final WindowFrame frame;
 
   @override
   State<WorkspaceScreen> createState() => _WorkspaceScreenState();
@@ -134,9 +140,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           children: [
             Entrance(
               child: _TopBar(
+                frame: widget.frame,
                 store: store,
                 settings: widget.settings,
                 onSettings: () => showSettings(context, widget.fonts),
+                onBatch: () => showBatch(context, store, widget.identities),
                 exporting: _exporting,
                 onExport: _export,
                 onBrowse: _browse,
@@ -261,20 +269,33 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 }
 
+/// مسافة الشريط عن حوافّه — **نفسها فوق وتحت ويمينًا ويسارًا**.
+///
+/// المسافة الرأسية غير الأفقية تُرى ولو لم تُقَس: الزرّ يبدو ملتصقًا بحافّة
+/// وطافيًا عن أخرى.
+const double _topBarInset = 12;
+
+/// ارتفاع الشريط: زرٌّ مضغوط (٣٢) وحافّتاه.
+const double _minTopBar = 32 + _topBarInset * 2;
+
 class _TopBar extends StatelessWidget {
   const _TopBar({
+    required this.frame,
     required this.store,
     required this.settings,
     required this.onSettings,
+    required this.onBatch,
     required this.exporting,
     required this.onExport,
     required this.onBrowse,
     required this.onClose,
   });
 
+  final WindowFrame frame;
   final WorkspaceStore store;
   final SettingsStore settings;
   final VoidCallback onSettings;
+  final VoidCallback onBatch;
   final bool exporting;
   final VoidCallback onExport;
   final VoidCallback onBrowse;
@@ -286,110 +307,145 @@ class _TopBar extends StatelessWidget {
     final t = context.l10n;
     final document = store.document;
 
+    // **صفٌّ واحد.** أزرار النظام تسكن أعلى الشريط، ومحتواه يحاذيها في
+    // السطر نفسه. وصفّان — علامةٌ فوق وأفعالٌ تحت — يتركان أحد الطرفين
+    // فارغًا أيًّا كان ترتيبهما.
+    //
+    // والسحب من خلفية الشريط (`isMovableByWindowBackground`)، فلا نحتاج
+    // حزامًا مخصّصًا له ولا يُحرَم زرٌّ من نقرته.
+    // الشريط يسع أزرار النظام كاملةً وإلّا تدلّت تحت حدّه.
+    final needed = frame.titlebarHeight + _topBarInset;
+
     return Container(
-      height: 62,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      height: needed < _minTopBar ? _minTopBar : needed,
+      padding: EdgeInsets.only(
+        // الجهة من النظام لا من اتجاه الواجهة: أزرار النافذة تنتقل مع لغة
+        // النظام، وقد تكون غير لغة التطبيق.
+        left: _topBarInset + frame.reserveLeft,
+        right: _topBarInset + frame.reserveRight,
+        top: _topBarInset,
+        bottom: _topBarInset,
+      ),
       decoration: const BoxDecoration(
         color: Shade.surface,
         border: Border(bottom: BorderSide(color: Shade.border)),
       ),
-      child: Row(
-        children: [
-          Text(
-            t.appName,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: Type.display,
-              letterSpacing: 4,
-              color: Shade.mirror,
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 24,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            color: Shade.border,
-          ),
-          if (document == null)
-            Text(t.tagline, style: theme.textTheme.bodySmall)
-          else ...[
-            const Icon(LucideIcons.fileText, size: 16, color: Shade.textMuted),
-            const SizedBox(width: 8),
-            // اسم الملف قد يطول؛ يُقصّ ولا يزحم الأزرار خارج النافذة.
-            Flexible(
-              child: Text(
-                document.fileName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium,
+      child: Theme(
+        // كثافة مضغوطة: الزرّ ٣٢ بدل ٤٠، فيملأ ما بين الحافّتين ولا يترك
+        // فرقًا بين المسافة الرأسية والأفقية.
+        data: theme.copyWith(visualDensity: VisualDensity.compact),
+        child: Row(
+          children: [
+            Text(
+              t.appName,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: Type.display,
+                letterSpacing: 4,
+                color: Shade.mirror,
               ),
             ),
-            const SizedBox(width: 8),
-            TextButton(onPressed: onBrowse, child: Text(t.openAnother)),
-            if (store.tabs.length < 2)
-              IconButton(
-                onPressed: onClose,
-                icon: const Icon(LucideIcons.x, size: 15),
-                color: Shade.textFaint,
-                visualDensity: VisualDensity.compact,
-                tooltip: t.close,
-              ),
-          ],
-          const SizedBox(width: 12),
-          const Spacer(),
-          _LanguageMenu(settings: settings),
-          const SizedBox(width: 4),
-          IconButton(
-            onPressed: onSettings,
-            icon: const Icon(LucideIcons.settings, size: 16),
-            color: Shade.textMuted,
-            tooltip: t.settings,
-          ),
-          const SizedBox(width: 8),
-          if (store.hasChanges) ...[
-            TextButton(onPressed: store.resetChanges, child: Text(t.reset)),
-            const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-              decoration: BoxDecoration(
-                color: Shade.mirrorDeep,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Shade.mirrorSoft),
+              width: 1,
+              height: 16,
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: Shade.border,
+            ),
+            if (document == null)
+              Text(t.tagline, style: theme.textTheme.labelSmall)
+            else ...[
+              const Icon(
+                LucideIcons.fileText,
+                size: 14,
+                color: Shade.textMuted,
               ),
-              child: Text(
-                t.changesBadge(store.changeCount),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Shade.mirror,
+              const SizedBox(width: 7),
+              // اسم الملف قد يطول؛ يُقصّ ولا يدفع شيئًا خارج النافذة.
+              Flexible(
+                child: Text(
+                  document.fileName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
                 ),
               ),
+              const SizedBox(width: 4),
+              TextButton(onPressed: onBrowse, child: Text(t.openAnother)),
+              if (store.tabs.length < 2)
+                IconButton(
+                  onPressed: onClose,
+                  icon: const Icon(LucideIcons.x, size: 15),
+                  color: Shade.textFaint,
+                  visualDensity: VisualDensity.compact,
+                  tooltip: t.close,
+                ),
+            ],
+            const SizedBox(width: 12),
+            const Spacer(),
+            _LanguageMenu(settings: settings),
+            const SizedBox(width: 4),
+            // الدفعة بجوار الإعدادات: كلاهما فعلٌ يفتح حوارًا، ولا يزاحم
+            // زرَّ التصدير الذي يخصّ الملف المفتوح وحده.
+            IconButton(
+              onPressed: onBatch,
+              icon: const Icon(LucideIcons.folders, size: 16),
+              color: Shade.textMuted,
+              tooltip: t.batchTitle,
             ),
-            const SizedBox(width: 14),
+            IconButton(
+              onPressed: onSettings,
+              icon: const Icon(LucideIcons.settings, size: 16),
+              color: Shade.textMuted,
+              tooltip: t.settings,
+            ),
+            const SizedBox(width: 10),
+            if (store.hasChanges) ...[
+              TextButton(onPressed: store.resetChanges, child: Text(t.reset)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Shade.mirrorDeep,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Shade.mirrorSoft),
+                ),
+                child: Text(
+                  t.changesBadge(store.changeCount),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Shade.mirror,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            if (document == null)
+              FilledButton.icon(
+                onPressed: store.busy ? null : onBrowse,
+                icon: const Icon(LucideIcons.folderOpen, size: 16),
+                label: Text(t.chooseFile),
+              )
+            else
+              FilledButton.icon(
+                onPressed: store.hasChanges && !exporting ? onExport : null,
+                icon: exporting
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(LucideIcons.share, size: 16),
+                label: Text(exporting ? t.exporting : t.export),
+              ),
           ],
-          if (document == null)
-            FilledButton.icon(
-              onPressed: store.busy ? null : onBrowse,
-              icon: const Icon(LucideIcons.folderOpen, size: 16),
-              label: Text(t.chooseFile),
-            )
-          else
-            FilledButton.icon(
-              onPressed: store.hasChanges && !exporting ? onExport : null,
-              icon: exporting
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(LucideIcons.share, size: 16),
-              label: Text(exporting ? t.exporting : t.export),
-            ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// مبدّل اللغة. في الشريط العلوي دائمًا: لا يبحث عنه المستخدم في إعدادات.
 class _LanguageMenu extends StatelessWidget {
   const _LanguageMenu({required this.settings});
 

@@ -9,7 +9,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// ‏`intl` تُصدّر `TextDirection` أيضًا، ونحن نريد التي في Flutter.
+// `intl` تُصدّر `TextDirection` أيضًا، ونحن نريد التي في Flutter.
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -18,7 +18,7 @@ import '../../app/theme.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/arabic_digits.dart';
 
-/// درجات التكبير المعلَنة. ‏١٫٠ = مقاس الورقة الحقيقي.
+/// درجات التكبير المعلَنة. ١٫٠ = مقاس الورقة الحقيقي.
 const List<double> zoomSteps = [0.5, 0.65, 0.8, 1.0, 1.25, 1.5, 2.0];
 
 typedef SectionEntry = ({String title, int index});

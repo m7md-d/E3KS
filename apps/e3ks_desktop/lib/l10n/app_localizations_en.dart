@@ -632,4 +632,61 @@ class LEn extends L {
 
   @override
   String get noColorMatch => 'No matching colour';
+
+  @override
+  String get batchTitle => 'Apply to a folder';
+
+  @override
+  String get batchHint =>
+      'The same plan on every document in the folder and below; the structure is kept.';
+
+  @override
+  String get batchSource => 'Folder';
+
+  @override
+  String get batchOutput => 'Output folder';
+
+  @override
+  String get batchChoose => 'Choose…';
+
+  @override
+  String batchDocuments(int count) {
+    return '$count documents';
+  }
+
+  @override
+  String get batchPlan => 'Plan';
+
+  @override
+  String get batchFromOpen => 'The open file\'s plan';
+
+  @override
+  String get batchRun => 'Run';
+
+  @override
+  String batchProgress(int done, int total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get batchWritten => 'Written';
+
+  @override
+  String get batchFailedCount => 'Failed';
+
+  @override
+  String get batchUnchanged => 'Unchanged';
+
+  @override
+  String get batchNeverMatched => 'Colours in the plan matched no file';
+
+  @override
+  String get batchEmptyFolder => 'No supported documents in this folder.';
+
+  @override
+  String get batchNoPlan => 'Change some colours or pick a saved identity.';
+
+  @override
+  String get batchSameFolder =>
+      'The output folder is the source; the source is never written over.';
 }

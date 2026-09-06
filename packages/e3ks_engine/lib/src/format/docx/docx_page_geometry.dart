@@ -51,7 +51,7 @@ PageGeometry geometryOf(XmlElement sectPr) {
     return value == null ? fallback : value / 20;
   }
 
-  // ‏72pt أصغر صفحة معقولة، و‎1584pt‎ (‏22 بوصة) أكبر ما يسمح به Word.
+  // 72pt أصغر صفحة معقولة، و1584pt (22 بوصة) أكبر ما يسمح به Word.
   final width = points(size, 'w', PageGeometry.a4.widthPt).clamp(72.0, 1584.0);
   final height = points(
     size,

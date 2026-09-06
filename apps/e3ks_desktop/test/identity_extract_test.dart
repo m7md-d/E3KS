@@ -8,6 +8,8 @@ import 'dart:typed_data';
 import 'package:e3ks_desktop/data/document_loader.dart';
 import 'package:e3ks_desktop/data/identity.dart';
 import 'package:e3ks_desktop/data/identity_extract.dart';
+import 'package:e3ks_desktop/data/workspace_store.dart';
+import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _realPath =
@@ -32,6 +34,47 @@ void main() {
       Uint8List.fromList(file.readAsBytesSync()),
     );
     document = result.document!;
+  });
+
+  test('الأدوار تُحفَظ حقولًا لا أسماءً', () {
+    if (!File(_realPath).existsSync()) {
+      markTestSkipped('لا يوجد مستند حقيقي');
+      return;
+    }
+    // الاسم مترجَم فلا يُقارَن به شيء؛ الدور يُقارَن، فيجب أن يكون حقلًا.
+    final identity = extractIdentity(document, name: 'مرجع', labels: _labels);
+    expect(identity.colors.first.role, equals(IdentityRole.primary));
+    expect(
+      identity.colors.map((c) => c.role),
+      isNot(everyElement(equals(IdentityRole.other))),
+    );
+  });
+
+  test('القاعدة الصريحة تسبق الترجيح بالإضاءة', () async {
+    if (!File(_realPath).existsSync()) {
+      markTestSkipped('لا يوجد مستند حقيقي');
+      return;
+    }
+    final store = WorkspaceStore();
+    await store.open(
+      _realPath,
+      'manual.docx',
+      Uint8List.fromList(File(_realPath).readAsBytesSync()),
+    );
+
+    final source = store.report!.contentColors.first.color;
+    final target = HexColor.tryParse('#0F3D3E')!;
+
+    // هوية فيها لون بعيد عن المصدر في الإضاءة، وقاعدة صريحة تخالف الترجيح.
+    store.applyIdentity(
+      Identity(
+        name: 'صريحة',
+        colors: [NamedColor(name: 'فاتح', hex: HexColor.tryParse('#F7F7F7')!)],
+        map: {source: target},
+      ),
+    );
+
+    expect(store.colorMap[source], equals(target));
   });
 
   test('الألوان مرتّبة بالأكثر استعمالًا ومحدودة العدد', () {

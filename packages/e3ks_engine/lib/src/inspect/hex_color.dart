@@ -64,7 +64,7 @@ extension type const HexColor._(String value) implements Object {
     return 0.2126 * channel(_r) + 0.7152 * channel(_g) + 0.0722 * channel(_b);
   }
 
-  /// نسبة التباين مع لون آخر حسب WCAG (‏1:1 إلى 21:1).
+  /// نسبة التباين مع لون آخر حسب WCAG (1:1 إلى 21:1).
   double contrastWith(HexColor other) {
     final a = relativeLuminance;
     final b = other.relativeLuminance;

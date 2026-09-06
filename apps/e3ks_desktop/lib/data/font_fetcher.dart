@@ -135,7 +135,7 @@ final class GoogleFontFetcher implements FontFetcher {
 /// رابط ملفّ TrueType من ورقة أنماط Google Fonts.
 ///
 /// **لا يُشترَط أن ينتهي الرابط بـ`.ttf`.** الخطوط المكافئة مقاسيًّا التي
-/// تخدمها Google بدل خطوط Microsoft (‏Calibri و Cambria و MS Gothic و
+/// تخدمها Google بدل خطوط Microsoft (Calibri و Cambria و MS Gothic و
 /// Courier …) تأتي من `/l/font?kit=…` بلا امتداد أصلًا. اشتراط الامتداد كان
 /// يجعل التطبيق يقول «غير متاح» عن أربعة خطوط من ستّة **يستطيع جلبها فعلًا**،
 /// وهذا أسوأ من العجز: عجزٌ يدّعي معرفة سببه.

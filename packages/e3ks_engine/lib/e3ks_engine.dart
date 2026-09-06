@@ -24,6 +24,7 @@ export 'src/inspect/inspection_report.dart';
 export 'src/inspect/part_class.dart';
 export 'src/package/document_package.dart';
 export 'src/palette/tonal_ramp.dart';
+export 'src/pipeline/batch.dart';
 export 'src/pipeline/restyle.dart';
 export 'src/preview/preview_model.dart';
 export 'src/preview/preview_restyler.dart';

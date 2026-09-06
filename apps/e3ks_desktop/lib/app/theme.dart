@@ -18,7 +18,7 @@ abstract final class Metrics {
   static const double gutter = 20;
   static const double sidebarWidth = 268;
 
-  /// بكسل منطقي لكل نقطة طباعية. مرجع Flutter ‎96dpi‎ والنقطة ‎1/72‎ بوصة،
+  /// بكسل منطقي لكل نقطة طباعية. مرجع Flutter 96dpi والنقطة 1/72 بوصة،
   /// فتكبير ١٠٠٪ يعني **مقاس الورقة الحقيقي** لا مقاسًا اصطلاحيًّا.
   static const double pxPerPoint = 96 / 72;
 }

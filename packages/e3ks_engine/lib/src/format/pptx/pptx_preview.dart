@@ -16,10 +16,10 @@ import '../../package/document_package.dart';
 import '../../preview/preview_model.dart';
 import 'pptx_parts.dart';
 
-/// وحدة PowerPoint: ‏914400 EMU للبوصة، و‎12700‎ للنقطة الطباعية.
+/// وحدة PowerPoint: 914400 EMU للبوصة، و12700 للنقطة الطباعية.
 const double _emuPerPoint = 12700;
 
-/// مقاس ‎4:3‎ الافتراضي بالنقاط — ما يفترضه PowerPoint حين لا يصرّح العرض.
+/// مقاس 4:3 الافتراضي بالنقاط — ما يفترضه PowerPoint حين لا يصرّح العرض.
 const PageGeometry _defaultSlide = PageGeometry(
   widthPt: 720,
   heightPt: 540,
@@ -78,7 +78,7 @@ final class PptxPreviewExtractor {
     }
   }
 
-  /// ‏`p:sldSz` من `presentation.xml` — مقاس كل شريحة في العرض.
+  /// `p:sldSz` من `presentation.xml` — مقاس كل شريحة في العرض.
   PageGeometry _slideSize(DocumentPackage package) {
     final document = _parse(package, 'ppt/presentation.xml');
     final size = document?.rootElement.getElement('sldSz', namespace: pNs);
@@ -232,7 +232,7 @@ final class PptxPreviewExtractor {
       color: _fillOf(properties),
       latinFont: typeface('latin'),
       arabicFont: typeface('cs'),
-      // ‏`sz` بمئات النقاط: ‏1800 = 18pt.
+      // `sz` بمئات النقاط: 1800 = 18pt.
       sizePt: size == null ? _defaultSizePt : size / 100,
       bold: properties?.getAttribute('b') == '1',
       italic: properties?.getAttribute('i') == '1',
@@ -248,7 +248,7 @@ final class PptxPreviewExtractor {
   };
 }
 
-/// ‏`slide10.xml` بعد `slide9.xml` لا قبله — الترتيب النصّي يخون هنا.
+/// `slide10.xml` بعد `slide9.xml` لا قبله — الترتيب النصّي يخون هنا.
 int _bySlideNumber(String a, String b) => _number(a).compareTo(_number(b));
 
 int _number(String partName) {

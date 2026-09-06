@@ -20,6 +20,7 @@ import 'package:e3ks_desktop/data/font_service.dart';
 import 'package:e3ks_desktop/data/identity_store.dart';
 import 'package:e3ks_desktop/data/settings_store.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
+import 'package:e3ks_desktop/data/identity.dart';
 import 'package:e3ks_desktop/features/mapping/colors_panel.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
 import 'package:e3ks_desktop/l10n/app_localizations.dart';
@@ -30,12 +31,48 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _demo = '../../docs/demo/brand-guidelines.docx';
 const _outputDir = '../../docs/screenshots';
 const _size = Size(1560, 980);
 
 final _shot = GlobalKey();
+
+/// مخزن هويات مؤقّت فيه هويّتان — قائمة الخطط في حوار الدفعة تعرضهما.
+late final IdentityStore _identities;
+
+Future<void> _seedIdentities() async {
+  final directory = Directory(
+    '${Directory.systemTemp.path}/e3ks_shot_identities',
+  )..createSync(recursive: true);
+  for (final file in directory.listSync()) {
+    file.deleteSync();
+  }
+
+  final store = IdentityStore(directory);
+  await store.save(
+    Identity(
+      name: 'Northwind 2026',
+      colors: [
+        NamedColor(
+          name: 'Primary',
+          hex: _hex('#0F3D3E'),
+          role: IdentityRole.primary,
+        ),
+      ],
+      map: {_hex('#1F3864'): _hex('#0F3D3E')},
+      latinFont: 'IBM Plex Sans',
+    ),
+  );
+  await store.save(
+    Identity(
+      name: 'Northwind legacy',
+      colors: [NamedColor(name: 'Primary', hex: _hex('#1F3864'))],
+    ),
+  );
+  _identities = store;
+}
 
 /// الهوية الجديدة المطبَّقة في اللقطات: من الكحلي إلى الأخضر المزرقّ.
 const _plan = {
@@ -45,7 +82,7 @@ const _plan = {
   '#F2F2F2': '#EAF4F2',
 };
 
-/// ‏`!` مضمون: القيم أعلاه مكتوبة بصيغة `#RRGGBB` صحيحة.
+/// `!` مضمون: القيم أعلاه مكتوبة بصيغة `#RRGGBB` صحيحة.
 HexColor _hex(String value) => HexColor.tryParse(value)!;
 
 /// جذر حزمة من `package_config.json` — أدقّ من تخمين مسار مخزن الحزم.
@@ -113,7 +150,7 @@ Widget _harness(WorkspaceStore store) => RepaintBoundary(
       listenable: store,
       builder: (_, _) => WorkspaceScreen(
         store: store,
-        identities: IdentityStore(Directory.systemTemp),
+        identities: _identities,
         fonts: FontService(FontCache(Directory.systemTemp))
           ..fetchEnabled = false,
         settings: SettingsStore(
@@ -151,7 +188,10 @@ Future<WorkspaceStore> _open(WidgetTester tester) async {
 }
 
 void main() {
-  setUpAll(_loadFonts);
+  setUpAll(() async {
+    await _loadFonts();
+    await _seedIdentities();
+  });
 
   testWidgets('لقطات README', (tester) async {
     await tester.binding.setSurfaceSize(_size);
@@ -181,5 +221,10 @@ void main() {
     }
     await tester.pumpAndSettle();
     await _write(tester, '03-after.png');
+
+    // الدفعة: خطة واحدة على مجلد كامل.
+    await tester.tap(find.byIcon(LucideIcons.folders));
+    await tester.pumpAndSettle();
+    await _write(tester, '04-batch.png');
   });
 }

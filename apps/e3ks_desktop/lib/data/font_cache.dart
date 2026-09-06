@@ -8,6 +8,8 @@ library;
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'app_directory.dart';
+
 /// خطّ محفوظ محليًا.
 final class CachedFont {
   const CachedFont({
@@ -32,10 +34,7 @@ final class FontCache {
   final Directory directory;
 
   static Future<FontCache> open() async {
-    final home = Platform.environment['HOME'] ?? Directory.current.path;
-    final directory = Directory('$home/Library/Application Support/E3KS/fonts');
-    if (!directory.existsSync()) directory.createSync(recursive: true);
-    return FontCache(directory);
+    return FontCache(appDataSubdirectory('fonts'));
   }
 
   /// اسم ملف آمن من اسم عائلة قد يحوي مسافات أو محارف نظام.

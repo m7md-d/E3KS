@@ -30,7 +30,7 @@ const _rootRels = '''
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>
 </Relationships>''';
 
-/// ‏16:9 = 12192000×6858000 EMU = 960×540 نقطة.
+/// 16:9 = 12192000×6858000 EMU = 960×540 نقطة.
 const _presentation = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
@@ -78,7 +78,7 @@ const _slideRels = '''
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
 </Relationships>''';
 
-/// موضع العنوان يسكن هنا: ‏838200×685800 EMU = 66×54 نقطة.
+/// موضع العنوان يسكن هنا: 838200×685800 EMU = 66×54 نقطة.
 const _slideLayout = '''
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <p:sldLayout xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
@@ -109,7 +109,7 @@ const _theme = '''
 <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="E3KS">
 <a:themeElements>
 <a:clrScheme name="E3KS"><a:dk1><a:srgbClr val="000000"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1><a:accent1><a:srgbClr val="9BBB59"/></a:accent1></a:clrScheme>
-<a:fontScheme name="E3KS"><a:majorFont><a:latin typeface="IBM Plex Sans"/><a:cs typeface="IBM Plex Sans Arabic"/></a:majorFont><a:minorFont><a:latin typeface="IBM Plex Sans"/><a:cs typeface="IBM Plex Sans Arabic"/></a:minorFont></a:fontScheme>
+<a:fontScheme name="E3KS"><a:majorFont><a:latin typeface="IBM Plex Sans"/><a:ea typeface=""/><a:cs typeface="IBM Plex Sans Arabic"/></a:majorFont><a:minorFont><a:latin typeface="IBM Plex Sans"/><a:ea typeface=""/><a:cs typeface="IBM Plex Sans Arabic"/></a:minorFont></a:fontScheme>
 </a:themeElements>
 </a:theme>''';
 

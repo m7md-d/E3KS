@@ -15,8 +15,8 @@ trap 'rm -rf "$work"' EXIT
 
 [ -x "$chrome" ] || { echo "لم أجد Chrome — وهو الراسم الوحيد المتاح بلا تنصيب."; exit 1; }
 
-# شبكة أيقونات macOS: جسم الرمز ‎824‎ داخل لوحة ‎1024‎ شفّافة، فيبقى الهامش
-# الذي يتوقّعه Dock وLaunchpad. نصف قطر الـSVG ‎(114/512)‎ يطابق ‎(185/824)‎.
+# شبكة أيقونات macOS: جسم الرمز 824 داخل لوحة 1024 شفّافة، فيبقى الهامش
+# الذي يتوقّعه Dock وLaunchpad. نصف قطر الـSVG (114/512) يطابق (185/824).
 wrap() {  # ملف SVG ← صفحة بمقاس أيقونة
 python3 - "$1" "$2" <<'PY'
 import sys
@@ -44,7 +44,7 @@ wrap "$here/e3ks-icon-small.svg" "$work/small.html"
 shoot "$work/full.html"  "$work/app_icon_1024.png"
 shoot "$work/small.html" "$work/small.png"
 
-# النسخة الكاملة من ‎128‎ فما فوق، ونسخة الأحجام الصغيرة لما دونها: عند ‎16px‎
+# النسخة الكاملة من 128 فما فوق، ونسخة الأحجام الصغيرة لما دونها: عند 16px
 # يذوب الشريط الرفيع والزاوية المدوَّرة فيصير الرمز لطخة.
 for size in 512 256 128; do
   sips -Z "$size" "$work/app_icon_1024.png" --out "$work/app_icon_$size.png" >/dev/null

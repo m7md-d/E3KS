@@ -1,25 +1,27 @@
-# فحوص كل تغيير: تحليل واختبار وتنسيق في الحزم الثلاث، وتطابق رقم الإصدار.
+# فحوص كل تغيير.
 #
-# ⚠ **معطَّل عمدًا.** لا يعمل إلا يدويًّا من تبويب Actions، أو حين يستدعيه
-# `release.yml`. لتشغيله على كل دفعة ومراجعة: أزل التعليق عن السطرين المعلَّمين
-# أدناه. القاعدة `08` §7.
+# **الوظيفة تشغّل `tools/checks.sh` نفسه الذي تشغّله على جهازك**، فقائمة
+# الفحوص واحدة والفرق بيئة العامل وحدها. ملفّان بقائمتين ينحرفان، فيمرّ
+# الشغل محليًّا ويسقط هنا — وقد وقع ذلك فعلًا.
+#
+# يعمل على كل دفعة إلى `dev` وعلى كل مراجعة، ويستدعيه `release.yml` قبل أي
+# إصدار. القاعدة `08` §7.
 
 name: checks
 
 on:
   workflow_dispatch:
   workflow_call:
-  # ↓ لتشغيل الفحوص آليًّا، أزل التعليق عن هذين:
-  # pull_request:
-  # push:
-  #   branches: [main]
+  pull_request:
+  push:
+    branches: [dev]
 
 env:
   FLUTTER_VERSION: "3.47.2"
 
 jobs:
-  engine:
-    name: المحرّك وسطر الأوامر
+  checks:
+    name: تحليل واختبار وتنسيق
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,51 +29,11 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-      - name: المحرّك
-        working-directory: packages/e3ks_engine
-        run: |
-          dart pub get --enforce-lockfile
-          dart analyze --fatal-infos
-          dart test
-      - name: سطر الأوامر
-        working-directory: tools/e3ks_cli
-        run: |
-          dart pub get --enforce-lockfile
-          dart analyze --fatal-infos
 
-  app:
-    name: التطبيق
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-      # اختبارات الواجهة تعمل بلا شاشة، والتي تحتاج مستندًا حقيقيًّا تتخطّى
-      # نفسها بـ`markTestSkipped` — مستندات العملاء لا تدخل المستودع (`04` §4).
-      - name: تحليل واختبار
-        working-directory: apps/e3ks_desktop
-        run: |
-          flutter pub get --enforce-lockfile
-          flutter analyze --fatal-infos
-          flutter test
-
-  hygiene:
-    name: التنسيق ورقم الإصدار
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-      - name: التنسيق
-        run: |
-          dart format --output=none --set-exit-if-changed \
-            packages/e3ks_engine/lib packages/e3ks_engine/test \
-            apps/e3ks_desktop/lib apps/e3ks_desktop/test apps/e3ks_desktop/tool \
-            tools/e3ks_cli/bin tools/e3ks_cli/lib tools/release
-      # الرقم في أربعة مواضع — القاعدة `08` §3.
-      - name: تطابق رقم الإصدار
-        run: dart tools/release/bump_version.dart --check
+      # `--no-build`: البناء على المنصّات الثلاث في `build.yml`، ولا معنى
+      # لتكراره في كل دفعة.
+      #
+      # واختبارات المستند الحقيقي تتخطّى نفسها هنا: مستندات العملاء لا تدخل
+      # المستودع (`04` §4).
+      - name: الفحوص
+        run: ./tools/checks.sh --no-build

@@ -110,7 +110,7 @@ final class _PptxState {
   TransformReport build(Set<HexColor> unmatched) => TransformReport(
     colorReplacements: Map.unmodifiable(colorReplacements),
     fontReplacements: Map.unmodifiable(fontReplacements),
-    // ‏DrawingML بلا سمات ثيم على العنصر: الإحالة عنصرٌ آخر (`a:schemeClr`)
+    // DrawingML بلا سمات ثيم على العنصر: الإحالة عنصرٌ آخر (`a:schemeClr`)
     // لا نلمسه، فلا شيء يُحذف هنا.
     themeAttributesRemoved: 0,
     highlightsRemoved: 0,

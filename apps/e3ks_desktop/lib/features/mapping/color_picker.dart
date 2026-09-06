@@ -1,6 +1,6 @@
 /// منتقي ألوان مكتوب هنا لا مستورد.
 ///
-/// مبني لهذه الحاجة تحديدًا: مستخدم يحمل لون هوية جاهزًا (‏#00635D‎) ويريد
+/// مبني لهذه الحاجة تحديدًا: مستخدم يحمل لون هوية جاهزًا (#00635D) ويريد
 /// لصقه، أو يريد اختياره بصريًا. الحقل النصّي أولًا لأنه الحالة الأشيع.
 library;
 
@@ -122,7 +122,7 @@ class _ColorDialogState extends State<_ColorDialog> {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Icon(
-                      LucideIcons.moveLeft,
+                      LucideIcons.moveRightDir,
                       size: 16,
                       color: Shade.textFaint,
                     ),
