@@ -1,7 +1,15 @@
-// أداة رفع رقم الإصدار في مواضعه الأربعة معًا.
+// أداة رفع رقم الإصدار في مواضعه كلّها معًا.
 //
 // القاعدة `08` §3: رقم واحد للمنتج كلّه، واختبارٌ يحرس تطابقه. هذه الأداة
-// هي الطرف الآخر من ذلك الحارس — ترفع الأربعة دفعةً فلا ينحرف واحد.
+// هي الطرف الآخر من ذلك الحارس — ترفعها دفعةً فلا ينحرف واحد.
+//
+// **وموضعان منها مشتقّان لا مكتوبان باليد:** `pubspec.lock` في التطبيق وفي
+// سطر الأوامر يسجّل نسخة `e3ks_engine` لأنها اعتمادية مسار. وتركهما على
+// الرقم القديم يُسقط `pub get --enforce-lockfile` بـ«Unable to satisfy
+// pubspec.yaml using pubspec.lock» — فيسقط الفحص عند العامل، **ويسقط
+// الإصدار نفسه** لأن `release.yml` يرفع الرقم ثم يجلب الحزم بنفس الراية.
+// وقع هذا فعلًا عند رفع ٠٫٢٫٠. والسطر المكتوب هنا هو نفسه الذي يكتبه
+// `pub get`، والقفل يبقى قفلًا: بقيّة الحزم مثبَّتة كما كانت.
 //
 //   dart tools/release/bump_version.dart --check      يتحقّق من التطابق فقط
 //   dart tools/release/bump_version.dart patch        0.1.0 → 0.1.1
@@ -26,6 +34,12 @@ const _pubspecs = [
 ];
 const _dartSource = 'apps/e3ks_desktop/lib/app/about.dart';
 
+/// أقفال الحزم التي تعتمد المحرّك بالمسار.
+const _lockfiles = [
+  'apps/e3ks_desktop/pubspec.lock',
+  'tools/e3ks_cli/pubspec.lock',
+];
+
 // المسافة الأفقية وحدها: `\s` يبتلع سطر الفراغ بعد الرقم فيختفي من
 // الملف مع كل رفع.
 final _pubspecLine = RegExp(
@@ -33,11 +47,20 @@ final _pubspecLine = RegExp(
   multiLine: true,
 );
 final _dartLine = RegExp(r"const String appVersion = '([^']+)';");
+
+/// سطر نسخة `e3ks_engine` داخل مدخلته في القفل، لا أيّ `version:` آخر.
+final _lockLine = RegExp(
+  r'^  e3ks_engine:\n(?:[ ]{4}.*\n)*?[ ]{4}version: "([^"]+)"',
+  multiLine: true,
+);
 final _semver = RegExp(r'^(\d+)\.(\d+)\.(\d+)$');
 
 void main(List<String> arguments) {
   final root = _repoRoot();
 
+  // **المواضع المكتوبة باليد هي المرجع.** الأقفال مشتقّة منها، فانحرافها
+  // خللٌ يُصلَح لا رأيٌ يُوازَن — ولو أُدخلت في الموازنة لامتنع الرفع الذي
+  // يصلحها.
   final found = <String, String>{
     for (final pubspec in _pubspecs)
       pubspec: _read(root, pubspec, _pubspecLine),
@@ -53,6 +76,19 @@ void main(List<String> arguments) {
 
   final current = distinct.single;
   if (arguments.isEmpty || arguments.first == '--check') {
+    final stale = {
+      for (final lock in _lockfiles)
+        if (_read(root, lock, _lockLine) != current)
+          lock: _read(root, lock, _lockLine),
+    };
+    if (stale.isNotEmpty) {
+      stderr.writeln('قفلٌ يسجّل نسخةً قديمة للمحرّك (المطلوب $current):');
+      stale.forEach((file, version) => stderr.writeln('  $version  $file'));
+      stderr.writeln(
+        'أصلحه: dart tools/release/bump_version.dart --set $current',
+      );
+      exit(1);
+    }
     stdout.writeln(current);
     return;
   }
@@ -68,6 +104,9 @@ void main(List<String> arguments) {
     _write(root, pubspec, _pubspecLine, 'version: $next');
   }
   _write(root, _dartSource, _dartLine, "const String appVersion = '$next';");
+  for (final lock in _lockfiles) {
+    _writeLock(root, lock, next);
+  }
 
   stdout.writeln(next);
 }
@@ -92,6 +131,22 @@ String _read(Directory root, String path, RegExp pattern) {
 void _write(Directory root, String path, RegExp pattern, String line) {
   final file = File.fromUri(root.uri.resolve(path));
   file.writeAsStringSync(file.readAsStringSync().replaceFirst(pattern, line));
+}
+
+/// يكتب النسخة في مدخلة `e3ks_engine` وحدها من القفل.
+///
+/// الاستبدال على آخر ظهور داخل المطابقة — وهو سطر النسخة، آخر سطورها.
+void _writeLock(Directory root, String path, String version) {
+  final file = File.fromUri(root.uri.resolve(path));
+  final text = file.readAsStringSync();
+  file.writeAsStringSync(
+    text.replaceFirstMapped(_lockLine, (match) {
+      final whole = match.group(0)!;
+      final old = '"${match.group(1)!}"';
+      final at = whole.lastIndexOf(old);
+      return whole.replaceRange(at, at + old.length, '"$version"');
+    }),
+  );
 }
 
 /// رقم الإصدار القادم بالنظر إلى آخر وسم منشور.

@@ -27,6 +27,28 @@ void main() {
     }
   });
 
+  test('قفل الحزم يسجّل نسخة المحرّك الحالية', () {
+    // **خلل حقيقي أوقف الفحوص عند العامل:** `e3ks_engine` اعتمادية مسار،
+    // فيسجّل `pubspec.lock` نسختها. ورفعُ الرقم بلا تحديث القفل يُسقط
+    // `pub get --enforce-lockfile` بـ«Unable to satisfy» — ومعه الإصدار
+    // نفسه، فمسار النشر يرفع الرقم ثم يجلب الحزم بنفس الراية.
+    //
+    // القفل مشتقّ، فيرفعه `bump_version.dart` مع المواضع الأربعة.
+    String engineVersionIn(String lock) {
+      final lines = File(lock).readAsLinesSync();
+      final at = lines.indexWhere((line) => line.trim() == 'e3ks_engine:');
+      expect(at, greaterThanOrEqualTo(0), reason: '$lock: لا مدخلة للمحرّك');
+      final version = lines
+          .skip(at)
+          .firstWhere((line) => line.trim().startsWith('version:'));
+      return version.split(':')[1].trim().replaceAll('"', '');
+    }
+
+    for (final lock in ['pubspec.lock', '../../tools/e3ks_cli/pubspec.lock']) {
+      expect(engineVersionIn(lock), equals(appVersion), reason: lock);
+    }
+  });
+
   test('نصّ رخصة كل خطّ مشحون ومعلَن كأصل', () {
     // OFL 1.1 تُلزم بشحن النصّ مع الخطّ. غيابه مخالفة ترخيص لا سهو تنظيمي.
     // وتسعة خطوط تعني تسع رخص، لا رخصةً واحدة تنوب عنها.
