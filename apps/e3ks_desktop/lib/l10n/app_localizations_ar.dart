@@ -554,11 +554,13 @@ class LAr extends L {
   String get fontDeletedNote => 'المحذوف يبقى معروضًا حتى إعادة تشغيل التطبيق.';
 
   @override
-  String get fontsMissingOne => 'خطّ واحد غير متاح، والمعاينة تعرضه ببديل.';
+  String fontsMissingOne(Object family) {
+    return '«$family» غير متاح، ويُرسَم بخطّ التطبيق.';
+  }
 
   @override
   String fontsMissingMany(int count) {
-    return '$count خطوط غير متاحة، والمعاينة تعرضها ببدائل.';
+    return '$count خطوط غير متاحة، وتُرسَم بخطّ التطبيق.';
   }
 
   @override
@@ -745,4 +747,24 @@ class LAr extends L {
 
   @override
   String get reportMarksLifted => 'علامات رُفعت';
+
+  @override
+  String get exportFailed => 'تعذّرت الكتابة';
+
+  @override
+  String get exportFailedWhy =>
+      'لم يُنشأ ملف. جرّب موضعًا آخر: المستندات أو سطح المكتب.';
+
+  @override
+  String get fitSubstitute => 'بديل مطابق';
+
+  @override
+  String get fitFallback => 'غير متاح هنا';
+
+  @override
+  String get fitFallbackWhy => 'يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.';
+
+  @override
+  String get fitSubstituteWhy =>
+      'يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره.';
 }

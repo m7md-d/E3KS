@@ -1120,13 +1120,13 @@ abstract class L {
   /// No description provided for @fontsMissingOne.
   ///
   /// In ar, this message translates to:
-  /// **'خطّ واحد غير متاح، والمعاينة تعرضه ببديل.'**
-  String get fontsMissingOne;
+  /// **'«{family}» غير متاح، ويُرسَم بخطّ التطبيق.'**
+  String fontsMissingOne(Object family);
 
   /// No description provided for @fontsMissingMany.
   ///
   /// In ar, this message translates to:
-  /// **'{count} خطوط غير متاحة، والمعاينة تعرضها ببدائل.'**
+  /// **'{count} خطوط غير متاحة، وتُرسَم بخطّ التطبيق.'**
   String fontsMissingMany(int count);
 
   /// No description provided for @fontsFetching.
@@ -1464,6 +1464,42 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'علامات رُفعت'**
   String get reportMarksLifted;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت الكتابة'**
+  String get exportFailed;
+
+  /// No description provided for @exportFailedWhy.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُنشأ ملف. جرّب موضعًا آخر: المستندات أو سطح المكتب.'**
+  String get exportFailedWhy;
+
+  /// No description provided for @fitSubstitute.
+  ///
+  /// In ar, this message translates to:
+  /// **'بديل مطابق'**
+  String get fitSubstitute;
+
+  /// No description provided for @fitFallback.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متاح هنا'**
+  String get fitFallback;
+
+  /// No description provided for @fitFallbackWhy.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.'**
+  String get fitFallbackWhy;
+
+  /// No description provided for @fitSubstituteWhy.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره.'**
+  String get fitSubstituteWhy;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

@@ -559,12 +559,13 @@ class LEn extends L {
       'Deleted fonts stay on screen until the app restarts.';
 
   @override
-  String get fontsMissingOne =>
-      'One font is unavailable; the preview shows a substitute.';
+  String fontsMissingOne(Object family) {
+    return '“$family” is not available; it is drawn with the app font.';
+  }
 
   @override
   String fontsMissingMany(int count) {
-    return '$count fonts are unavailable; the preview shows substitutes.';
+    return '$count fonts are not available; they are drawn with the app font.';
   }
 
   @override
@@ -754,4 +755,25 @@ class LEn extends L {
 
   @override
   String get reportMarksLifted => 'Marks removed';
+
+  @override
+  String get exportFailed => 'Could not write the file';
+
+  @override
+  String get exportFailedWhy =>
+      'No file was created. Try another location, such as Documents or the Desktop.';
+
+  @override
+  String get fitSubstitute => 'Metric substitute';
+
+  @override
+  String get fitFallback => 'Not available here';
+
+  @override
+  String get fitFallbackWhy =>
+      'Drawn with the app font, so the preview is approximate.';
+
+  @override
+  String get fitSubstituteWhy =>
+      'Drawn with a metric-compatible substitute: the layout is right, the letterforms are not.';
 }

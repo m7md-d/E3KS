@@ -52,8 +52,10 @@ class _FontNoticeState extends State<FontNotice> {
     return _Bar(
       icon: LucideIcons.triangleAlert,
       tone: Shade.warning,
+      // **الاسم لا العدد** حين يكون واحدًا: «خطّ غير متاح» لا يقول للمستخدم
+      // أي نصّ في صفحته ليس بخطّه.
       text: missing.length == 1
-          ? t.fontsMissingOne
+          ? t.fontsMissingOne(missing.first.family)
           : t.fontsMissingMany(missing.length),
       action: Row(
         mainAxisSize: MainAxisSize.min,

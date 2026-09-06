@@ -46,6 +46,29 @@ String previewFamily(String family) {
   return _substitutes[name.toLowerCase()] ?? name;
 }
 
+/// بماذا سترسم المعاينة هذه العائلة **على هذا الجهاز**.
+///
+/// **الغرض ألّا تكذب المعاينة صامتة.** خطٌّ لا نملكه ولا بديل له يسقط إلى
+/// خطّ التطبيق، فيرى المستخدم مستنده كلّه بخطّ واحد ويحسبه خطّه. والحكم
+/// محلّي لأن الجواب محلّي: Geeza Pro على macOS خطّ نظام، وعلى ويندوز ولينكس
+/// لا وجود له.
+enum PreviewFit {
+  /// الخطّ نفسه: مشحون معنا أو منصَّب أو محمَّل وقت التشغيل.
+  real,
+
+  /// بديل مطابق في المقاسات: التخطيط صحيح والحروف حروف غيره.
+  substitute,
+
+  /// لا هذا ولا ذاك: يُرسَم بخطّ التطبيق، والمعاينة تقريبية.
+  fallback,
+}
+
+PreviewFit previewFit(String family) {
+  final name = family.trim();
+  if (isBundled(name) || isFontAvailable(name)) return PreviewFit.real;
+  return hasSubstitute(name) ? PreviewFit.substitute : PreviewFit.fallback;
+}
+
 /// هل لهذه العائلة بديل مضمَّن؟ تستعمله الواجهة كي تقول للمستخدم إن ما يراه
 /// بديلٌ مطابق مقاسيًّا لا الخطّ نفسه.
 bool hasSubstitute(String family) =>

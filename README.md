@@ -124,7 +124,7 @@ cd apps/e3ks_desktop && flutter build macos --release
 ./brand/build-appicon.sh
 ```
 
-96 engine tests and 144 app tests. Documentation and project rules are in
+96 engine tests and 152 app tests. Documentation and project rules are in
 Arabic; code is in English.
 
 ## Versioning

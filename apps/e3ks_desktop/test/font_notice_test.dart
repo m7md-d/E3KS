@@ -65,6 +65,15 @@ void main() {
     expect(find.byIcon(LucideIcons.triangleAlert), findsOneWidget);
   });
 
+  testWidgets('الواحد يُذكر باسمه لا بعدده', (tester) async {
+    // **خللٌ في الصياغة كان يُربك:** «خطّ واحد غير متاح» لا يقول أي نصٍّ في
+    // الصفحة ليس بخطّه، ولا يقول أن البديل خطّ التطبيق لا خطّ مطابق.
+    await fonts.resolveAll(['Amiri']);
+    await tester.pumpWidget(harness(fonts));
+
+    expect(find.textContaining('Amiri'), findsOneWidget);
+  });
+
   testWidgets('زرّ الإخفاء يُزيل الإشعار', (tester) async {
     // إشعارٌ لا سبيل إلى إغلاقه يقتطع من المعاينة بعد أن أدّى غرضه.
     await fonts.resolveAll(['Amiri']);

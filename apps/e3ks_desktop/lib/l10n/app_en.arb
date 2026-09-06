@@ -239,8 +239,13 @@
   "deleteFont": "Delete",
   "noCachedFonts": "No stored fonts.",
   "fontDeletedNote": "Deleted fonts stay on screen until the app restarts.",
-  "fontsMissingOne": "One font is unavailable; the preview shows a substitute.",
-  "fontsMissingMany": "{count} fonts are unavailable; the preview shows substitutes.",
+  "fontsMissingOne": "“{family}” is not available; it is drawn with the app font.",
+  "@fontsMissingOne": {
+    "placeholders": {
+      "family": {}
+    }
+  },
+  "fontsMissingMany": "{count} fonts are not available; they are drawn with the app font.",
   "@fontsMissingMany": {
     "placeholders": {
       "count": {
@@ -346,5 +351,11 @@
   "markLifted": "Will be removed",
   "focusedMark": "Tracked mark",
   "tapMarkHint": "Tap to track its places",
-  "reportMarksLifted": "Marks removed"
+  "reportMarksLifted": "Marks removed",
+  "exportFailed": "Could not write the file",
+  "exportFailedWhy": "No file was created. Try another location, such as Documents or the Desktop.",
+  "fitSubstitute": "Metric substitute",
+  "fitFallback": "Not available here",
+  "fitFallbackWhy": "Drawn with the app font, so the preview is approximate.",
+  "fitSubstituteWhy": "Drawn with a metric-compatible substitute: the layout is right, the letterforms are not."
 }

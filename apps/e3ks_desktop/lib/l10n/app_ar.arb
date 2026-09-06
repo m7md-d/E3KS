@@ -239,8 +239,13 @@
   "deleteFont": "احذف",
   "noCachedFonts": "لا خطوط محفوظة.",
   "fontDeletedNote": "المحذوف يبقى معروضًا حتى إعادة تشغيل التطبيق.",
-  "fontsMissingOne": "خطّ واحد غير متاح، والمعاينة تعرضه ببديل.",
-  "fontsMissingMany": "{count} خطوط غير متاحة، والمعاينة تعرضها ببدائل.",
+  "fontsMissingOne": "«{family}» غير متاح، ويُرسَم بخطّ التطبيق.",
+  "@fontsMissingOne": {
+    "placeholders": {
+      "family": {}
+    }
+  },
+  "fontsMissingMany": "{count} خطوط غير متاحة، وتُرسَم بخطّ التطبيق.",
   "@fontsMissingMany": {
     "placeholders": {
       "count": {
@@ -346,5 +351,11 @@
   "markLifted": "سيُمسح",
   "focusedMark": "علامة متتبَّعة",
   "tapMarkHint": "اضغط لتتبّع مواضعها",
-  "reportMarksLifted": "علامات رُفعت"
+  "reportMarksLifted": "علامات رُفعت",
+  "exportFailed": "تعذّرت الكتابة",
+  "exportFailedWhy": "لم يُنشأ ملف. جرّب موضعًا آخر: المستندات أو سطح المكتب.",
+  "fitSubstitute": "بديل مطابق",
+  "fitFallback": "غير متاح هنا",
+  "fitFallbackWhy": "يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.",
+  "fitSubstituteWhy": "يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره."
 }

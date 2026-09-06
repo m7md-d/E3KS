@@ -431,4 +431,23 @@ void main() {
       expect(service.cache.list(), isEmpty);
     });
   });
+
+  group('بماذا تُرسَم المعاينة', () {
+    // **الحاجة:** خطٌّ لا نملكه ولا بديل له يسقط إلى خطّ التطبيق، فيرى
+    // المستخدم مستنده كلّه بخطٍّ واحد ويحسبه خطّه. الحكم يُعرَض في اللوحة
+    // وفي الإشعار، فلا تكذب المعاينة صامتة.
+    test('المشحون يُرسَم بنفسه', () {
+      expect(previewFit('IBM Plex Sans Arabic'), equals(PreviewFit.real));
+      expect(previewFit('  Cairo  '), equals(PreviewFit.real));
+    });
+
+    test('المملوك ذو البديل المقاسي يُعلَن بديلًا', () {
+      expect(previewFit('Calibri'), equals(PreviewFit.substitute));
+      expect(previewFit('ARIAL'), equals(PreviewFit.substitute));
+    });
+
+    test('ما لا نملكه ولا بديل له يُعلَن غير متاح', () {
+      expect(previewFit('Sakkal Majalla'), equals(PreviewFit.fallback));
+    });
+  });
 }

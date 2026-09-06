@@ -124,6 +124,54 @@ Future<void> showExportBlocked(BuildContext context, LoadFailure failure) =>
       );
     });
 
+/// تعذّرت الكتابة على القرص — لا الفحص.
+///
+/// **الفصل مقصود:** المنع قرارُ البوابة، وهذا عجزٌ عن الكتابة. خلطهما يجعل
+/// المستخدم يبحث عن خللٍ في ملفّه وهو في موضع الحفظ.
+Future<void> showExportFailed(
+  BuildContext context,
+  String path,
+  String? reason,
+) => showAppDialog<void>(context, (context) {
+  final t = context.l10n;
+  return AlertDialog(
+    backgroundColor: Shade.surface,
+    title: Row(
+      children: [
+        const Icon(LucideIcons.fileWarning, color: Shade.danger, size: 20),
+        const SizedBox(width: 10),
+        Expanded(child: Text(t.exportFailed)),
+      ],
+    ),
+    content: SizedBox(
+      width: 460,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            t.exportFailedWhy,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 14),
+          _Note(color: Shade.danger, text: path),
+          // رسالة النظام كما قالها: نصف السبب أدقّ من تخمينه كاملًا (`00` §5).
+          if (reason != null && reason.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _Note(color: Shade.danger, text: reason),
+          ],
+        ],
+      ),
+    ),
+    actions: [
+      FilledButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: Text(t.close),
+      ),
+    ],
+  );
+});
+
 class _Note extends StatelessWidget {
   const _Note({required this.color, required this.text});
   final Color color;

@@ -6,6 +6,7 @@ library;
 
 import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
@@ -111,6 +112,22 @@ class _FontField extends StatelessWidget {
   }
 }
 
+/// ما يُقال عن عائلةٍ لا تُرسَم بنفسها، أو `null` إن كانت تُرسَم بنفسها.
+({String label, String why, IconData icon})? _fitNote(L t, String family) =>
+    switch (previewFit(family)) {
+      PreviewFit.real => null,
+      PreviewFit.substitute => (
+        label: t.fitSubstitute,
+        why: t.fitSubstituteWhy,
+        icon: LucideIcons.replace,
+      ),
+      PreviewFit.fallback => (
+        label: t.fitFallback,
+        why: t.fitFallbackWhy,
+        icon: LucideIcons.triangleAlert,
+      ),
+    };
+
 class _FontChip extends StatelessWidget {
   const _FontChip({
     required this.name,
@@ -123,32 +140,54 @@ class _FontChip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => MouseRegion(
-    cursor: SystemMouseCursors.click,
-    child: GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: Motion.quick,
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected ? Shade.mirrorDeep : Shade.canvas,
-          borderRadius: BorderRadius.circular(Metrics.radiusSmall),
-          border: Border.all(color: selected ? Shade.mirror : Shade.border),
-        ),
-        child: Text(
-          name,
-          // نرسم الاسم بالخطّ نفسه، أو ببديله المطابق مقاسيًّا: ما يراه
-          // المستخدم في الرقاقة هو ما ستُرسم به المعاينة.
-          style: TextStyle(
-            fontFamily: previewFamily(name),
-            fontSize: 13,
-            color: selected ? Shade.mirror : Shade.text,
-            fontWeight: selected ? Type.semiBold : Type.regular,
+  Widget build(BuildContext context) {
+    final note = _fitNote(context.l10n, name);
+    final chip = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: Motion.quick,
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? Shade.mirrorDeep : Shade.canvas,
+            borderRadius: BorderRadius.circular(Metrics.radiusSmall),
+            border: Border.all(color: selected ? Shade.mirror : Shade.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                name,
+                // نرسم الاسم بالخطّ نفسه، أو ببديله المطابق مقاسيًّا: ما يراه
+                // المستخدم في الرقاقة هو ما ستُرسم به المعاينة.
+                style: TextStyle(
+                  fontFamily: previewFamily(name),
+                  fontSize: 13,
+                  color: selected ? Shade.mirror : Shade.text,
+                  fontWeight: selected ? Type.semiBold : Type.regular,
+                ),
+              ),
+              // **العلامة عند الاختيار لا بعده.** من يختار خطًّا لا يُرسَم
+              // هنا يرى معاينته لا تتغيّر، فيحسب الأداة عاطلة.
+              if (note != null) ...[
+                const SizedBox(width: 7),
+                Icon(
+                  note.icon,
+                  size: 12,
+                  color: previewFit(name) == PreviewFit.fallback
+                      ? Shade.warning
+                      : Shade.textFaint,
+                ),
+              ],
+            ],
           ),
         ),
       ),
-    ),
-  );
+    );
+
+    return note == null ? chip : Tooltip(message: note.why, child: chip);
+  }
 }
 
 class _ProtectedRow extends StatelessWidget {
@@ -189,9 +228,13 @@ class _ProtectedRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  font.looksMonospaced
-                      ? '${t.occurrences(font.count)} · ${t.likelyCodeFont}'
-                      : t.occurrences(font.count),
+                  [
+                    t.occurrences(font.count),
+                    if (font.looksMonospaced) t.likelyCodeFont,
+                    // ما يُرسَم به فعلًا، بجوار اسمه: المستخدم يقرأ الصفّ
+                    // فيعرف أي نصٍّ في صفحته ليس بخطّه.
+                    ?_fitNote(t, font.name)?.label,
+                  ].join(' · '),
                   style: theme.textTheme.labelSmall,
                 ),
               ],

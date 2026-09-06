@@ -19,6 +19,7 @@ import '../../data/font_service.dart';
 import '../../data/identity_extract.dart';
 import '../../data/identity_store.dart';
 import '../../data/openable_files.dart';
+import '../../data/output_writer.dart';
 import '../../data/settings_store.dart';
 import '../../data/window_frame.dart';
 import '../../data/workspace_store.dart';
@@ -110,20 +111,27 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     setState(() => _exporting = true);
     final result = await buildOutput(document.bytes, widget.store.plan);
     if (!mounted) return;
-    setState(() => _exporting = false);
 
     if (result.failure != null) {
       // البوابة رفضت — لا ملف يُكتب، والسبب يُعرَض كاملًا (`00` §١/٢).
+      setState(() => _exporting = false);
       await showExportBlocked(context, result.failure!);
       return;
     }
 
-    // كتابة ذرّية: مؤقّت ثم إعادة تسمية (`00` §١/٣).
-    File('${location.path}.part')
-      ..writeAsBytesSync(result.bytes!)
-      ..renameSync(location.path);
+    // **الكتابة تُلتقَط.** كانت تقع خارج أي مُلتقِط، فيبقى الزرّ يدور ولا
+    // يظهر ملفّ ولا سبب. والصمت ممنوع (`00` §5): ما لا يُكتب يُقال.
+    try {
+      await writeOutput(location.path, result.bytes!);
+    } on FileSystemException catch (error) {
+      if (!mounted) return;
+      setState(() => _exporting = false);
+      await showExportFailed(context, location.path, error.osError?.message);
+      return;
+    }
 
     if (!mounted) return;
+    setState(() => _exporting = false);
     await showExportDone(context, location.path, result.report!);
   }
 
