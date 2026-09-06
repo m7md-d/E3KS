@@ -30,16 +30,24 @@ typedef AppServices = ({
   SettingsStore settings,
   IdentityStore identities,
   FontService fonts,
-  WindowFrame frame,
+  WindowFrameWatch frame,
 });
 
 Future<AppServices> openServices() async => (
   settings: await SettingsStore.open(),
   identities: await IdentityStore.open(),
   fonts: FontService(await FontCache.open()),
-  // مقاس الإطار يُقاس مرّةً عند الإقلاع: أزرار النظام لا تتنقّل بعدها.
-  frame: await readWindowFrame(),
+  // ويبقى مصغيًا: ملء الشاشة يُخفي أزرار النظام، فيسقط حجزها معها.
+  frame: await _openFrame(),
 );
+
+/// يقرأ القياس الأول قبل أوّل رسمة: بدء الحجز صفرًا ثم قفزه بعد لحظة
+/// يُري المستخدم شريطًا ينزلق تحته المحتوى بلا سبب ظاهر.
+Future<WindowFrameWatch> _openFrame() async {
+  final watch = WindowFrameWatch();
+  await watch.start();
+  return watch;
+}
 
 class E3ksApp extends StatefulWidget {
   const E3ksApp({super.key, this.services});
@@ -91,13 +99,14 @@ class _E3ksAppState extends State<E3ksApp> {
             _store,
             services.identities,
             services.fonts,
+            services.frame,
           ]),
           builder: (context, _) => WorkspaceScreen(
             store: _store,
             identities: services.identities,
             settings: services.settings,
             fonts: services.fonts,
-            frame: services.frame,
+            frame: services.frame.value,
           ),
         ),
       ),

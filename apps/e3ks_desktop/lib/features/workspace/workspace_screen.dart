@@ -316,7 +316,15 @@ class _TopBar extends StatelessWidget {
     // الشريط يسع أزرار النظام كاملةً وإلّا تدلّت تحت حدّه.
     final needed = frame.titlebarHeight + _topBarInset;
 
-    return Container(
+    // **والانتقال بحركة لا بقفزة.** الحجز يتغيّر حين يُخفي النظام أزراره
+    // عند ملء الشاشة ويعيدها عند الخروج، فتنزلق العلامة والأزرار بمقداره.
+    // والقفزة تجعل الشريط يبدو منكسرًا في اللحظة التي يستقرّ فيها كل شيء آخر.
+    //
+    // وزمنه `slow`: ما يُطلقه تغيّرُ شاشةٍ كاملة يُقاس بمقياسها لا بمقياس
+    // زرّ (`07` §7). ومنحناه `standard` — تغيّرٌ في مكانه.
+    return AnimatedContainer(
+      duration: Motion.slow,
+      curve: Motion.standard,
       height: needed < _minTopBar ? _minTopBar : needed,
       padding: EdgeInsets.only(
         // الجهة من النظام لا من اتجاه الواجهة: أزرار النافذة تنتقل مع لغة

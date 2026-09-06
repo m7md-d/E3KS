@@ -1,4 +1,4 @@
-/// إطار النافذة المخصّص: يُقاس ولا يُفترَض.
+/// إطار النافذة المخصّص: يُقاس ولا يُفترَض، ويُعاد قياسه حين يتغيّر.
 library;
 
 import 'package:e3ks_desktop/data/window_frame.dart';
@@ -60,5 +60,76 @@ void main() {
     final frame = await readWindowFrame();
     expect(frame.titlebarHeight, equals(28));
     expect(frame.reserveLeft, equals(0));
+  });
+
+  group('المتابعة الحيّة', () {
+    /// يحاكي دفعةً من الجهة الأصلية.
+    Future<void> push(Map<String, double> metrics) =>
+        messenger.handlePlatformMessage(
+          _channel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            MethodCall('metrics', metrics),
+          ),
+          (_) {},
+        );
+
+    test('تبدأ بالقياس الأول', () async {
+      messenger.setMockMethodCallHandler(
+        _channel,
+        (call) async => <String, double>{
+          'titlebarHeight': 28,
+          'reserveLeft': 78,
+          'reserveRight': 0,
+        },
+      );
+
+      final watch = WindowFrameWatch();
+      await watch.start();
+
+      expect(watch.value.reserveLeft, equals(78));
+      watch.dispose();
+    });
+
+    test('ملء الشاشة يُسقط الحجز ويُخطر المستمعين', () async {
+      // أزرار النظام تختفي في ملء الشاشة، والحجز الباقي فراغٌ بلا شاغل.
+      messenger.setMockMethodCallHandler(
+        _channel,
+        (call) async => <String, double>{
+          'titlebarHeight': 28,
+          'reserveLeft': 78,
+          'reserveRight': 0,
+        },
+      );
+      final watch = WindowFrameWatch();
+      await watch.start();
+      var notified = 0;
+      watch.addListener(() => notified++);
+
+      await push({'titlebarHeight': 0, 'reserveLeft': 0, 'reserveRight': 0});
+
+      expect(watch.value, equals(flatWindowFrame));
+      expect(notified, equals(1), reason: 'تغيّر بلا إخطار لا يُعاد رسمه');
+      watch.dispose();
+    });
+
+    test('الخروج من ملء الشاشة يعيد الحجز', () async {
+      messenger.setMockMethodCallHandler(_channel, (call) async => null);
+      final watch = WindowFrameWatch();
+      await watch.start();
+      expect(watch.value, equals(flatWindowFrame));
+
+      await push({'titlebarHeight': 28, 'reserveLeft': 0, 'reserveRight': 78});
+
+      expect(watch.value.reserveRight, equals(78));
+      watch.dispose();
+    });
+
+    test('بلا قناة تبدأ بلا حجز ولا تنهار', () async {
+      final watch = WindowFrameWatch();
+      await watch.start();
+
+      expect(watch.value, equals(flatWindowFrame));
+      watch.dispose();
+    });
   });
 }

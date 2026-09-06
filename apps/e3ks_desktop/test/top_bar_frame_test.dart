@@ -1,0 +1,135 @@
+/// الشريط العلوي يتبع ما يحجزه النظام، ويتخلّى عنه حين يتخلّى النظام.
+library;
+
+import 'dart:io';
+
+import 'package:e3ks_desktop/app/theme.dart';
+import 'package:e3ks_desktop/data/font_cache.dart';
+import 'package:e3ks_desktop/data/font_service.dart';
+import 'package:e3ks_desktop/data/identity_store.dart';
+import 'package:e3ks_desktop/data/settings_store.dart';
+import 'package:e3ks_desktop/data/window_frame.dart';
+import 'package:e3ks_desktop/data/workspace_store.dart';
+import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
+import 'package:e3ks_desktop/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+/// المسافة المطبَّقة على الشريط من كل حافّة (`03`).
+const double _inset = 12;
+
+/// المخازن تُبنى مرّةً: إعادة بنائها مع كل إطار تُنشئ شجرةً جديدة فتضيع
+/// حالة الحركة، ولا يبقى ما يُقاس.
+final WorkspaceStore _store = WorkspaceStore();
+final IdentityStore _identities = IdentityStore(Directory.systemTemp);
+final SettingsStore _settings = SettingsStore(
+  File('${Directory.systemTemp.path}/e3ks_frame_test.json'),
+  const Locale('ar'),
+);
+final FontService _fonts = FontService(FontCache(Directory.systemTemp))
+  ..fetchEnabled = false;
+
+Widget harness(WindowFrame frame) => MaterialApp(
+  theme: buildTheme(),
+  locale: const Locale('ar'),
+  supportedLocales: L.supportedLocales,
+  localizationsDelegates: const [
+    L.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  home: WorkspaceScreen(
+    store: _store,
+    identities: _identities,
+    settings: _settings,
+    fonts: _fonts,
+    frame: frame,
+  ),
+);
+
+/// حشوة الشريط العلوي: الحاوية الوحيدة التي تحمل المسافة من أعلى ومن أسفل.
+EdgeInsets topBarPadding(WidgetTester tester) {
+  final containers = tester.widgetList<Container>(find.byType(Container));
+  for (final box in containers) {
+    final padding = box.padding;
+    if (padding is EdgeInsets &&
+        padding.top == _inset &&
+        padding.bottom == _inset) {
+      return padding;
+    }
+  }
+  fail('لم يُعثر على الشريط العلوي');
+}
+
+void main() {
+  // النافذة أوسع من الحدّ الأدنى المفروض على المنصّات الثلاث (1180×720).
+  setUp(() => TestWidgetsFlutterBinding.ensureInitialized());
+
+  testWidgets('الحجز يمينًا يزيد حشوة اليمين وحدها', (tester) async {
+    // نظام بلغة عربية ينقل أزرار النافذة إلى اليمين.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      harness((titlebarHeight: 28, reserveLeft: 0, reserveRight: 78)),
+    );
+
+    final padding = topBarPadding(tester);
+    expect(padding.right, equals(_inset + 78));
+    expect(padding.left, equals(_inset));
+  });
+
+  testWidgets('ملء الشاشة يُسقط الحجز فلا يبقى فراغ بلا شاغل', (tester) async {
+    // **الخلل الذي يعالجه هذا الاختبار:** أزرار النظام تختفي في ملء الشاشة،
+    // وكان الشريط يبقى محتفظًا بحجزها لأن القياس كان يُقرأ مرّةً عند
+    // الإقلاع. الآن يدفع النظام قياسًا جديدًا، والشريط يتبعه.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(harness(flatWindowFrame));
+
+    final padding = topBarPadding(tester);
+    expect(padding.left, equals(_inset));
+    expect(padding.right, equals(_inset));
+  });
+
+  testWidgets('المسافة واحدة من كل حافّة حين لا حجز', (tester) async {
+    // فرقٌ بين الرأسية والأفقية يُرى ولو لم يُقَس (`03`).
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(harness(flatWindowFrame));
+
+    final padding = topBarPadding(tester);
+    expect(padding.left, equals(padding.top));
+    expect(padding.right, equals(padding.bottom));
+  });
+
+  testWidgets('تغيّر الحجز ينتقل بحركة لا بقفزة', (tester) async {
+    // الحجز يسقط حين يُخفي النظام أزراره عند ملء الشاشة. القفزة تجعل الشريط
+    // يبدو منكسرًا في اللحظة التي يستقرّ فيها كل شيء آخر.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      harness((titlebarHeight: 28, reserveLeft: 0, reserveRight: 78)),
+    );
+    expect(topBarPadding(tester).right, equals(_inset + 78));
+
+    await tester.pumpWidget(harness(flatWindowFrame));
+    await tester.pump(Motion.slow ~/ 2);
+
+    final mid = topBarPadding(tester).right;
+    expect(mid, greaterThan(_inset), reason: 'قفز إلى النهاية بلا حركة');
+    expect(mid, lessThan(_inset + 78), reason: 'لم يتحرّك أصلًا');
+
+    await tester.pumpAndSettle();
+    expect(topBarPadding(tester).right, equals(_inset));
+  });
+}

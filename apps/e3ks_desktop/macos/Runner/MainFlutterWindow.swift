@@ -9,7 +9,26 @@ import FlutterMacOS
 /// قد يعرض التطبيق الإنجليزية على نظام عربي.
 ///
 /// فلا نفترض موضعها: **نقيسه** من AppKit ونرسله إلى الواجهة (`00` §5).
+///
+/// **ولا نقيسه مرّةً.** ملء الشاشة يُخفي أزرار النظام، فحجزٌ يبقى بعدها
+/// فراغٌ لا شاغل له. والنظام يعرف لحظة التغيّر، فنصغي إليه ونَدفع القياس
+/// الجديد إلى الواجهة بدل أن تستطلعه هي في كل إطار.
 class MainFlutterWindow: NSWindow {
+  /// القناة نفسها في الاتجاهين: تسأل الواجهة، وندفع نحن.
+  private var channel: FlutterMethodChannel?
+
+  /// آخر ما دفعناه. تغيّر المقاس يصل عشرات المرّات في الثانية أثناء السحب،
+  /// وأغلبه لا يغيّر شيئًا في الحجز.
+  private var pushed: [String: Double]?
+
+  /// هل النافذة في منتصف انتقال ملء الشاشة؟
+  ///
+  /// **السبب الذي لولاه لما رُئيت الحركة.** `styleMask` يحمل `.fullScreen`
+  /// من أوّل الانتقال لا من آخره، و`didResize` يصل عشرات المرّات أثناءه.
+  /// فلو دفعنا حينها لسقط الحجز والنافذة محجوبة، ولانتهت حركة الواجهة قبل
+  /// أن يراها أحد. نصمت حتى يستقرّ النظام، ثم ندفع مرّةً واحدة.
+  private var switchingFullScreen = false
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
@@ -41,18 +60,71 @@ class MainFlutterWindow: NSWindow {
       }
       result(window.frameMetrics())
     }
+    self.channel = channel
+
+    // ملء الشاشة يُخفي الأزرار ويُلغي الشريط، والتحجيم يزيح ما كان يمينًا.
+    let center = NotificationCenter.default
+    for name: NSNotification.Name in [
+      NSWindow.didEnterFullScreenNotification,
+      NSWindow.didExitFullScreenNotification,
+      NSWindow.didResizeNotification,
+    ] {
+      center.addObserver(
+        self, selector: #selector(pushMetrics), name: name, object: self)
+    }
+    for name: NSNotification.Name in [
+      NSWindow.willEnterFullScreenNotification,
+      NSWindow.willExitFullScreenNotification,
+    ] {
+      center.addObserver(
+        self, selector: #selector(beginFullScreenSwitch), name: name,
+        object: self)
+    }
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()
   }
 
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
+  /// يبدأ انتقال ملء الشاشة: نصمت حتى ينتهي.
+  @objc private func beginFullScreenSwitch() {
+    switchingFullScreen = true
+  }
+
+  /// يدفع القياس إلى الواجهة، ويسكت إن لم يتغيّر شيء.
+  ///
+  /// الدفعة الوحيدة التي تصل من انتقال ملء الشاشة هي دفعة نهايته، فتقع
+  /// حركة الواجهة والنافذة أمام المستخدم.
+  @objc private func pushMetrics(_ note: Notification) {
+    let ended =
+      note.name == NSWindow.didEnterFullScreenNotification
+      || note.name == NSWindow.didExitFullScreenNotification
+    if ended { switchingFullScreen = false }
+    if switchingFullScreen { return }
+
+    let metrics = frameMetrics()
+    if metrics == pushed { return }
+    pushed = metrics
+    channel?.invokeMethod("metrics", arguments: metrics)
+  }
+
   /// مقاسات الإطار كما يراها النظام هذه اللحظة.
   ///
   /// المحجوز يمينًا ويسارًا يُحسب من إطارات الأزرار نفسها، فينقلب معها حين
   /// ينقلها النظام. وبلا أزرار (نافذة بلا شريط) يعود صفرًا.
-  private func frameMetrics() -> [String: Any] {
-    let titlebarHeight = frame.height - contentLayoutRect.height
+  private func frameMetrics() -> [String: Double] {
+    // ملء الشاشة: لا شريط ولا أزرار ظاهرة، فلا شيء يُحجز له. تعود الأزرار
+    // في طبقة تنزلق فوق المحتوى عند التمرير إلى الأعلى، وهي طبقة النظام
+    // لا مساحة نقتطعها من التطبيق.
+    if styleMask.contains(.fullScreen) {
+      return ["titlebarHeight": 0, "reserveLeft": 0, "reserveRight": 0]
+    }
+
+    let titlebarHeight = Double(frame.height - contentLayoutRect.height)
 
     let buttons = [NSWindow.ButtonType.closeButton,
                    .miniaturizeButton,
@@ -63,8 +135,8 @@ class MainFlutterWindow: NSWindow {
     guard let content = contentView, !buttons.isEmpty else {
       return [
         "titlebarHeight": titlebarHeight,
-        "reserveLeft": 0.0,
-        "reserveRight": 0.0,
+        "reserveLeft": 0,
+        "reserveRight": 0,
       ]
     }
 
@@ -83,8 +155,8 @@ class MainFlutterWindow: NSWindow {
 
     return [
       "titlebarHeight": titlebarHeight,
-      "reserveLeft": onLeft ? Double(maxX + minX) : 0.0,
-      "reserveRight": onLeft ? 0.0 : Double((width - minX) + (width - maxX)),
+      "reserveLeft": onLeft ? Double(maxX + minX) : 0,
+      "reserveRight": onLeft ? 0 : Double((width - minX) + (width - maxX)),
     ]
   }
 }
