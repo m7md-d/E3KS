@@ -1,0 +1,15 @@
+# الأجزاء المفحوصة
+  word/document.xml
+  word/footer1.xml
+  word/styles.xml
+
+# الألوان
+  #4F81BD  عدد=2
+    محتوى=false  ثيم=false
+    أدوار: border=2
+    أجزاء: word/styles.xml=2
+    تصنيفات: styles
+
+# الخطوط
+
+# العلامات

@@ -1,0 +1,50 @@
+# الأجزاء المفحوصة
+  word/document.xml
+  word/footer1.xml
+  word/header1.xml
+  word/styles.xml
+
+# الألوان
+  #4C2FB8  عدد=2
+    محتوى=true  ثيم=true
+    أدوار: text=2
+    أجزاء: word/document.xml=1، word/header1.xml=1
+    تصنيفات: content
+    عيّنة: «مرحبا»
+    عيّنة: «Header line»
+  #4F81BD  عدد=2
+    محتوى=false  ثيم=false
+    أدوار: border=2
+    أجزاء: word/styles.xml=2
+    تصنيفات: styles
+  #EEF3F2  عدد=1
+    محتوى=true  ثيم=false
+    أدوار: paragraphFill=1
+    أجزاء: word/document.xml=1
+    تصنيفات: content
+    عيّنة: «مرحبا world»
+  #667085  عدد=1
+    محتوى=true  ثيم=false
+    أدوار: text=1
+    أجزاء: word/document.xml=1
+    تصنيفات: content
+    عيّنة: «world»
+
+# الخطوط
+  Calibri  عدد=4
+    ثيم=false  محتوى=true
+    فتحات: ascii=2، highAnsi=2
+    أجزاء: word/document.xml=4
+    تصنيفات: content
+  DejaVu Sans Mono  عدد=3
+    ثيم=false  محتوى=true
+    فتحات: ascii=1، complexScript=1، highAnsi=1
+    أجزاء: word/document.xml=3
+    تصنيفات: content
+  Traditional Arabic  عدد=2
+    ثيم=false  محتوى=true
+    فتحات: complexScript=2
+    أجزاء: word/document.xml=2
+    تصنيفات: content
+
+# العلامات

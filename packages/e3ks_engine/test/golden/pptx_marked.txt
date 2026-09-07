@@ -1,0 +1,60 @@
+# الأجزاء المفحوصة
+  ppt/presentation.xml
+  ppt/slideLayouts/slideLayout1.xml
+  ppt/slideMasters/slideMaster1.xml
+  ppt/slides/slide1.xml
+  ppt/theme/theme1.xml
+
+# الألوان
+  #1B7F79  عدد=2
+    محتوى=true  ثيم=false
+    أدوار: text=2
+    أجزاء: ppt/slides/slide1.xml=2
+    تصنيفات: content
+    عيّنة: «marked run»
+    عيّنة: «plain run»
+  #FFFFFF  عدد=2
+    محتوى=false  ثيم=false
+    أدوار: pageBackground=1، themePalette=1
+    أجزاء: ppt/slideMasters/slideMaster1.xml=1، ppt/theme/theme1.xml=1
+    تصنيفات: styles، theme
+  #FFFF00  عدد=1
+    محتوى=true  ثيم=false
+    أدوار: runFill=1
+    أجزاء: ppt/slides/slide1.xml=1
+    تصنيفات: content
+    عيّنة: «marked run»
+  #4F81BD  عدد=1
+    محتوى=false  ثيم=false
+    أدوار: text=1
+    أجزاء: ppt/slideMasters/slideMaster1.xml=1
+    تصنيفات: styles
+    عيّنة: «Master»
+  #000000  عدد=1
+    محتوى=false  ثيم=false
+    أدوار: themePalette=1
+    أجزاء: ppt/theme/theme1.xml=1
+    تصنيفات: theme
+  #9BBB59  عدد=1
+    محتوى=false  ثيم=false
+    أدوار: themePalette=1
+    أجزاء: ppt/theme/theme1.xml=1
+    تصنيفات: theme
+
+# الخطوط
+  IBM Plex Sans  عدد=2
+    ثيم=false  محتوى=false
+    فتحات: ascii=2
+    أجزاء: ppt/theme/theme1.xml=2
+    تصنيفات: theme
+  IBM Plex Sans Arabic  عدد=2
+    ثيم=false  محتوى=false
+    فتحات: complexScript=2
+    أجزاء: ppt/theme/theme1.xml=2
+    تصنيفات: theme
+
+# العلامات
+  highlight:#FFFF00  عدد=1
+    أجزاء: ppt/slides/slide1.xml=1
+    تصنيفات: content
+    عيّنة: «marked run»

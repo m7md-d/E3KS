@@ -40,11 +40,16 @@ final class ColorAccumulator {
     byPart[context.partName] = (byPart[context.partName] ?? 0) + 1;
     partClasses.add(context.partClass);
     if (themed) themeLinked = true;
-    if (sample != null &&
-        samples.length < maxColorSamples &&
-        !samples.contains(sample)) {
-      samples.add(sample);
-    }
+    addSample(sample);
+  }
+
+  /// **تُضاف بعد التسجيل** لأن نصّ العيّنة يأتي بعد اللون في تدفّق XML:
+  /// اللون يسكن `rPr` وسابقٌ لنصّ الـ`run`. الحدّ والتفرّد كما هما.
+  void addSample(String? sample) {
+    if (sample == null) return;
+    if (samples.length >= maxColorSamples) return;
+    if (samples.contains(sample)) return;
+    samples.add(sample);
   }
 
   ColorUsage build(HexColor color) => ColorUsage(
@@ -93,11 +98,15 @@ final class MarkAccumulator {
     count++;
     byPart[context.partName] = (byPart[context.partName] ?? 0) + 1;
     partClasses.add(context.partClass);
-    if (sample != null &&
-        samples.length < maxColorSamples &&
-        !samples.contains(sample)) {
-      samples.add(sample);
-    }
+    addSample(sample);
+  }
+
+  /// كنظيرتها في [ColorAccumulator]: العيّنة تُلحَق حين يُعرَف نصّها.
+  void addSample(String? sample) {
+    if (sample == null) return;
+    if (samples.length >= maxColorSamples) return;
+    if (samples.contains(sample)) return;
+    samples.add(sample);
   }
 
   MarkUsage build(TextMark mark) => MarkUsage(

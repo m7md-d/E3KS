@@ -1,9 +1,9 @@
 /// فحص مستند Word: استخراج كل لون وكل خط بعدده ودوره وموضعه وعيّنة نصّه.
 ///
-/// الفحص **قراءة محضة** — لا يعدّل الحاوية ولا يمسّ جزءًا.
+/// الفحص **قراءة محضة** — لا يعدّل الحاوية ولا يمسّ جزءًا. ولأنه قراءة محضة
+/// **لا يبني شجرة**: يمرّ على تدفّق الأحداث ([scanXmlPartsStreamed])، فما
+/// كان يكلّف ١٧٦MB لمستند مئة صفحة صار ٤١MB.
 library;
-
-import 'package:xml/xml.dart';
 
 import '../../diagnostics/engine_result.dart';
 import '../../inspect/color_usage.dart';
@@ -14,7 +14,7 @@ import '../../inspect/text_mark.dart';
 import '../../inspect/usage_accumulator.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
-import '../xml_part_pass.dart';
+import '../xml_stream_pass.dart';
 import 'docx_parts.dart';
 
 /// دور خلفية `w:shd` يُحدَّد من العنصر الأب.
@@ -35,7 +35,7 @@ final class DocxInspector {
     final marks = <TextMark, MarkAccumulator>{};
     final scanned = <String>[];
 
-    final warnings = scanXmlParts(
+    final warnings = scanXmlPartsStreamed(
       package,
       classifyDocxPart,
       (element, partName, partClass) => _scanElement(
@@ -46,6 +46,7 @@ final class DocxInspector {
         marks,
       ),
       scannedParts: scanned,
+      textShape: const TextShape(namespace: wNs),
     );
 
     return Ok(
@@ -60,44 +61,45 @@ final class DocxInspector {
   }
 
   void _scanElement(
-    XmlElement element,
+    ScannedElement element,
     ScanContext context,
     Map<HexColor, ColorAccumulator> colors,
     Map<String, FontAccumulator> fonts,
     Map<TextMark, MarkAccumulator> marks,
   ) {
-    final name = element.name.local;
-    final namespace = element.name.namespaceUri;
+    final name = element.localName;
+    final namespace = element.namespaceUri;
 
     void addColor(String? raw, ColorRole role, {bool themed = false}) {
       final color = HexColor.tryParse(raw);
       if (color == null) return; // ومنها `auto` — تفويض لا لون (`02` §5).
-      colors
-          .putIfAbsent(color, ColorAccumulator.new)
-          .record(context, role, themed: themed, sample: _sampleFor(element));
+      final accumulator = colors.putIfAbsent(color, ColorAccumulator.new);
+      accumulator.record(context, role, themed: themed);
+      element.deferSample(accumulator.addSample);
     }
 
-    void addMark(TextMark mark) => marks
-        .putIfAbsent(mark, MarkAccumulator.new)
-        .record(context, sample: _sampleFor(element));
+    void addMark(TextMark mark) {
+      final accumulator = marks.putIfAbsent(mark, MarkAccumulator.new);
+      accumulator.record(context);
+      element.deferSample(accumulator.addSample);
+    }
 
     if (namespace == wNs) {
       final hasThemeAttribute = colorThemeAttributes.any(
-        (a) => element.getAttribute(a, namespace: wNs) != null,
+        (a) => element.attribute(a, namespace: wNs) != null,
       );
 
       switch (name) {
         case 'color':
           addColor(
-            element.getAttribute('val', namespace: wNs),
+            element.attribute('val', namespace: wNs),
             ColorRole.text,
             themed: hasThemeAttribute,
           );
         case 'shd':
           final role =
-              _shadingRoleByParent[element.parentElement?.name.local] ??
-              ColorRole.other;
-          final fill = element.getAttribute('fill', namespace: wNs);
+              _shadingRoleByParent[element.parentLocalName] ?? ColorRole.other;
+          final fill = element.attribute('fill', namespace: wNs);
           addColor(fill, role, themed: hasThemeAttribute);
           // تظليل النصّ نفسه علامةٌ تُرفع، فوق كونه لونًا يُبدَّل: قلم Word
           // لا يرفعه لأنه ليس تمييزًا، فيستعصي على المستخدم.
@@ -106,18 +108,18 @@ final class DocxInspector {
             addMark(TextMark.shading(shading));
           }
           addColor(
-            element.getAttribute('color', namespace: wNs),
+            element.attribute('color', namespace: wNs),
             ColorRole.shadingPattern,
             themed: hasThemeAttribute,
           );
         case 'background':
           addColor(
-            element.getAttribute('color', namespace: wNs),
+            element.attribute('color', namespace: wNs),
             ColorRole.pageBackground,
             themed: hasThemeAttribute,
           );
         case 'highlight':
-          final value = element.getAttribute('val', namespace: wNs);
+          final value = element.attribute('val', namespace: wNs);
           if (value != null && value != 'none') {
             addMark(TextMark(MarkKind.highlight, value));
           }
@@ -126,7 +128,7 @@ final class DocxInspector {
         default:
           if (borderElements.contains(name) || name == 'bdr') {
             addColor(
-              element.getAttribute('color', namespace: wNs),
+              element.attribute('color', namespace: wNs),
               ColorRole.border,
               themed: hasThemeAttribute,
             );
@@ -138,15 +140,13 @@ final class DocxInspector {
     if (namespace == aNs) {
       if (name == 'srgbClr') {
         // داخل `a:clrScheme` هذه لوحة الثيم نفسها، لا استعمال في المحتوى.
-        final inScheme = element.ancestors.whereType<XmlElement>().any(
-          (e) => e.name.local == 'clrScheme',
-        );
+        final inScheme = element.hasAncestor('clrScheme');
         addColor(
-          element.getAttribute('val'),
+          element.attribute('val'),
           inScheme ? ColorRole.themePalette : ColorRole.graphics,
         );
       } else if (name == 'latin' || name == 'cs' || name == 'ea') {
-        final typeface = element.getAttribute('typeface');
+        final typeface = element.attribute('typeface');
         if (typeface != null &&
             typeface.isNotEmpty &&
             !typeface.startsWith('+')) {
@@ -159,12 +159,12 @@ final class DocxInspector {
   }
 
   void _scanFonts(
-    XmlElement element,
+    ScannedElement element,
     ScanContext context,
     Map<String, FontAccumulator> fonts,
   ) {
     final themed = fontThemeAttributes.any(
-      (a) => element.getAttribute(a, namespace: wNs) != null,
+      (a) => element.attribute(a, namespace: wNs) != null,
     );
 
     const slots = {
@@ -175,41 +175,11 @@ final class DocxInspector {
     };
 
     for (final attribute in fontAttributes) {
-      final value = element.getAttribute(attribute, namespace: wNs);
+      final value = element.attribute(attribute, namespace: wNs);
       if (value == null || value.isEmpty) continue;
       fonts
           .putIfAbsent(value, FontAccumulator.new)
           .record(context, slots[attribute]!, themed: themed);
     }
-  }
-
-  /// عيّنة من النصّ الذي طُبّق عليه اللون.
-  ///
-  /// نصعد إلى أقرب `w:r` — فهو وحدة التنسيق — ثم إلى `w:p` إن لزم.
-  /// بلا عيّنة يصير جدول الأثر أرقامًا صمّاء لا يُبنى عليها قرار.
-  String? _sampleFor(XmlElement element) {
-    for (final ancestor in element.ancestors.whereType<XmlElement>()) {
-      if (ancestor.name.namespaceUri != wNs) continue;
-      final isRun = ancestor.name.local == 'r';
-      final isParagraph = ancestor.name.local == 'p';
-      if (!isRun && !isParagraph) continue;
-
-      final buffer = StringBuffer();
-      for (final node in ancestor.descendants.whereType<XmlElement>()) {
-        if (node.name.namespaceUri == wNs && node.name.local == 't') {
-          buffer.write(node.innerText);
-          if (buffer.length >= colorSampleLength) break;
-        }
-      }
-      final text = buffer.toString().trim();
-      if (text.isEmpty) {
-        if (isParagraph) return null;
-        continue; // الـ run بلا نص: نجرّب الفقرة.
-      }
-      return text.length <= colorSampleLength
-          ? text
-          : '${text.substring(0, colorSampleLength)}…';
-    }
-    return null;
   }
 }

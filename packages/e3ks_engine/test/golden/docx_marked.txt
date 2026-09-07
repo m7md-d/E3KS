@@ -1,0 +1,49 @@
+# الأجزاء المفحوصة
+  word/document.xml
+  word/footer1.xml
+  word/header1.xml
+  word/styles.xml
+
+# الألوان
+  #D9D9D9  عدد=2
+    محتوى=true  ثيم=false
+    أدوار: runFill=2
+    أجزاء: word/document.xml=2
+    تصنيفات: content
+    عيّنة: «pasted shading»
+    عيّنة: «both at once»
+  #4F81BD  عدد=2
+    محتوى=false  ثيم=false
+    أدوار: border=2
+    أجزاء: word/styles.xml=2
+    تصنيفات: styles
+  #EEF3F2  عدد=1
+    محتوى=true  ثيم=false
+    أدوار: paragraphFill=1
+    أجزاء: word/document.xml=1
+    تصنيفات: content
+    عيّنة: «marked yellow marked green»
+  #4C2FB8  عدد=1
+    محتوى=true  ثيم=false
+    أدوار: text=1
+    أجزاء: word/header1.xml=1
+    تصنيفات: content
+    عيّنة: «Header line»
+
+# الخطوط
+
+# العلامات
+  highlight:yellow  عدد=2
+    أجزاء: word/document.xml=2
+    تصنيفات: content
+    عيّنة: «marked yellow»
+    عيّنة: «both at once»
+  textShading:#D9D9D9  عدد=2
+    أجزاء: word/document.xml=2
+    تصنيفات: content
+    عيّنة: «pasted shading»
+    عيّنة: «both at once»
+  highlight:green  عدد=1
+    أجزاء: word/document.xml=1
+    تصنيفات: content
+    عيّنة: «marked green»

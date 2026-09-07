@@ -3,9 +3,9 @@
 /// أنظف من Word: الألوان كلّها DrawingML (`a:srgbClr`) بلا صيغ متعدّدة ولا
 /// سمات ثيم مبعثرة. **الفخّ هنا مختلف:** `a:schemeClr` إحالةٌ إلى الثيم لا
 /// لونٌ صريح، وعدّها لونًا يُخرج «accent1» في جدول الألوان.
+///
+/// والفحص **قراءة محضة فلا يبني شجرة** — تدفّق أحداث كنظيره في Word.
 library;
-
-import 'package:xml/xml.dart';
 
 import '../../diagnostics/engine_result.dart';
 import '../../inspect/color_usage.dart';
@@ -16,7 +16,7 @@ import '../../inspect/text_mark.dart';
 import '../../inspect/usage_accumulator.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
-import '../xml_part_pass.dart';
+import '../xml_stream_pass.dart';
 import 'pptx_parts.dart';
 
 /// فتحات الخطّ في DrawingML. `a:sym` خطّ الرموز — يُحصى ولا يُبدَّل افتراضًا.
@@ -36,7 +36,7 @@ final class PptxInspector {
     final marks = <TextMark, MarkAccumulator>{};
     final scanned = <String>[];
 
-    final warnings = scanXmlParts(
+    final warnings = scanXmlPartsStreamed(
       package,
       classifyPptxPart,
       (element, partName, partClass) => _scan(
@@ -47,6 +47,7 @@ final class PptxInspector {
         marks,
       ),
       scannedParts: scanned,
+      textShape: const TextShape(namespace: aNs),
     );
 
     return Ok(
@@ -62,42 +63,41 @@ final class PptxInspector {
   }
 
   void _scan(
-    XmlElement element,
+    ScannedElement element,
     ScanContext context,
     Map<HexColor, ColorAccumulator> colors,
     Map<String, FontAccumulator> fonts,
     Map<TextMark, MarkAccumulator> marks,
   ) {
-    if (element.name.namespaceUri != aNs) return;
+    if (element.namespaceUri != aNs) return;
 
-    switch (element.name.local) {
+    final local = element.localName;
+    switch (local) {
       case 'srgbClr':
-        final color = HexColor.tryParse(element.getAttribute('val'));
+        final color = HexColor.tryParse(element.attribute('val'));
         if (color == null) return;
         // لونٌ داخل `a:highlight` علامةٌ تُرفع، فوق كونه لونًا يُبدَّل.
-        if (element.parentElement?.name.local == 'highlight') {
-          marks
-              .putIfAbsent(TextMark.coloredPen(color), MarkAccumulator.new)
-              .record(context, sample: sampleFor(element));
+        if (element.parentLocalName == 'highlight') {
+          final mark = marks.putIfAbsent(
+            TextMark.coloredPen(color),
+            MarkAccumulator.new,
+          );
+          mark.record(context);
+          element.deferSample(mark.addSample);
         }
-        colors
-            .putIfAbsent(color, ColorAccumulator.new)
-            .record(
-              context,
-              roleOf(element),
-              themed: false,
-              sample: sampleFor(element),
-            );
+        final accumulator = colors.putIfAbsent(color, ColorAccumulator.new);
+        accumulator.record(context, roleOf(element), themed: false);
+        element.deferSample(accumulator.addSample);
 
       case 'latin' || 'cs' || 'ea' || 'sym':
-        final typeface = element.getAttribute('typeface');
+        final typeface = element.attribute('typeface');
         // `+mj-lt` و`+mn-ea` إحالات إلى خطوط الثيم لا أسماء عائلات.
         if (typeface == null || typeface.isEmpty || typeface.startsWith('+')) {
           return;
         }
         fonts
             .putIfAbsent(typeface, FontAccumulator.new)
-            .record(context, _fontSlots[element.name.local]!, themed: false);
+            .record(context, _fontSlots[local]!, themed: false);
     }
   }
 }
@@ -106,55 +106,33 @@ final class PptxInspector {
 ///
 /// الترتيب مقصود: الأخصّ أولًا. `a:ln` داخل `a:spPr` حدٌّ لا تعبئة، ولون
 /// داخل `a:rPr` نصٌّ ولو كان أبوه `a:solidFill` نفسه.
-ColorRole roleOf(XmlElement element) {
-  for (final ancestor in element.ancestors.whereType<XmlElement>()) {
-    switch (ancestor.name.local) {
-      case 'clrScheme' || 'clrMap' || 'clrMapOvr':
-        return ColorRole.themePalette;
-      case 'ln':
-        return ColorRole.border;
+ColorRole roleOf(ScannedElement element) =>
+    switch (element.nearestAncestor(_roleBearers)) {
+      'clrScheme' || 'clrMap' || 'clrMapOvr' => ColorRole.themePalette,
+      'ln' => ColorRole.border,
       // قلم التمييز: خلفية النصّ لا لونه. وهو أخصّ من `a:rPr` فيسبقه.
-      case 'highlight':
-        return ColorRole.runFill;
-      case 'rPr' || 'defRPr' || 'endParaRPr':
-        return ColorRole.text;
-      case 'tcPr':
-        return ColorRole.cellFill;
-      case 'bg' || 'bgPr' || 'bgRef':
-        return ColorRole.pageBackground;
-      case 'spPr' || 'grpSpPr':
-        return ColorRole.shapeFill;
-    }
-  }
-  return ColorRole.graphics;
-}
+      'highlight' => ColorRole.runFill,
+      'rPr' || 'defRPr' || 'endParaRPr' => ColorRole.text,
+      'tcPr' => ColorRole.cellFill,
+      'bg' || 'bgPr' || 'bgRef' => ColorRole.pageBackground,
+      'spPr' || 'grpSpPr' => ColorRole.shapeFill,
+      _ => ColorRole.graphics,
+    };
 
-/// عيّنة من النصّ الذي طُبّق عليه اللون.
-///
-/// نصعد إلى أقرب `a:r` — وحدة التنسيق — ثم إلى `a:p` إن لزم. بلا عيّنة
-/// يصير جدول الأثر أرقامًا صمّاء لا يُبنى عليها قرار.
-String? sampleFor(XmlElement element) {
-  for (final ancestor in element.ancestors.whereType<XmlElement>()) {
-    if (ancestor.name.namespaceUri != aNs) continue;
-    final isRun = ancestor.name.local == 'r';
-    final isParagraph = ancestor.name.local == 'p';
-    if (!isRun && !isParagraph) continue;
-
-    final buffer = StringBuffer();
-    for (final node in ancestor.descendants.whereType<XmlElement>()) {
-      if (node.name.namespaceUri == aNs && node.name.local == 't') {
-        buffer.write(node.innerText);
-        if (buffer.length >= colorSampleLength) break;
-      }
-    }
-    final text = buffer.toString().trim();
-    if (text.isEmpty) {
-      if (isParagraph) return null;
-      continue;
-    }
-    return text.length <= colorSampleLength
-        ? text
-        : '${text.substring(0, colorSampleLength)}…';
-  }
-  return null;
-}
+/// العناصر التي يُقرأ منها الدور. الأقرب يفوز، فتُطلَب دفعةً ويُردّ أقربها.
+const Set<String> _roleBearers = {
+  'clrScheme',
+  'clrMap',
+  'clrMapOvr',
+  'ln',
+  'highlight',
+  'rPr',
+  'defRPr',
+  'endParaRPr',
+  'tcPr',
+  'bg',
+  'bgPr',
+  'bgRef',
+  'spPr',
+  'grpSpPr',
+};
