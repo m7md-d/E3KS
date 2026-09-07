@@ -1303,6 +1303,18 @@ abstract class L {
   /// **'اختر…'**
   String get batchChoose;
 
+  /// No description provided for @batchConfirmSource.
+  ///
+  /// In ar, this message translates to:
+  /// **'اقرأ من هذا المجلد'**
+  String get batchConfirmSource;
+
+  /// No description provided for @batchConfirmOutput.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب في هذا المجلد'**
+  String get batchConfirmOutput;
+
   /// No description provided for @batchDocuments.
   ///
   /// In ar, this message translates to:

@@ -299,6 +299,8 @@
   "batchSource": "Folder",
   "batchOutput": "Output folder",
   "batchChoose": "Choose…",
+  "batchConfirmSource": "Read from this folder",
+  "batchConfirmOutput": "Write into this folder",
   "batchDocuments": "{count} documents",
   "@batchDocuments": {
     "placeholders": {

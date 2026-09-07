@@ -299,6 +299,8 @@
   "batchSource": "المجلد",
   "batchOutput": "مجلد المخرَج",
   "batchChoose": "اختر…",
+  "batchConfirmSource": "اقرأ من هذا المجلد",
+  "batchConfirmOutput": "اكتب في هذا المجلد",
   "batchDocuments": "{count} مستندًا",
   "@batchDocuments": {
     "placeholders": {

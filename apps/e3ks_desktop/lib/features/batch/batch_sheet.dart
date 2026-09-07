@@ -90,7 +90,9 @@ class _BatchBodyState extends State<_BatchBody> {
   }
 
   Future<void> _pickSource() async {
-    final path = await getDirectoryPath();
+    final path = await getDirectoryPath(
+      confirmButtonText: context.l10n.batchConfirmSource,
+    );
     if (path == null || !mounted) return;
     setState(() {
       _source = path;
@@ -100,7 +102,16 @@ class _BatchBodyState extends State<_BatchBody> {
   }
 
   Future<void> _pickOutput() async {
-    final path = await getDirectoryPath();
+    // **`canCreateDirectories` صريحة هنا.** `NSOpenPanel` يخفي زرّ «مجلد
+    // جديد» افتراضًا — الافتراض مصنوع لاختيار ما هو قائم — فكان المستخدم
+    // يُطالَب بمجلد مخرَج ولا يُعطى وسيلةً لصنعه، فيخرج من التطبيق ليصنعه
+    // ثم يعود. والراية تمرّ من `getDirectoryPath` إلى `NSSavePanel` منها.
+    final path = await getDirectoryPath(
+      canCreateDirectories: true,
+      confirmButtonText: context.l10n.batchConfirmOutput,
+      // يفتح عند المصدر: مجلد المخرَج يُصنع بجواره في الغالب.
+      initialDirectory: _source,
+    );
     if (path == null || !mounted) return;
     setState(() {
       _output = path;

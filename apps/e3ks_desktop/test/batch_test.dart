@@ -88,6 +88,21 @@ void main() {
     },
   );
 
+  test('حوار مجلد المخرَج يسمح بصنع مجلد', () {
+    // **الخلل الذي وُلد منه الاختبار:** `NSOpenPanel` يخفي زرّ «مجلد جديد»
+    // افتراضًا، فكان المستخدم يُطالَب بمجلد مخرَج بلا وسيلة لصنعه. والراية
+    // تعبر إلى AppKit ولا يبلغها اختبار ودجة — الصندوق الرملي مثلها
+    // (`03`) — فالحارس على المصدر: أن تبقى مكتوبة.
+    final source = File(
+      'lib/features/batch/batch_sheet.dart',
+    ).readAsStringSync();
+    final pick = source.substring(source.indexOf('Future<void> _pickOutput'));
+    expect(
+      pick.substring(0, pick.indexOf('}')),
+      contains('canCreateDirectories: true'),
+    );
+  });
+
   testWidgets('حوار الدفعة يفتح عند أضيق نافذة بلا تجاوز', (tester) async {
     // أضيق نافذة مسموحة، وهي أكثر ما ينكسر عمليًّا (`03`).
     await tester.binding.setSurfaceSize(const Size(1180, 720));

@@ -661,6 +661,12 @@ class LAr extends L {
   String get batchChoose => 'اختر…';
 
   @override
+  String get batchConfirmSource => 'اقرأ من هذا المجلد';
+
+  @override
+  String get batchConfirmOutput => 'اكتب في هذا المجلد';
+
+  @override
   String batchDocuments(int count) {
     return '$count مستندًا';
   }

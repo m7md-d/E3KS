@@ -668,6 +668,12 @@ class LEn extends L {
   String get batchChoose => 'Choose…';
 
   @override
+  String get batchConfirmSource => 'Read from this folder';
+
+  @override
+  String get batchConfirmOutput => 'Write into this folder';
+
+  @override
   String batchDocuments(int count) {
     return '$count documents';
   }
