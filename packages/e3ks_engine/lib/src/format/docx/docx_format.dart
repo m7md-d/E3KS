@@ -45,8 +45,8 @@ final class DocxFormat implements DocumentFormat {
   ) => const DocxTransformer().apply(package, plan);
 
   @override
-  DocumentPreview preview(DocumentPackage package) =>
-      const DocxPreviewExtractor().extract(package);
+  DocumentPreview preview(DocumentPackage package, {int? maxPages}) =>
+      const DocxPreviewExtractor().extract(package, maxPages: maxPages);
 
   @override
   List<EngineIssue> validate(DocumentPackage package) => checkDocx(package);

@@ -36,7 +36,7 @@ const Map<String, PreviewSectionKind> _sectionKinds = {
 final class DocxPreviewExtractor {
   const DocxPreviewExtractor();
 
-  DocumentPreview extract(DocumentPackage package) {
+  DocumentPreview extract(DocumentPackage package, {int? maxPages}) {
     final sections = <PreviewSection>[];
     final book = StyleBook.read(package);
     PageGeometry? bodyGeometry;
@@ -48,7 +48,7 @@ final class DocxPreviewExtractor {
       final text = package.textOf(partName);
       if (text == null) continue;
 
-      final builder = _SectionBuilder();
+      final builder = _SectionBuilder(maxPages);
       var index = 0;
       for (final child in _bodyChildren(text)) {
         if (builder.full) break;
@@ -499,6 +499,14 @@ final class _PendingPage {
 /// **والإعلان لا يُغلق صفحة.** `sectPr` ينهي قسمًا، والصفحة تنتهي بفاصلها
 /// المخزَّن وحده؛ إغلاقها عنده يخترع صفحةً لا وجود لها.
 final class _SectionBuilder {
+  _SectionBuilder(this.maxPages);
+
+  /// حدّ الصفحات لهذا الجزء، أو `null` بلا حدّ.
+  ///
+  /// **ليس صمّامًا بل استعجالًا**: أوّل رسمة لا تحتاج آخر المستند، والقارئ
+  /// كسول فالوقوف هنا يوقف التحليل. وما بعده يُكمَل في نداءٍ ثانٍ.
+  final int? maxPages;
+
   final List<_PendingPage> _pages = [];
   List<PreviewBlock> _current = [];
   int _firstChild = 0;
@@ -506,7 +514,9 @@ final class _SectionBuilder {
   int _count = 0;
 
   /// بلغ الصمّام حدَّه: ما بعده يُعلَن مقتطعًا ولا يُخفى (`00` §5).
-  bool get full => _count >= _maxBlocksPerSection;
+  bool get full =>
+      _count >= _maxBlocksPerSection ||
+      (maxPages != null && _pages.length >= maxPages!);
 
   void add(int childIndex, PreviewBlock block) {
     _count++;

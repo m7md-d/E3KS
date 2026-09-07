@@ -165,6 +165,9 @@ class LAr extends L {
   }
 
   @override
+  String get previewLoadingRest => 'بقيّة الصفحات قيد الاستخراج';
+
+  @override
   String get previewTruncated => 'عُرض جزء من المستند لأنه طويل.';
 
   @override

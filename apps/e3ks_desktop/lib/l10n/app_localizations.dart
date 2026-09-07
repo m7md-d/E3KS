@@ -385,6 +385,12 @@ abstract class L {
   /// **'صفحة {n} من {total}'**
   String pageOf(int n, int total);
 
+  /// No description provided for @previewLoadingRest.
+  ///
+  /// In ar, this message translates to:
+  /// **'بقيّة الصفحات قيد الاستخراج'**
+  String get previewLoadingRest;
+
   /// No description provided for @previewTruncated.
   ///
   /// In ar, this message translates to:

@@ -45,8 +45,8 @@ final class PptxFormat implements DocumentFormat {
   ) => const PptxTransformer().apply(package, plan);
 
   @override
-  DocumentPreview preview(DocumentPackage package) =>
-      const PptxPreviewExtractor().extract(package);
+  DocumentPreview preview(DocumentPackage package, {int? maxPages}) =>
+      const PptxPreviewExtractor().extract(package, maxPages: maxPages);
 
   @override
   List<EngineIssue> validate(DocumentPackage package) => checkPptx(package);

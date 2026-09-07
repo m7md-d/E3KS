@@ -168,6 +168,9 @@ class LEn extends L {
   }
 
   @override
+  String get previewLoadingRest => 'The remaining pages are still being read';
+
+  @override
   String get previewTruncated =>
       'Part of the document is shown because it is long.';
 

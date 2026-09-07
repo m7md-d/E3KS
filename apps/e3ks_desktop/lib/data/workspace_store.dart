@@ -17,7 +17,12 @@ enum WorkspaceTab { colors, fonts, marks, identities }
 class OpenTab {
   OpenTab(this.document);
 
-  final LoadedDocument document;
+  /// **يُستبدَل مرّةً واحدة**: يُفتح بأوّل صفحات المعاينة ثم يحلّ محلّها
+  /// المستندُ كاملًا حين يجهز. ما عداه ثابت.
+  LoadedDocument document;
+
+  /// ما زالت بقيّة الصفحات قيد الاستخراج.
+  bool previewPartial = true;
   final Map<HexColor, HexColor> colorMap = {};
   final Set<String> preserveFonts = {};
 
@@ -69,6 +74,9 @@ class WorkspaceStore extends ChangeNotifier {
   LoadedDocument? get document => current?.document;
   LoadFailure? get failure => _failure;
   bool get busy => _busy;
+
+  /// المستند معروض وبقيّة صفحاته في الطريق — تعرضه الواجهة إشعارًا هادئًا.
+  bool get previewPartial => current?.previewPartial ?? false;
   bool get hasDocument => current != null;
   InspectionReport? get report => current?.document.report;
 
@@ -218,6 +226,23 @@ class WorkspaceStore extends ChangeNotifier {
     }
     _tabs.add(tab);
     _active = _tabs.length - 1;
+    notifyListeners();
+
+    // **الصفحة معروضة الآن؛ البقيّة تلحق.** أوّل الصفحات يكلّف ٤١ms لمئة
+    // صفحة والكامل ٦٠٩ — فيُعرَض الأوّل ويُكمَّل خلفه، ولا ينتظر المستخدم
+    // آخر المستند ليرى أوّله.
+    await _completePreview(tab, bytes);
+  }
+
+  Future<void> _completePreview(OpenTab tab, Uint8List bytes) async {
+    final full = await loadFullPreview(bytes);
+    // أُغلق التبويب أثناء الاستخراج؟ لا شيء يُحدَّث.
+    if (full == null || !_tabs.contains(tab)) return;
+    tab.document = tab.document.withPreview(full);
+    tab.previewPartial = false;
+    // المعاينة المحفوظة بُنيت على الأوائل، فتسقط.
+    tab.cachedPreview = null;
+    tab.cachedPlanHash = -1;
     notifyListeners();
   }
 

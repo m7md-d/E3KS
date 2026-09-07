@@ -36,7 +36,7 @@ const double _defaultSizePt = 18;
 final class PptxPreviewExtractor {
   const PptxPreviewExtractor();
 
-  DocumentPreview extract(DocumentPackage package) {
+  DocumentPreview extract(DocumentPackage package, {int? maxPages}) {
     final geometry = _slideSize(package);
     final slides = <String>[
       for (final name in package.partNames)
@@ -45,6 +45,8 @@ final class PptxPreviewExtractor {
 
     final pages = <PreviewPage>[];
     for (final name in slides) {
+      // الحدّ لأجل أوّل رسمة: الشريحة المعروضة لا تنتظر آخر العرض.
+      if (maxPages != null && pages.length >= maxPages) break;
       final document = _parse(package, name);
       if (document == null) continue;
       pages.add(

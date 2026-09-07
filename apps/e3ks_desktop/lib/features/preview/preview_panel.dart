@@ -284,6 +284,7 @@ class _PreviewPanelState extends State<PreviewPanel> {
               fit: _fit,
               numbers: _numbers,
               pageCount: pages.length,
+              partial: store.previewPartial,
               changeCount: changed.length,
               cursor: _cursor,
               sections: [

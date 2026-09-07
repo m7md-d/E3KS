@@ -43,7 +43,11 @@ abstract interface class DocumentFormat {
     StylePlan plan,
   );
 
-  DocumentPreview preview(DocumentPackage package);
+  /// نموذج المعاينة. [maxPages] يقف عند حدٍّ من الصفحات لكل جزء.
+  ///
+  /// **الحدّ لأجل أوّل رسمة**: المستخدم يرى الصفحة التي يقف عليها، ولا
+  /// ينتظر آخر المستند ليراها. والاستخراج كسول، فالوقوف عنده يوقف القراءة.
+  DocumentPreview preview(DocumentPackage package, {int? maxPages});
 
   /// فحوص ما قبل الكتابة الخاصّة بهذه الصيغة، فوق فحوص الحاوية المشتركة.
   ///

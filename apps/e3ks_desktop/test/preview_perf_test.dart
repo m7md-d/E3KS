@@ -92,6 +92,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('المعاينة تصل على دفعتين: أوّل الصفحات ثم تمامها', () async {
+    // **الخلل الذي وُلد منه الاختبار:** كانت المعاينة تُستخرَج كاملةً قبل
+    // أن يُعرَض شيء، فينتظر المستخدم آخر المستند ليرى أوّله — ٦٠٩ms لمئة
+    // صفحة و٢٫٣ ثانية لثمانمئة، مقابل ٤١ و١٧٣ لأوّل صفحاتها.
+    final file = File(_realPath);
+    if (!file.existsSync()) {
+      markTestSkipped('لا يوجد مستند حقيقي');
+      return;
+    }
+
+    final store = WorkspaceStore();
+    final seen = <int>[];
+    store.addListener(() {
+      final preview = store.document?.preview;
+      if (preview != null) seen.add(preview.pageCount);
+    });
+
+    await store.open(
+      _realPath,
+      'manual.docx',
+      Uint8List.fromList(file.readAsBytesSync()),
+    );
+
+    expect(seen, isNotEmpty, reason: 'لم يُعرَض المستند قطّ');
+    expect(
+      seen.first,
+      lessThan(seen.last),
+      reason: 'وصلت المعاينة دفعةً واحدة: ${seen.join("، ")}',
+    );
+    expect(seen.first, greaterThan(0), reason: 'الدفعة الأولى بلا صفحات');
+    expect(store.previewPartial, isFalse, reason: 'بقيت المعاينة ناقصة');
+  });
+
   testWidgets('تبديل لون لا يعيد بناء المستند كلّه', (tester) async {
     final file = File(_realPath);
     if (!file.existsSync()) {

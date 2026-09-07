@@ -84,6 +84,7 @@
       }
     }
   },
+  "previewLoadingRest": "The remaining pages are still being read",
   "previewTruncated": "Part of the document is shown because it is long.",
   "sectionBody": "Body",
   "sectionHeader": "Header",

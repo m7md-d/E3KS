@@ -30,6 +30,7 @@ class PreviewToolbar extends StatelessWidget {
     required this.fit,
     required this.numbers,
     required this.pageCount,
+    required this.partial,
     required this.changeCount,
     required this.cursor,
     required this.sections,
@@ -51,6 +52,12 @@ class PreviewToolbar extends StatelessWidget {
   final bool fit;
   final bool numbers;
   final int pageCount;
+
+  /// المعاينة ناقصة: بقيّة الصفحات قيد الاستخراج، والعدد سيرتفع.
+  ///
+  /// **يُقال ولا يُخفى** (`00` §5): عدّادٌ يقول «من ٣٧» ثم يصير «من ١٧٣»
+  /// بلا تفسير يجعل المستخدم يظنّ أنه فقد صفحات.
+  final bool partial;
   final int changeCount;
   final int cursor;
   final List<SectionEntry> sections;
@@ -139,6 +146,17 @@ class PreviewToolbar extends StatelessWidget {
                   total: pageCount,
                   onGoToPage: onGoToPage,
                 ),
+                if (partial) ...[
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message: t.previewLoadingRest,
+                    child: const SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(strokeWidth: 1.6),
+                    ),
+                  ),
+                ],
               ],
               if (showNumbering) ...[
                 const SizedBox(width: 6),
