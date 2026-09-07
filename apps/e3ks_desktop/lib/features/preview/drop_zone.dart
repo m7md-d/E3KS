@@ -12,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
+import '../../data/openable_files.dart';
 import '../../shared/widgets/mirror_mark.dart';
 
 class DropZone extends StatelessWidget {
@@ -31,7 +32,14 @@ class DropZone extends StatelessWidget {
   final List<String> errors;
 
   Future<void> _browse() async {
-    const type = XTypeGroup(label: 'Word', extensions: ['docx']);
+    // **الامتدادات من مرجعها الواحد.** كان امتداد Word مكتوبًا هنا وحده،
+    // فعجز زرّ الحالة الفارغة — أوّل ما يلمسه القادم الجديد — عن فتح عرضٍ
+    // تقديمي والتطبيق يدعمه منذ المرحلة ٣. قائمتان تنحرفان، والحارس
+    // يمسح `lib/` ويرفض امتدادًا مكتوبًا خارج مرجعه.
+    const type = XTypeGroup(
+      label: 'E3KS', // e3ks:not-ui
+      extensions: openableExtensions,
+    );
     final file = await openFile(acceptedTypeGroups: const [type]);
     if (file != null) onOpen(file.path);
   }

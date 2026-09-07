@@ -8,6 +8,7 @@ import 'package:e3ks_desktop/data/batch_runner.dart';
 import 'package:e3ks_desktop/data/font_cache.dart';
 import 'package:e3ks_desktop/data/font_service.dart';
 import 'package:e3ks_desktop/data/identity_store.dart';
+import 'package:e3ks_desktop/data/openable_files.dart';
 import 'package:e3ks_desktop/data/settings_store.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
@@ -101,6 +102,23 @@ void main() {
       pick.substring(0, pick.indexOf('}')),
       contains('canCreateDirectories: true'),
     );
+  });
+
+  test('امتدادات الفتح من مرجعها الواحد', () {
+    // **الخلل الذي وُلد منه الاختبار:** `drop_zone.dart` كان يكتب
+    // `extensions: ['docx']` بيده، فعجز زرّ الحالة الفارغة عن فتح عرضٍ
+    // تقديمي والتطبيق يدعمه. قائمتان تنحرفان، والمرجع الواحد يُحرَس
+    // آليًّا (`07` §1).
+    final offenders = <String>[];
+    for (final entity in Directory('lib').listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      if (entity.path.endsWith('openable_files.dart')) continue;
+      final text = entity.readAsStringSync();
+      for (final extension in openableExtensions) {
+        if (text.contains("'$extension'")) offenders.add(entity.path);
+      }
+    }
+    expect(offenders, isEmpty);
   });
 
   testWidgets('حوار الدفعة يفتح عند أضيق نافذة بلا تجاوز', (tester) async {
