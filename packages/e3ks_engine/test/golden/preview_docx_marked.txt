@@ -1,0 +1,25 @@
+# word/document.xml  نوع=body  مقتطع=false
+  صفحة 1  595.30×841.90pt  هوامش 72.00/72.00/72.00/72.00
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=#EEF3F2 قبل=0.00 بعد=0.00 سطر=null
+        مقطع «marked yellow» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=highlight:yellow
+        مقطع « marked green» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=highlight:green
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «pasted shading» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=#D9D9D9 تمييز=null
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «no highlight at all» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «both at once» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=#D9D9D9 تمييز=highlight:yellow
+# word/header1.xml  نوع=header  مقتطع=false
+  صفحة 1  595.30×841.90pt  هوامش 72.00/72.00/72.00/72.00
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «Header line» لون=#4C2FB8 لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null
+# word/footer1.xml  نوع=footer  مقتطع=false
+  صفحة 1  595.30×841.90pt  هوامش 72.00/72.00/72.00/72.00
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «Page » لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null

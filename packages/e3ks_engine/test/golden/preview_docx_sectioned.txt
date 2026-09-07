@@ -1,0 +1,18 @@
+# word/document.xml  نوع=body  مقتطع=false
+  صفحة 1  612.00×792.00pt  هوامش 72.00/54.00/72.00/90.00
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «portrait» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «end of first section» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null
+  صفحة 2  841.90×595.30pt  هوامش 36.00/36.00/36.00/36.00
+    فقرة  صفحة‑جديدة=true
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «
+landscape» لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null
+# word/footer1.xml  نوع=footer  مقتطع=false
+  صفحة 1  612.00×792.00pt  هوامش 72.00/54.00/72.00/90.00
+    فقرة  صفحة‑جديدة=false
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «Page » لون=null لاتيني=null عربي=null مقاس=null ثقيل=false مائل=false تحته=false تظليل=null تمييز=null

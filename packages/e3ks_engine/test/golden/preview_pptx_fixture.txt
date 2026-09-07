@@ -1,0 +1,10 @@
+# ppt/slides  نوع=slides  مقتطع=false
+  صفحة 1  960.00×540.00pt  هوامش 0.00/0.00/0.00/0.00
+    شكل  تعبئة=null  صفحة‑جديدة=false  إطار=66.00,54.00 828.00×90.00
+      ف: محاذاة=center rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «هوية العرض» لون=#1B7F79 لاتيني=Cairo عربي=Traditional Arabic مقاس=44.0 ثقيل=true مائل=false تحته=false تظليل=null تمييز=null
+    شكل  تعبئة=#EEF3F2  صفحة‑جديدة=false  إطار=66.00,180.00 828.00×170.08
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «theme reference stays» لون=#667085 لاتيني=null عربي=null مقاس=20.0 ثقيل=false مائل=false تحته=false تظليل=null تمييز=null
+      ف: محاذاة=start rtl=false نمط=null عنوان=1 تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «const x = 1;» لون=null لاتيني=DejaVu Sans Mono عربي=null مقاس=16.0 ثقيل=false مائل=false تحته=false تظليل=null تمييز=null

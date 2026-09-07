@@ -1,0 +1,7 @@
+# ppt/slides  نوع=slides  مقتطع=false
+  صفحة 1  960.00×540.00pt  هوامش 0.00/0.00/0.00/0.00
+    شكل  تعبئة=null  صفحة‑جديدة=false  إطار=66.00,54.00 828.00×90.00
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «marked run» لون=#1B7F79 لاتيني=null عربي=null مقاس=20.0 ثقيل=false مائل=false تحته=false تظليل=null تمييز=highlight:#FFFF00
+      ف: محاذاة=start rtl=false نمط=null عنوان=null تعبئة=null قبل=0.00 بعد=0.00 سطر=null
+        مقطع «plain run» لون=#1B7F79 لاتيني=null عربي=null مقاس=20.0 ثقيل=false مائل=false تحته=false تظليل=null تمييز=null

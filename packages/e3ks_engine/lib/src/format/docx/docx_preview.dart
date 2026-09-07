@@ -2,9 +2,15 @@
 ///
 /// قراءة محضة، ولا تُستدعى إلا مرّة واحدة عند فتح الملف. تطبيق الخطة على
 /// المعاينة يجري في الذاكرة (`preview_restyler.dart`) فتكون الاستجابة فورية.
+///
+/// **ولا تُبنى شجرة المستند كاملةً.** يُقرأ التدفّق ويُجمَّع **ابنٌ واحد من
+/// `w:body` في وقته** فيُقرأ ثم يُرمى، فتصير ذروة الذاكرة أطولَ فقرةٍ أو
+/// جدولٍ في الملف لا الملفَّ كلّه. وقراءة الكتلة نفسها لم تتغيّر: ما تحتاجه
+/// من شجرة يقع كلّه داخل تلك الشجرة الصغيرة.
 library;
 
 import 'package:xml/xml.dart';
+import 'package:xml/xml_events.dart';
 
 import '../../inspect/hex_color.dart';
 import '../../inspect/text_mark.dart';
@@ -42,52 +48,23 @@ final class DocxPreviewExtractor {
       final text = package.textOf(partName);
       if (text == null) continue;
 
-      final XmlDocument document;
-      try {
-        document = XmlDocument.parse(text);
-      } on XmlException {
-        continue; // الفحص يبلّغ عن الجزء التالف؛ المعاينة تتخطّاه بهدوء.
-      }
-
-      final body = document.rootElement;
-      final children = _bodyChildren(body).toList();
-      final geometries = geometriesForBody(children);
-
-      final pages = <PreviewPage>[];
-      var current = <PreviewBlock>[];
-      var currentGeometry = PageGeometry.a4;
-      var count = 0;
-      var truncated = false;
-
-      void closePage() {
-        if (current.isEmpty) return;
-        pages.add(
-          PreviewPage(
-            number: pages.length + 1,
-            blocks: current,
-            geometry: currentGeometry,
-          ),
-        );
-        current = <PreviewBlock>[];
-      }
-
-      for (var i = 0; i < children.length; i++) {
-        if (count >= _maxBlocksPerSection) {
-          truncated = true;
-          break;
+      final builder = _SectionBuilder();
+      var index = 0;
+      for (final child in _bodyChildren(text)) {
+        if (builder.full) break;
+        // `w:sectPr` يصف القسم الذي **ينتهي** عنده (`02` §7/1)، فيُحلّ به
+        // مقاسُ كل صفحةٍ معلَّقة بدأت قبله.
+        final mark = _sectionMark(child);
+        for (final block in _readBlocks(child, book)) {
+          builder.add(index, block);
         }
-        for (final block in _readBlocks(children[i], book)) {
-          count++;
-          // فاصل الصفحة يقع **قبل** الكتلة التي تحمله.
-          if (block.startsPage && current.isNotEmpty) closePage();
-          // مقاس الصفحة مقاس أول كتلة فيها: القسم الأفقيّ يبدأ بفاصل صفحة.
-          if (current.isEmpty) currentGeometry = geometries[i];
-          current.add(block);
-        }
+        if (mark != null) builder.resolveUpTo(index, mark);
+        index++;
       }
-      closePage();
+      final pages = builder.finish();
 
       if (pages.isEmpty) continue;
+      final truncated = builder.full;
       if (kind == PreviewSectionKind.body) {
         bodyGeometry ??= pages.first.geometry;
       }
@@ -151,9 +128,92 @@ final class DocxPreviewExtractor {
     return null;
   }
 
-  Iterable<XmlElement> _bodyChildren(XmlElement root) {
-    final body = root.getElement('body', namespace: wNs) ?? root;
-    return body.childElements.where((e) => e.name.namespaceUri == wNs);
+  /// أبناء `w:body` واحدًا واحدًا، مبنيّين من التدفّق ومرميّين بعد قراءتهم.
+  ///
+  /// **ولا `body` في الترويسة والتذييل**: جذرها `w:hdr`/`w:ftr` وأبناؤه هم
+  /// الفقرات مباشرةً. فالقاعدة: ننزل داخل `w:body` إن وجدناه، وإلّا فأبناء
+  /// الجذر هم المقصودون — وهو نفس ما كان يفعله `getElement('body') ?? root`.
+  /// وما ليس فقرةً ولا جدولًا (`w:background` مثلًا) يتخطّاه [_readBlocks].
+  Iterable<XmlElement> _bodyChildren(String text) sync* {
+    var depth = 0;
+    var containerDepth = 1;
+    var collecting = <XmlEvent>[];
+    var collectDepth = -1;
+
+    // **إعلانات `xmlns` تسكن الجذر، والشجرة المقتطعة لا تحملها.** فبلا
+    // إحاطتها بجذرها تصير مساحةُ كل عنصرٍ فيها `null`، ويرجع كل
+    // `getElement(..., namespace: wNs)` فارغًا — فقرات بلا خصائص ولا
+    // فواصل ولا `sectPr`. تُلفّ بجذرها، فتُحلّ البادئات كما تُحلّ في الملف.
+    XmlStartElementEvent? root;
+
+    for (final event in parseEvents(text)) {
+      switch (event) {
+        case XmlStartElementEvent():
+          if (depth == 0) root = event;
+          if (collectDepth < 0 &&
+              depth == containerDepth &&
+              _localOf(event.name) == 'body') {
+            // الجذر `w:document`: المقصود ما داخل `w:body` لا ما جاوره.
+            containerDepth = depth + 1;
+            if (!event.isSelfClosing) depth++;
+            continue;
+          }
+          if (collectDepth < 0 && depth == containerDepth) {
+            collectDepth = depth;
+            collecting = [event];
+            if (event.isSelfClosing) {
+              yield* _elementsOf(root, collecting);
+              collectDepth = -1;
+            }
+          } else if (collectDepth >= 0) {
+            collecting.add(event);
+          }
+          if (!event.isSelfClosing) depth++;
+
+        case XmlEndElementEvent():
+          depth--;
+          if (collectDepth >= 0) {
+            collecting.add(event);
+            if (depth == collectDepth) {
+              yield* _elementsOf(root, collecting);
+              collectDepth = -1;
+              collecting = <XmlEvent>[];
+            }
+          }
+
+        default:
+          if (collectDepth >= 0) collecting.add(event);
+      }
+    }
+  }
+
+  Iterable<XmlElement> _elementsOf(
+    XmlStartElementEvent? root,
+    List<XmlEvent> events,
+  ) {
+    if (root == null) return const [];
+    final wrapped = <XmlEvent>[
+      XmlStartElementEvent(root.name, root.attributes, false),
+      ...events,
+      XmlEndElementEvent(root.name),
+    ];
+    return const XmlNodeDecoder()
+        .convert(wrapped)
+        .whereType<XmlElement>()
+        .expand((element) => element.childElements);
+  }
+
+  /// مقاس الصفحة الذي يعلنه هذا الابن، إن أعلن.
+  PageGeometry? _sectionMark(XmlElement child) {
+    final sectPr = switch (child.name.local) {
+      'sectPr' => child,
+      'p' =>
+        child
+            .getElement('pPr', namespace: wNs)
+            ?.getElement('sectPr', namespace: wNs),
+      _ => null,
+    };
+    return sectPr == null ? null : geometryOf(sectPr);
   }
 
   List<PreviewBlock> _readBlocks(XmlElement element, StyleBook book) =>
@@ -410,5 +470,86 @@ final class DocxPreviewExtractor {
     if (!name.startsWith('heading') && !name.startsWith('title')) return null;
     if (name.startsWith('title')) return 0;
     return (int.tryParse(name.substring(7)) ?? 1) - 1;
+  }
+}
+
+String _localOf(String qualified) {
+  final colon = qualified.indexOf(':');
+  return colon < 0 ? qualified : qualified.substring(colon + 1);
+}
+
+/// صفحةٌ اكتملت كتلها، ومقاسها إن عُرف.
+final class _PendingPage {
+  _PendingPage(this.number, this.blocks, this.firstChild, this.geometry);
+  final int number;
+  final List<PreviewBlock> blocks;
+
+  /// فهرس الابن الذي بدأت عنده — به يُطابَق أوّلُ `sectPr` يليها.
+  final int firstChild;
+  PageGeometry? geometry;
+}
+
+/// يجمّع صفحات قسمٍ واحد، ويحلّ مقاساتها حين تُعلَن.
+///
+/// **الحلّ مؤجَّل بالضرورة**: `w:sectPr` يقع في نهاية قسمه لا في بدايته
+/// (`02` §7/1)، فالصفحة تُبنى قبل أن يُعرَف مقاسها. تبقى معلَّقةً بفهرس
+/// أوّل أبنائها، ويحلّها أوّلُ إعلانٍ يليه. وما بقي معلَّقًا فمقاسه A4 —
+/// وهو نفس ما كان يفعله المسح من نهاية المتن إلى بدايته.
+///
+/// **والإعلان لا يُغلق صفحة.** `sectPr` ينهي قسمًا، والصفحة تنتهي بفاصلها
+/// المخزَّن وحده؛ إغلاقها عنده يخترع صفحةً لا وجود لها.
+final class _SectionBuilder {
+  final List<_PendingPage> _pages = [];
+  List<PreviewBlock> _current = [];
+  int _firstChild = 0;
+  PageGeometry? _openGeometry;
+  int _count = 0;
+
+  /// بلغ الصمّام حدَّه: ما بعده يُعلَن مقتطعًا ولا يُخفى (`00` §5).
+  bool get full => _count >= _maxBlocksPerSection;
+
+  void add(int childIndex, PreviewBlock block) {
+    _count++;
+    // فاصل الصفحة يقع **قبل** الكتلة التي تحمله.
+    if (block.startsPage && _current.isNotEmpty) _close();
+    // مقاس الصفحة مقاس أول كتلة فيها: القسم الأفقيّ يبدأ بفاصل صفحة.
+    if (_current.isEmpty) _firstChild = childIndex;
+    _current.add(block);
+  }
+
+  void _close() {
+    if (_current.isEmpty) return;
+    _pages.add(
+      _PendingPage(_pages.length + 1, _current, _firstChild, _openGeometry),
+    );
+    _current = [];
+    _openGeometry = null;
+  }
+
+  /// يُسند [geometry] إلى كل صفحة لم يُعرَف مقاسها وبدأت عند [childIndex]
+  /// أو قبله — ومنها الصفحة المفتوحة.
+  void resolveUpTo(int childIndex, PageGeometry geometry) {
+    for (final page in _pages) {
+      if (page.geometry == null && page.firstChild <= childIndex) {
+        page.geometry = geometry;
+      }
+    }
+    if (_current.isNotEmpty &&
+        _openGeometry == null &&
+        _firstChild <= childIndex) {
+      _openGeometry = geometry;
+    }
+  }
+
+  List<PreviewPage> finish() {
+    _close();
+    return [
+      for (final page in _pages)
+        PreviewPage(
+          number: page.number,
+          blocks: page.blocks,
+          geometry: page.geometry ?? PageGeometry.a4,
+        ),
+    ];
   }
 }
