@@ -25,8 +25,7 @@ DocumentPackage openOrFail(Uint8List bytes) {
 
 /// البوابة كما يستدعيها المسار: فحوص الحاوية المشتركة ثم فحوص الصيغة.
 List<EngineIssue> gateOf(DocumentPackage package) => [
-  ...checkPackage(package),
-  ...formatOrFail(package).validate(package),
+  ...checkPackage(package, gateFor: formatOrFail(package).gateFor),
 ];
 
 /// يمرّ عبر الواجهة العامة لا عبر أصناف الصيغة مباشرةً: هكذا يستدعيها
@@ -223,6 +222,35 @@ void main() {
       expect(issues, hasLength(1));
       expect(issues.single.code, equals(IssueCode.emptyTextNode));
       expect(issues.single.part, equals('word/header1.xml'));
+    });
+
+    test('تكشف <w:t/> المغلق على نفسه', () {
+      // **مسارٌ منفصل في البوابة التدفّقية**: العنصر المغلق على نفسه لا
+      // يُنتج حدث نهاية، فيُحكَم عليه عند بدايته. وهو فارغ كنظيره تمامًا.
+      final package = openOrFail(buildFixtureDocx());
+      final broken = package
+          .textOf('word/header1.xml')!
+          .replaceAll('<w:t>Header line</w:t>', '<w:t/>');
+      package.putText('word/header1.xml', broken);
+
+      final issues = gateOf(package);
+      expect(issues, hasLength(1));
+      expect(issues.single.code, equals(IssueCode.emptyTextNode));
+    });
+
+    test('المسافة وحدها نصٌّ، فلا تُرفض', () {
+      // **الإيجابية الكاذبة أسوأ من الفوات**: رفض الكتابة على مستند سليم
+      // يمنع المستخدم من عمله بلا ذنب. والمسافة المحفوظة نصٌّ (`02` §2).
+      final package = openOrFail(buildFixtureDocx());
+      final spaced = package
+          .textOf('word/header1.xml')!
+          .replaceAll(
+            '<w:t>Header line</w:t>',
+            '<w:t xml:space="preserve"> </w:t>',
+          );
+      package.putText('word/header1.xml', spaced);
+
+      expect(gateOf(package), isEmpty);
     });
 
     test('تكشف حقلًا غير متوازن', () {

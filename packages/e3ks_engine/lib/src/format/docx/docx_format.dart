@@ -4,13 +4,13 @@
 /// المسار ولا في الواجهة.
 library;
 
-import '../../diagnostics/engine_issue.dart';
 import '../../diagnostics/engine_result.dart';
 import '../../inspect/inspection_report.dart';
 import '../../package/document_package.dart';
 import '../../preview/preview_model.dart';
 import '../../transform/style_plan.dart';
 import '../../transform/transform_report.dart';
+import '../../validate/package_gate.dart';
 import '../document_format.dart';
 import 'docx_gate.dart';
 import 'docx_inspector.dart';
@@ -49,5 +49,5 @@ final class DocxFormat implements DocumentFormat {
       const DocxPreviewExtractor().extract(package, maxPages: maxPages);
 
   @override
-  List<EngineIssue> validate(DocumentPackage package) => checkDocx(package);
+  PartGate? gateFor(String partName) => DocxPartGate(partName);
 }

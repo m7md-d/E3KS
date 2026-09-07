@@ -2,7 +2,8 @@
 //
 // **الغرض أن يُقاس ما يُقال.** «التطبيق ثقيل على الملفات الكبيرة» حكمٌ بلا
 // رقم؛ وهذه الأداة تعطي الرقم مفكَّكًا فيُعرَف أين يذهب الزمن — وقد أظهرت
-// أن **البوابة أغلى من التبديل نفسه** (`00` §5: لا يُسمّى سبب لم يُقَس).
+// أن **البوابة كانت أغلى من التبديل نفسه** لأنها تحلّل الجزء مرّتين
+// (`00` §5: لا يُسمّى سبب لم يُقَس). وصارت مرورًا تدفّقيًّا واحدًا.
 //
 //   dart tool/measure_document.dart <ملف.docx> [ملفات أخرى…]
 //
@@ -61,15 +62,10 @@ void main(List<String> args) {
     format.transform(package, plan);
     final transform = watch.elapsedMilliseconds;
 
-    // البوابتان مفصولتان: المشتركة تحلّل كل جزء ممسوس، وبوابة الصيغة
-    // تحلّله **مرّةً ثانية**. الفصل هنا هو ما يُظهر ثمن التكرار.
+    // مرورٌ واحد: المشتركة تقرأ التدفّق وفاحص الصيغة يمرّ على أحداثه.
     watch.reset();
-    final shared = checkPackage(package);
-    final gateShared = watch.elapsedMilliseconds;
-
-    watch.reset();
-    final specific = format.validate(package);
-    final gateFormat = watch.elapsedMilliseconds;
+    final blockers = checkPackage(package, gateFor: format.gateFor);
+    final gate = watch.elapsedMilliseconds;
 
     watch.reset();
     package.build();
@@ -79,8 +75,8 @@ void main(List<String> args) {
       '${_name(path)} | فتح ${open}ms | فحص ${inspect}ms | '
       'معاينة ${previewMs}ms (${preview.pageCount}ص${truncated ? "+" : ""}، '
       '$blocks كتلة) | تبديل ${transform}ms | '
-      'بوابة $gateShared+${gateFormat}ms | بناء ${build}ms | '
-      'عوائق ${shared.length + specific.length} | '
+      'بوابة ${gate}ms | بناء ${build}ms | '
+      'عوائق ${blockers.length} | '
       'ذاكرة ${(ProcessInfo.currentRss / 1e6).round()}MB',
     );
   }

@@ -63,7 +63,7 @@ EngineResult<RestyleOutcome> restyle(Uint8List source, StylePlan plan) {
     ]);
   }
 
-  final blockers = [...checkPackage(package), ...format.validate(package)];
+  final blockers = checkPackage(package, gateFor: format.gateFor);
   if (blockers.isNotEmpty) return Failed(blockers);
 
   final built = package.build();

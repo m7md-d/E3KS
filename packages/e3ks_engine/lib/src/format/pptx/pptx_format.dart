@@ -1,13 +1,13 @@
 /// صيغة PowerPoint — تجميع أجزائها خلف عقد [DocumentFormat].
 library;
 
-import '../../diagnostics/engine_issue.dart';
 import '../../diagnostics/engine_result.dart';
 import '../../inspect/inspection_report.dart';
 import '../../package/document_package.dart';
 import '../../preview/preview_model.dart';
 import '../../transform/style_plan.dart';
 import '../../transform/transform_report.dart';
+import '../../validate/package_gate.dart';
 import '../document_format.dart';
 import 'pptx_gate.dart';
 import 'pptx_inspector.dart';
@@ -49,5 +49,5 @@ final class PptxFormat implements DocumentFormat {
       const PptxPreviewExtractor().extract(package, maxPages: maxPages);
 
   @override
-  List<EngineIssue> validate(DocumentPackage package) => checkPptx(package);
+  PartGate? gateFor(String partName) => PptxPartGate(partName);
 }

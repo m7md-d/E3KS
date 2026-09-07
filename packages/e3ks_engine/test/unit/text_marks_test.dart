@@ -43,8 +43,7 @@ InspectionReport inspectOrFail(Uint8List bytes) {
 }
 
 List<EngineIssue> gateOf(DocumentPackage package) => [
-  ...checkPackage(package),
-  ...formatOrFail(package).validate(package),
+  ...checkPackage(package, gateFor: formatOrFail(package).gateFor),
 ];
 
 MarkUsage? usageOf(InspectionReport report, TextMark mark) {

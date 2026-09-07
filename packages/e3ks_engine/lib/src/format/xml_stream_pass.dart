@@ -54,7 +54,7 @@ final class ScannedElement {
   final XmlStartElementEvent _event;
   final String? _namespace;
 
-  String get localName => _local(_event.name);
+  String get localName => localNameOf(_event.name);
 
   /// مسار مساحة اسم العنصر، أو `null` إن لم يُعلَن لبادئته شيء.
   String? get namespaceUri => _namespace;
@@ -147,7 +147,59 @@ List<EngineIssue> scanXmlPartsStreamed(
   return warnings;
 }
 
-String _local(String qualified) {
+/// حلّال بادئات مساحات الأسماء على تدفّق أحداث.
+///
+/// **يُشارَك بين الفحص والبوابة**: كلاهما يقرأ التدفّق ويحتاج أن يعرف مسار
+/// `w:` قبل أن يحكم. والمطابقة بالبادئة وحدها تفترض أن Word لن يسمّيها
+/// يومًا بغير `w` (`02` §2).
+final class XmlNamespaces {
+  /// إعلانات سارية، الأحدث آخرًا. `''` بادئةُ المساحة الافتراضية.
+  final List<Map<String, String>> _scopes = [];
+
+  /// لكل عنصر مفتوح: هل دفع نطاقًا؟ فيُرفَع عند إغلاقه.
+  final List<bool> _pushed = [];
+
+  /// يُستدعى عند بداية عنصر، ويُرجع مسار مساحته.
+  String? open(XmlStartElementEvent event) {
+    final declarations = <String, String>{};
+    for (final attribute in event.attributes) {
+      final raw = attribute.name;
+      if (raw == 'xmlns') {
+        declarations[''] = attribute.value;
+      } else if (raw.startsWith('xmlns:')) {
+        declarations[raw.substring(6)] = attribute.value;
+      }
+    }
+    if (declarations.isNotEmpty) _scopes.add(declarations);
+    _pushed.add(declarations.isNotEmpty);
+
+    final colon = event.name.indexOf(':');
+    return resolve(colon < 0 ? '' : event.name.substring(0, colon));
+  }
+
+  /// يُستدعى عند نهاية عنصر.
+  void close() {
+    if (_pushed.isNotEmpty && _pushed.removeLast()) _scopes.removeLast();
+  }
+
+  String? resolve(String prefix) {
+    for (var i = _scopes.length - 1; i >= 0; i--) {
+      final uri = _scopes[i][prefix];
+      if (uri != null) return uri;
+    }
+    return null;
+  }
+
+  /// مسار مساحة سمةٍ مؤهَّلة، أو `null` إن كانت بلا بادئة — المساحة
+  /// الافتراضية لا تسري على السمات، وهو معنى XML نفسه.
+  String? namespaceOfAttribute(String qualified) {
+    final colon = qualified.indexOf(':');
+    return colon < 0 ? null : resolve(qualified.substring(0, colon));
+  }
+}
+
+/// الاسم المحلّي من اسمٍ مؤهَّل.
+String localNameOf(String qualified) {
   final colon = qualified.indexOf(':');
   return colon < 0 ? qualified : qualified.substring(colon + 1);
 }
@@ -175,11 +227,7 @@ final class _StreamPass {
   final List<String> _open = [];
   final List<String?> _openNamespace = [];
 
-  /// إعلانات `xmlns` سارية، الأحدث آخرًا. `''` بادئةُ المساحة الافتراضية.
-  final List<Map<String, String>> _scopes = [];
-
-  /// لكل عنصر مفتوح: هل دفع نطاق مساحات أسماء؟ فيُرفَع عند إغلاقه.
-  final List<bool> _pushedScope = [];
+  final XmlNamespaces _namespaces = XmlNamespaces();
 
   final List<_TextFrame> _frames = [];
 
@@ -201,13 +249,7 @@ final class _StreamPass {
     return null;
   }
 
-  String? resolve(String prefix) {
-    for (var i = _scopes.length - 1; i >= 0; i--) {
-      final uri = _scopes[i][prefix];
-      if (uri != null) return uri;
-    }
-    return null;
-  }
+  String? resolve(String prefix) => _namespaces.resolve(prefix);
 
   void deferSample(void Function(String) assign) {
     if (_frames.isEmpty) return;
@@ -218,9 +260,9 @@ final class _StreamPass {
     switch (event) {
       case XmlStartElementEvent():
         _start(event, visit);
-        if (event.isSelfClosing) _end(_local(event.name));
+        if (event.isSelfClosing) _end(localNameOf(event.name));
       case XmlEndElementEvent():
-        _end(_local(event.name));
+        _end(localNameOf(event.name));
       case XmlTextEvent():
         _text(event.value);
       case XmlCDATAEvent():
@@ -231,23 +273,8 @@ final class _StreamPass {
   }
 
   void _start(XmlStartElementEvent event, void Function(ScannedElement) visit) {
-    final declarations = <String, String>{};
-    for (final attribute in event.attributes) {
-      final raw = attribute.name;
-      if (raw == 'xmlns') {
-        declarations[''] = attribute.value;
-      } else if (raw.startsWith('xmlns:')) {
-        declarations[raw.substring(6)] = attribute.value;
-      }
-    }
-    if (declarations.isNotEmpty) _scopes.add(declarations);
-    _pushedScope.add(declarations.isNotEmpty);
-
-    final name = event.name;
-    final colon = name.indexOf(':');
-    final namespace = resolve(colon < 0 ? '' : name.substring(0, colon));
-
-    _open.add(colon < 0 ? name : name.substring(colon + 1));
+    final namespace = _namespaces.open(event);
+    _open.add(localNameOf(event.name));
     _openNamespace.add(namespace);
 
     if (namespace == shape.namespace) {
@@ -269,9 +296,7 @@ final class _StreamPass {
         (localName == shape.run || localName == shape.paragraph)) {
       _closeFrame();
     }
-    if (_pushedScope.isNotEmpty && _pushedScope.removeLast()) {
-      _scopes.removeLast();
-    }
+    _namespaces.close();
     if (_open.isNotEmpty) _open.removeLast();
     if (_openNamespace.isNotEmpty) _openNamespace.removeLast();
   }

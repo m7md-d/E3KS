@@ -11,43 +11,55 @@
 /// في `FontPlan` لا هنا.
 library;
 
-import 'package:xml/xml.dart';
+import 'package:xml/xml_events.dart';
 
 import '../../diagnostics/engine_issue.dart';
 import '../../ooxml/ooxml_names.dart';
-import '../../package/document_package.dart';
 import '../../validate/package_gate.dart';
+import '../xml_stream_pass.dart';
 
 final RegExp _sixHex = RegExp(r'^[0-9A-Fa-f]{6}$');
 
-List<EngineIssue> checkPptx(DocumentPackage package) {
-  final issues = <EngineIssue>[];
+/// فاحص جزءٍ من عرض PowerPoint.
+final class PptxPartGate implements PartGate {
+  PptxPartGate(this.partName);
 
-  forEachTouchedDocument(package, (partName, document) {
-    var badColors = 0;
+  final String partName;
+  final XmlNamespaces _namespaces = XmlNamespaces();
+  int _badColors = 0;
 
-    for (final element in document.descendants.whereType<XmlElement>()) {
-      if (element.name.namespaceUri != aNs) continue;
+  @override
+  void visit(XmlEvent event) {
+    switch (event) {
+      case XmlStartElementEvent():
+        final namespace = _namespaces.open(event);
+        if (namespace == aNs && localNameOf(event.name) == 'srgbClr') {
+          // لون بست خانات ست عشرية أو لا شيء: قيمة مشوّهة تجعل PowerPoint
+          // يعرض حوار «الملف تالف، هل نصلحه؟» — وهو أسوأ ما قد يراه المستخدم.
+          String? value;
+          for (final attribute in event.attributes) {
+            if (attribute.name == 'val') value = attribute.value;
+          }
+          if (value == null || !_sixHex.hasMatch(value)) _badColors++;
+        }
+        if (event.isSelfClosing) _namespaces.close();
 
-      // لون بست خانات ست عشرية أو لا شيء: قيمة مشوّهة تجعل PowerPoint
-      // يعرض حوار «الملف تالف، هل نصلحه؟» — وهو أسوأ ما قد يراه المستخدم.
-      if (element.name.local == 'srgbClr') {
-        final value = element.getAttribute('val');
-        if (value == null || !_sixHex.hasMatch(value)) badColors++;
-      }
+      case XmlEndElementEvent():
+        _namespaces.close();
+
+      default:
+        break;
     }
+  }
 
-    if (badColors > 0) {
-      issues.add(
-        EngineIssue(
-          code: IssueCode.malformedXml,
-          part: partName,
-          args: {'count': badColors},
-          detail: 'a:srgbClr/@val must be exactly six hex digits',
-        ),
-      );
-    }
-  });
-
-  return issues;
+  @override
+  List<EngineIssue> finish() => [
+    if (_badColors > 0)
+      EngineIssue(
+        code: IssueCode.malformedXml,
+        part: partName,
+        args: {'count': _badColors},
+        detail: 'a:srgbClr/@val must be exactly six hex digits',
+      ),
+  ];
 }

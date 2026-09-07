@@ -9,10 +9,10 @@
 /// في المسار ولا في الواجهة ولا في المحرّك المشترك يتغيّر.
 library;
 
-import '../diagnostics/engine_issue.dart';
 import '../diagnostics/engine_result.dart';
 import '../inspect/inspection_report.dart';
 import '../package/document_package.dart';
+import '../validate/package_gate.dart';
 import '../preview/preview_model.dart';
 import '../transform/style_plan.dart';
 import '../transform/transform_report.dart';
@@ -49,10 +49,14 @@ abstract interface class DocumentFormat {
   /// ينتظر آخر المستند ليراها. والاستخراج كسول، فالوقوف عنده يوقف القراءة.
   DocumentPreview preview(DocumentPackage package, {int? maxPages});
 
-  /// فحوص ما قبل الكتابة الخاصّة بهذه الصيغة، فوق فحوص الحاوية المشتركة.
+  /// فاحص ما قبل الكتابة الخاصّ بهذه الصيغة، لجزءٍ ممسوس واحد.
   ///
-  /// كلّها مشتقّة من انكسار حقيقي وقع، لا من احتمال نظري.
-  List<EngineIssue> validate(DocumentPackage package);
+  /// كل فحصٍ فيه مشتقّ من انكسار حقيقي وقع، لا من احتمال نظري.
+  ///
+  /// **ويمرّ على تدفّق البوابة المشتركة** بدل أن يفتح مرورًا ثانيًا: كان
+  /// الجزء يُحلَّل مرّتين، وقياسهما على ثمانمئة صفحة ٧٫٩ ثانية — أغلى من
+  /// التبديل نفسه. و`null` تعني أن هذا الجزء لا يعني هذه الصيغة.
+  PartGate? gateFor(String partName);
 }
 
 /// هل يعلن `[Content_Types].xml` نوع المحتوى [contentType]؟
