@@ -18,6 +18,10 @@ abstract final class Metrics {
   static const double gutter = 20;
   static const double sidebarWidth = 268;
 
+  /// عرض شجرة الملفات. **أضيق من الشريط الجانبي**: أسماء ملفات لا عناوين
+  /// ووصفًا، والمساحة الفائضة للمعاينة (`03`).
+  static const double treeWidth = 212;
+
   /// بكسل منطقي لكل نقطة طباعية. مرجع Flutter 96dpi والنقطة 1/72 بوصة،
   /// فتكبير ١٠٠٪ يعني **مقاس الورقة الحقيقي** لا مقاسًا اصطلاحيًّا.
   static const double pxPerPoint = 96 / 72;

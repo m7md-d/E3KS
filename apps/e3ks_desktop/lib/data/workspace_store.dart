@@ -8,6 +8,7 @@ import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter/foundation.dart';
 
 import 'document_loader.dart';
+import 'file_tree.dart';
 import 'identity.dart';
 import 'style_edits.dart';
 
@@ -71,6 +72,9 @@ class WorkspaceStore extends ChangeNotifier {
   /// القواعد التي تسري على كل ملفات المجموعة، إلا المقفل منها.
   final StyleEdits _general = StyleEdits();
 
+  /// المجلدات التي فُتحت. تصير جذورًا في الشجرة، ويُنسب إليها ما تحتها.
+  final Set<String> _directories = {};
+
   int _active = -1;
   LoadFailure? _failure;
   bool _busy = false;
@@ -112,6 +116,22 @@ class WorkspaceStore extends ChangeNotifier {
     for (var i = 0; i < _tabs.length; i++)
       if (i != _active) (index: i, fileName: _tabs[i].document.fileName),
   ];
+
+  /// شجرة المجموعة. [loose] اسم حاضنة الملفات المفردة، من ملفّ الترجمة.
+  List<TreeRoot> fileTree(String loose) => buildFileTree(
+    [
+      for (var i = 0; i < _tabs.length; i++)
+        (path: _tabs[i].document.path, index: i),
+    ],
+    _directories,
+    loose: loose,
+  );
+
+  /// يسجّل مجلدًا فُتح، فيصير جذرًا تُنسب إليه ملفاته.
+  void addDirectory(String path) {
+    if (!_directories.add(path)) return;
+    notifyListeners();
+  }
 
   LoadedDocument? documentAt(int index) =>
       index >= 0 && index < _tabs.length ? _tabs[index].document : null;

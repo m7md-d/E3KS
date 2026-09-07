@@ -44,6 +44,14 @@ class DocumentTabs extends StatelessWidget {
               ),
             ),
           ),
+          // **الموضع من العدد**: شريطٌ يُمرَّر داخله يُخفي أين أنت منه.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              t.tabPosition(store.activeIndex + 1, store.tabs.length),
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ),
           Tooltip(
             message: t.chooseFile,
             child: IconButton(

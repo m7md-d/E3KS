@@ -1399,6 +1399,54 @@ abstract class L {
   /// **'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.'**
   String get batchSameFolder;
 
+  /// No description provided for @tabPosition.
+  ///
+  /// In ar, this message translates to:
+  /// **'{at} / {total}'**
+  String tabPosition(int at, int total);
+
+  /// No description provided for @filesPanel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الملفات'**
+  String get filesPanel;
+
+  /// No description provided for @openFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'افتح مجلدًا'**
+  String get openFolder;
+
+  /// No description provided for @looseFiles.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملفات مضافة'**
+  String get looseFiles;
+
+  /// No description provided for @addFiles.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف ملفات'**
+  String get addFiles;
+
+  /// No description provided for @addFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف مجلدًا'**
+  String get addFolder;
+
+  /// No description provided for @fileLocked.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقفل عن الخطة العامّة'**
+  String get fileLocked;
+
+  /// No description provided for @fileReviewed.
+  ///
+  /// In ar, this message translates to:
+  /// **'راجعته'**
+  String get fileReviewed;
+
   /// No description provided for @tabMarks.
   ///
   /// In ar, this message translates to:

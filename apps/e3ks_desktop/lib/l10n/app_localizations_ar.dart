@@ -714,6 +714,32 @@ class LAr extends L {
       'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.';
 
   @override
+  String tabPosition(int at, int total) {
+    return '$at / $total';
+  }
+
+  @override
+  String get filesPanel => 'الملفات';
+
+  @override
+  String get openFolder => 'افتح مجلدًا';
+
+  @override
+  String get looseFiles => 'ملفات مضافة';
+
+  @override
+  String get addFiles => 'أضف ملفات';
+
+  @override
+  String get addFolder => 'أضف مجلدًا';
+
+  @override
+  String get fileLocked => 'مقفل عن الخطة العامّة';
+
+  @override
+  String get fileReviewed => 'راجعته';
+
+  @override
   String get tabMarks => 'التمييز';
 
   @override

@@ -721,6 +721,32 @@ class LEn extends L {
       'The output folder is the source; the source is never written over.';
 
   @override
+  String tabPosition(int at, int total) {
+    return '$at / $total';
+  }
+
+  @override
+  String get filesPanel => 'Files';
+
+  @override
+  String get openFolder => 'Open a folder';
+
+  @override
+  String get looseFiles => 'Added files';
+
+  @override
+  String get addFiles => 'Add files';
+
+  @override
+  String get addFolder => 'Add a folder';
+
+  @override
+  String get fileLocked => 'Excluded from the general plan';
+
+  @override
+  String get fileReviewed => 'Reviewed';
+
+  @override
   String get tabMarks => 'Highlights';
 
   @override

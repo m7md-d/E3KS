@@ -332,6 +332,24 @@
   "batchEmptyFolder": "لا مستندات مدعومة في هذا المجلد.",
   "batchNoPlan": "بدّل ألوانًا أو اختر هوية محفوظة.",
   "batchSameFolder": "مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.",
+  "tabPosition": "{at} / {total}",
+  "@tabPosition": {
+    "placeholders": {
+      "at": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "filesPanel": "الملفات",
+  "openFolder": "افتح مجلدًا",
+  "looseFiles": "ملفات مضافة",
+  "addFiles": "أضف ملفات",
+  "addFolder": "أضف مجلدًا",
+  "fileLocked": "مقفل عن الخطة العامّة",
+  "fileReviewed": "راجعته",
   "tabMarks": "التمييز",
   "marksTitle": "علامات النصّ",
   "marksHint": "قلم التمييز وتظليل الخلفية. الرفع لهذا الملف وحده.",

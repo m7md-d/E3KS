@@ -18,6 +18,7 @@ import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
 import '../../data/identity_extract.dart';
 import '../../data/identity_store.dart';
+import '../../data/batch_runner.dart';
 import '../../data/openable_files.dart';
 import '../../data/output_writer.dart';
 import '../../data/settings_store.dart';
@@ -36,6 +37,7 @@ import '../preview/font_notice.dart';
 import '../preview/preview_panel.dart';
 import '../settings/settings_sheet.dart';
 import 'document_tabs.dart';
+import 'file_tree_panel.dart';
 import 'export_result_sheet.dart';
 import 'sidebar.dart';
 
@@ -77,24 +79,51 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     await widget.fonts.resolveAll([for (final font in report.fonts) font.name]);
   }
 
+  /// الامتدادات هنا للحوار وحده؛ الصيغة الفعلية يقرّرها المحرّك من محتوى
+  /// الملفّ (`formatFor`)، فملفّ أُعيدت تسميته لا يُعالَج بالاسم الخطأ.
+  static const _openable = XTypeGroup(
+    label: 'E3KS', // e3ks:not-ui
+    extensions: openableExtensions,
+  );
+
+  /// **ملفات لا ملفًّا.** المجموعة تُبنى من أربعة أبواب، وهذا أوّلها
+  /// (`ADR 0005` §١)، و`openFiles` موجودة في الحزمة ولم تكن مستعملة.
   Future<void> _browse() async {
-    // الامتدادات هنا للحوار وحده؛ الصيغة الفعلية يقرّرها المحرّك من محتوى
-    // الملفّ (`formatFor`)، فملفّ أُعيدت تسميته لا يُعالَج بالاسم الخطأ.
-    const type = XTypeGroup(
-      label: 'E3KS', // e3ks:not-ui
-      extensions: openableExtensions,
-    );
-    final file = await openFile(acceptedTypeGroups: const [type]);
-    if (file != null) await _open(file.path);
+    final files = await openFiles(acceptedTypeGroups: const [_openable]);
+    for (final file in files) {
+      await _open(file.path);
+    }
   }
 
-  void _dropped(DropDoneDetails details) {
+  /// الباب الثاني: مجلدٌ وما تحته. يصير جذرًا في الشجرة.
+  Future<void> _browseFolder() async {
+    final path = await getDirectoryPath(
+      confirmButtonText: context.l10n.batchConfirmSource,
+    );
+    if (path == null || !mounted) return;
+    await _openDirectory(path);
+  }
+
+  Future<void> _openDirectory(String path) async {
+    widget.store.addDirectory(path);
+    for (final found in findDocuments(Directory(path))) {
+      await _open(found.path);
+    }
+  }
+
+  /// الباب الثالث: الإفلات — **كلّ ما أُفلت** لا أوّله.
+  ///
+  /// كان يأخذ أوّل ملفٍّ مطابق ثم يخرج، فيهمل البقيّة ويهمل المجلدات معًا.
+  Future<void> _dropped(DropDoneDetails details) async {
     setState(() => _dragging = false);
-    for (final file in details.files) {
-      final name = file.path.toLowerCase();
+    for (final item in details.files) {
+      if (Directory(item.path).existsSync()) {
+        await _openDirectory(item.path);
+        continue;
+      }
+      final name = item.path.toLowerCase();
       if (openableExtensions.any((e) => name.endsWith('.$e'))) {
-        _open(file.path);
-        return;
+        await _open(item.path);
       }
     }
   }
@@ -153,6 +182,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 store: store,
                 settings: widget.settings,
                 onSettings: () => showSettings(context, widget.fonts),
+                onOpenFolder: _browseFolder,
                 onBatch: () => showBatch(context, store, widget.identities),
                 exporting: _exporting,
                 onExport: _export,
@@ -167,7 +197,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  final compactSidebar = width < 1340;
+                  // **الشجرة تظهر حين تصير المجموعة مجموعة**، وتنسحب أولًا
+                  // عند الضيق: المساحة الفائضة للمعاينة (`03`).
+                  final showTree = store.tabs.length > 1 && width >= 1240;
+                  final compactSidebar = width < (showTree ? 1500 : 1340);
                   final controlsWidth = width < 1280 ? 370.0 : 430.0;
                   // اللوحات تتشكّل بالترتيب الذي تُقرأ به: التنقّل، ثم
                   // أدوات العمل، ثم المعاينة. مرّةً واحدة عند الدخول —
@@ -179,8 +212,17 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                         order: 1,
                         child: Sidebar(store: store, compact: compactSidebar),
                       ),
+                      if (showTree)
+                        Entrance(
+                          order: 2,
+                          child: FileTreePanel(
+                            store: store,
+                            onAddFiles: _browse,
+                            onAddFolder: _browseFolder,
+                          ),
+                        ),
                       Entrance(
-                        order: 2,
+                        order: 3,
                         child: SizedBox(
                           width: controlsWidth,
                           child: _controls(store),
@@ -189,7 +231,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                       const VerticalDivider(width: 1, color: Shade.border),
                       Expanded(
                         child: Entrance(
-                          order: 3,
+                          order: 4,
                           child: Column(
                             children: [
                               // إشعار الخطوط فوق المعاينة مباشرةً: مكانه حيث
@@ -301,6 +343,7 @@ class _TopBar extends StatelessWidget {
     required this.store,
     required this.settings,
     required this.onSettings,
+    required this.onOpenFolder,
     required this.onBatch,
     required this.exporting,
     required this.onExport,
@@ -312,6 +355,7 @@ class _TopBar extends StatelessWidget {
   final WorkspaceStore store;
   final SettingsStore settings;
   final VoidCallback onSettings;
+  final VoidCallback onOpenFolder;
   final VoidCallback onBatch;
   final bool exporting;
   final VoidCallback onExport;
@@ -427,6 +471,15 @@ class _TopBar extends StatelessWidget {
             const SizedBox(width: 4),
             // الدفعة بجوار الإعدادات: كلاهما فعلٌ يفتح حوارًا، ولا يزاحم
             // زرَّ التصدير الذي يخصّ الملف المفتوح وحده.
+            // **الباب قبل الغرفة.** زرّ «أضف مجلدًا» يسكن رأس شجرة الملفات،
+            // والشجرة لا تظهر إلا بملفَّين — فلا سبيل إلى فتح مجلد إلا بعد
+            // فتح مجلد. وهذا الزرّ هو المخرج من تلك الحلقة.
+            IconButton(
+              onPressed: onOpenFolder,
+              icon: const Icon(LucideIcons.folderOpen, size: 16),
+              color: Shade.textMuted,
+              tooltip: t.openFolder,
+            ),
             IconButton(
               onPressed: onBatch,
               icon: const Icon(LucideIcons.folders, size: 16),

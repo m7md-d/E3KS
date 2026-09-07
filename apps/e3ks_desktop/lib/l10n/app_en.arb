@@ -332,6 +332,24 @@
   "batchEmptyFolder": "No supported documents in this folder.",
   "batchNoPlan": "Change some colours or pick a saved identity.",
   "batchSameFolder": "The output folder is the source; the source is never written over.",
+  "tabPosition": "{at} / {total}",
+  "@tabPosition": {
+    "placeholders": {
+      "at": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "filesPanel": "Files",
+  "openFolder": "Open a folder",
+  "looseFiles": "Added files",
+  "addFiles": "Add files",
+  "addFolder": "Add a folder",
+  "fileLocked": "Excluded from the general plan",
+  "fileReviewed": "Reviewed",
   "tabMarks": "Highlights",
   "marksTitle": "Text marks",
   "marksHint": "Highlighter pen and background shading. Removal applies to this file only.",
