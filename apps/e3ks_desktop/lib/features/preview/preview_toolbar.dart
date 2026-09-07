@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
+import '../../shared/widgets/app_menu.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/arabic_digits.dart';
 
@@ -178,16 +179,12 @@ class PreviewToolbar extends StatelessWidget {
               ],
               const Spacer(),
               if (showSections)
-                PopupMenuButton<int>(
+                AppMenuButton<int>(
                   tooltip: t.jumpToSection,
-                  color: Shade.surfaceHigh,
                   onSelected: onSection,
-                  itemBuilder: (_) => [
+                  items: () => [
                     for (final section in sections)
-                      PopupMenuItem(
-                        value: section.index,
-                        child: Text(section.title),
-                      ),
+                      AppMenuChoice(value: section.index, label: section.title),
                   ],
                   child: _Chip(
                     icon: LucideIcons.listTree,

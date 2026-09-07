@@ -225,6 +225,69 @@ class WorkspaceStore extends ChangeNotifier {
   bool isFileSpecific(HexColor from) =>
       current?.own.colors.containsKey(from) ?? false;
 
+  /// **استثناءٌ صريح**: الملفّ يقول «هذا اللون يبقى» ردًّا على قاعدة عامّة
+  /// تشمله. يختلف عن غياب القاعدة، والواجهة تسمّيه لئلّا يبدو صفًّا لم يُمَس.
+  bool isColorExcluded(HexColor from) {
+    final own = current?.own.colors;
+    return own != null && own.containsKey(from) && own[from] == null;
+  }
+
+  bool isFontSpecific({required bool latin}) =>
+      (latin ? current?.own.latinFont : current?.own.arabicFont) != null;
+
+  bool isMarkSpecific(TextMark mark) =>
+      current?.own.liftedMarks.contains(mark) ?? false;
+
+  /// للمجموعة أكثر من ملفّ، فللطبقتين معنًى يُعرَض.
+  ///
+  /// **وبملفٍّ واحد لا يُعرَض شيء منهما**: مربّعٌ يقول «خاصّ بهذا الملفّ» وليس
+  /// في المجموعة غيره سؤالٌ بلا جواب.
+  bool get canScope => _files.length > 1;
+
+  /// في الطبقة العامّة قرارات — يعرضه زرّ المحو ليقول أيّهما يمحو.
+  bool get hasGeneralEdits => !_general.isEmpty;
+
+  /// أين يُكتب تعديلٌ **جديد** ما لم يُقل غير ذلك (`ADR 0005` §٢).
+  ///
+  /// **عامٌّ حيث للعموم معنى**: من فتح أربعين ملفًا فالشائع عنده ما يسري
+  /// عليها كلّها. **والمقفل يكتب لنفسه دائمًا**: قاعدةٌ عامّة تُكتب من شاشته
+  /// لا تسري عليه، فيرى المستخدم تعديلًا بلا أثر ولا يعرف لماذا.
+  EditScope get defaultScope => canScope && !(current?.locked ?? false)
+      ? EditScope.general
+      : EditScope.file;
+
+  /// أين يُكتب تعديل هذا اللون: **حيث تسكن قاعدته** إن كانت له قاعدة، وإلّا
+  /// فحيث يقول [defaultScope].
+  ///
+  /// **وبلا هذا يُكتب التعديل في طبقةٍ ويُمحى من أخرى**: رفعُ قاعدةٍ خاصّة
+  /// بافتراضٍ عامّ يمحو من العامّة ما ليس فيها، فلا يتغيّر شيء على الشاشة.
+  EditScope scopeForColor(HexColor from) {
+    if (isFileSpecific(from)) return EditScope.file;
+    return _general.colors.containsKey(from) ? EditScope.general : defaultScope;
+  }
+
+  EditScope scopeForFont({required bool latin}) {
+    if (isFontSpecific(latin: latin)) return EditScope.file;
+    final general = latin ? _general.latinFont : _general.arabicFont;
+    return general != null ? EditScope.general : defaultScope;
+  }
+
+  EditScope scopeForMark(TextMark mark) {
+    if (isMarkSpecific(mark)) return EditScope.file;
+    return _general.liftedMarks.contains(mark)
+        ? EditScope.general
+        : defaultScope;
+  }
+
+  EditScope scopeForPreserved(String font) {
+    if (current?.own.preserveFonts.contains(font) ?? false) {
+      return EditScope.file;
+    }
+    return _general.preserveFonts.contains(font)
+        ? EditScope.general
+        : defaultScope;
+  }
+
   /// الملفّ مقفلٌ عن الخطة العامّة.
   bool get locked => current?.locked ?? false;
   bool get reviewed => current?.reviewed ?? false;
@@ -485,6 +548,82 @@ class WorkspaceStore extends ChangeNotifier {
     _invalidate();
   }
 
+  /// ينقل قاعدة لونٍ بين الطبقتين — وهو ما يفعله المربّع على القاعدة نفسها.
+  ///
+  /// **نقلٌ لا نسخ.** «خاصّ بهذا الملفّ» يعني أن غيره لا يناله، فتخرج
+  /// القاعدة من العامّة. ونسخُها إبقاءٌ لها على الأربعين، فيصير المربّع
+  /// زينةً لا فعلًا.
+  ///
+  /// **والاستثناء الصريح رفعُه عودةٌ لا نقل**: `null` قولٌ لا قيمة، ورفعُه
+  /// يُسلّم اللون للقاعدة العامّة كما كان.
+  void setColorScope(HexColor from, EditScope to) {
+    final tab = current;
+    if (tab == null) return;
+    final specific = tab.own.colors.containsKey(from);
+    if (specific == (to == EditScope.file)) return;
+
+    if (to == EditScope.file) {
+      final value = _general.colors[from];
+      if (value == null) return; // لا قاعدة عامّة تُنقَل
+      _general.colors.remove(from);
+      tab.own.colors[from] = value;
+    } else {
+      final value = tab.own.colors.remove(from);
+      if (value != null) _general.colors[from] = value;
+    }
+    _invalidateAll();
+  }
+
+  void setFontScope({required bool latin, required EditScope to}) {
+    final own = current?.own;
+    if (own == null) return;
+    final mine = latin ? own.latinFont : own.arabicFont;
+    if ((mine != null) == (to == EditScope.file)) return;
+
+    if (to == EditScope.file) {
+      final value = latin ? _general.latinFont : _general.arabicFont;
+      if (value == null) return;
+      if (latin) {
+        own.latinFont = value;
+        _general.latinFont = null;
+      } else {
+        own.arabicFont = value;
+        _general.arabicFont = null;
+      }
+    } else if (latin) {
+      _general.latinFont = mine;
+      own.latinFont = null;
+    } else {
+      _general.arabicFont = mine;
+      own.arabicFont = null;
+    }
+    _invalidateAll();
+  }
+
+  void setMarkScope(TextMark mark, EditScope to) {
+    final own = current?.own;
+    if (own == null) return;
+    final moved = to == EditScope.file
+        ? _general.liftedMarks.remove(mark)
+        : own.liftedMarks.remove(mark);
+    if (!moved) return;
+    (to == EditScope.file ? own.liftedMarks : _general.liftedMarks).add(mark);
+    _invalidateAll();
+  }
+
+  void setPreservedScope(String font, EditScope to) {
+    final own = current?.own;
+    if (own == null) return;
+    final moved = to == EditScope.file
+        ? _general.preserveFonts.remove(font)
+        : own.preserveFonts.remove(font);
+    if (!moved) return;
+    (to == EditScope.file ? own.preserveFonts : _general.preserveFonts).add(
+      font,
+    );
+    _invalidateAll();
+  }
+
   StyleEdits? _editsFor(EditScope scope) =>
       scope == EditScope.general ? _general : current?.own;
 
@@ -566,9 +705,14 @@ class WorkspaceStore extends ChangeNotifier {
   ///
   /// المطابقة بالإضاءة تحفظ بنية الفاتح والداكن، فيبقى النصّ مقروءًا
   /// ولا ينقلب عنوان داكن إلى خلفية فاتحة.
-  void applyIdentity(Identity identity) {
+  /// و[scope] يقرّر أتصير الهوية قاعدةً للمجموعة أم لهذا الملفّ وحده. وهي
+  /// **أوّل ما يُطبَّق على مجلد**، فحصرُها في ملفٍّ واحد يُبطل معناها.
+  void applyIdentity(Identity identity, [EditScope scope = EditScope.file]) {
     final tab = current;
-    if (tab == null || (identity.colors.isEmpty && identity.map.isEmpty)) {
+    final edits = _editsFor(scope);
+    if (tab == null ||
+        edits == null ||
+        (identity.colors.isEmpty && identity.map.isEmpty)) {
       return;
     }
 
@@ -580,7 +724,7 @@ class WorkspaceStore extends ChangeNotifier {
       // التي تجعل الملف الحادي والأربعين يخرج مطابقًا لما قبله.
       final explicit = identity.map[usage.color];
       if (explicit != null) {
-        tab.own.colors[usage.color] = explicit;
+        edits.colors[usage.color] = explicit;
         continue;
       }
       if (identity.colors.isEmpty) continue;
@@ -600,13 +744,13 @@ class WorkspaceStore extends ChangeNotifier {
           best = candidate;
         }
       }
-      tab.own.colors[usage.color] = best.hex;
+      edits.colors[usage.color] = best.hex;
     }
 
-    tab.own.latinFont = identity.latinFont ?? tab.own.latinFont;
-    tab.own.arabicFont = identity.arabicFont ?? tab.own.arabicFont;
-    tab.own.preserveFonts.addAll(identity.preserveFonts);
-    _invalidate();
+    edits.latinFont = identity.latinFont ?? edits.latinFont;
+    edits.arabicFont = identity.arabicFont ?? edits.arabicFont;
+    edits.preserveFonts.addAll(identity.preserveFonts);
+    _invalidateFor(scope);
   }
 
   void _invalidate() {

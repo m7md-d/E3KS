@@ -14,6 +14,7 @@ import '../../data/font_substitutes.dart';
 import '../../data/font_suggestions.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/panel.dart';
+import 'scope_box.dart';
 
 class FontsPanel extends StatelessWidget {
   const FontsPanel({super.key, required this.store});
@@ -41,14 +42,34 @@ class FontsPanel extends StatelessWidget {
           label: t.arabicFont,
           value: store.arabicFont,
           suggestions: arabicFontSuggestions,
-          onChanged: store.setArabicFont,
+          onChanged: (v) =>
+              store.setArabicFont(v, store.scopeForFont(latin: false)),
+          scope: !store.canScope || store.arabicFont == null
+              ? null
+              : ScopeBox(
+                  specific: store.isFontSpecific(latin: false),
+                  onChanged: (value) => store.setFontScope(
+                    latin: false,
+                    to: value ? EditScope.file : EditScope.general,
+                  ),
+                ),
         ),
         const SizedBox(height: 12),
         _FontField(
           label: t.latinFont,
           value: store.latinFont,
           suggestions: latinFontSuggestions,
-          onChanged: store.setLatinFont,
+          onChanged: (v) =>
+              store.setLatinFont(v, store.scopeForFont(latin: true)),
+          scope: !store.canScope || store.latinFont == null
+              ? null
+              : ScopeBox(
+                  specific: store.isFontSpecific(latin: true),
+                  onChanged: (value) => store.setFontScope(
+                    latin: true,
+                    to: value ? EditScope.file : EditScope.general,
+                  ),
+                ),
         ),
         const SizedBox(height: 26),
         SectionHeader(
@@ -60,7 +81,21 @@ class FontsPanel extends StatelessWidget {
           _ProtectedRow(
             font: font,
             protected: store.preserveFonts.contains(font.name),
-            onChanged: (v) => store.togglePreserved(font.name, v),
+            onChanged: (v) => store.togglePreserved(
+              font.name,
+              v,
+              store.scopeForPreserved(font.name),
+            ),
+            scope: !store.canScope || !store.preserveFonts.contains(font.name)
+                ? null
+                : ScopeBox(
+                    specific:
+                        store.scopeForPreserved(font.name) == EditScope.file,
+                    onChanged: (value) => store.setPreservedScope(
+                      font.name,
+                      value ? EditScope.file : EditScope.general,
+                    ),
+                  ),
           ),
         const SizedBox(height: 30),
       ],
@@ -74,12 +109,16 @@ class _FontField extends StatelessWidget {
     required this.value,
     required this.suggestions,
     required this.onChanged,
+    this.scope,
   });
 
   final String label;
   final String? value;
   final List<String> suggestions;
   final ValueChanged<String?> onChanged;
+
+  /// مربّع الطبقة، أو `null` حيث لا معنى له: لا قاعدة، أو ملفٌّ واحد.
+  final Widget? scope;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +152,7 @@ class _FontField extends StatelessWidget {
                 ),
             ],
           ),
+          if (scope != null) ...[const SizedBox(height: 8), scope!],
         ],
       ),
     );
@@ -202,11 +242,15 @@ class _ProtectedRow extends StatelessWidget {
     required this.font,
     required this.protected,
     required this.onChanged,
+    this.scope,
   });
 
   final FontUsage font;
   final bool protected;
   final ValueChanged<bool> onChanged;
+
+  /// مربّع الطبقة، أو `null` حيث لا معنى له: لا حماية، أو ملفٌّ واحد.
+  final Widget? scope;
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +288,7 @@ class _ProtectedRow extends StatelessWidget {
                   ].join(' · '),
                   style: theme.textTheme.labelSmall,
                 ),
+                ?scope,
               ],
             ),
           ),

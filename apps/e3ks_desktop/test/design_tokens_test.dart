@@ -59,6 +59,38 @@ void main() {
     );
   });
 
+  test('لا قائمة اختيار تُبنى خارج مكوّنها', () {
+    // **مانعيد اختراع مكوّن موجود، ولا نبنيه مرّتين.** `PopupMenuButton`
+    // من Material تحمل التموضع وحبس التركيز والحركة، وهويتنا تُركَّب عليها
+    // في `app_menu.dart` وحده. وبناؤها عند كل نداء أخرج قوائم يختلف
+    // بعضها عن بعض: علامة اختيار لا تكاد تُرى في واحدة، وحدٌّ غائب في أخرى.
+    const home = 'lib/shared/widgets/app_menu.dart';
+    final primitive = RegExp(
+      r'\b(PopupMenuButton|PopupMenuItem|CheckedPopupMenuItem'
+      r'|PopupMenuDivider|showMenu|MenuAnchor|DropdownButton)\b',
+    );
+    final offenders = <String>[];
+
+    for (final entity in Directory('lib').listSync(recursive: true)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) continue;
+      if (entity.path.endsWith(home)) continue;
+      final lines = entity.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final trimmed = lines[i].trim();
+        if (trimmed.startsWith('//') || trimmed.startsWith('///')) continue;
+        if (primitive.hasMatch(lines[i])) {
+          offenders.add('${entity.path}:${i + 1}  $trimmed');
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      isEmpty,
+      reason: 'قائمة خارج $home:\n${offenders.join("\n")}',
+    );
+  });
+
   test('كل أيقونة اتجاهية تتبع اتجاه القراءة', () {
     // سهمٌ ثابت الاتجاه ينقلب معناه بين اللغتين: «من المصدر إلى البديل»
     // في العربية تصير «من البديل إلى المصدر» في الإنجليزية. ونسخة `Dir`

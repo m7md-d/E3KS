@@ -16,7 +16,6 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
-import '../../data/identity_extract.dart';
 import '../../data/identity_store.dart';
 import '../../data/batch_runner.dart';
 import '../../data/openable_files.dart';
@@ -24,6 +23,7 @@ import '../../data/output_writer.dart';
 import '../../data/settings_store.dart';
 import '../../data/window_frame.dart';
 import '../../data/workspace_store.dart';
+import '../../shared/widgets/app_menu.dart';
 import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
 import '../batch/batch_sheet.dart';
@@ -257,24 +257,15 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 
   Widget _controls(WorkspaceStore store) {
-    // **الاختيار السريع**: الهويات المحفوظة أولًا، ثم هويات الملفات المفتوحة
-    // مستخرَجةً في حينها. الاستخراج يمرّ على ثمانية ألوان لا أكثر، فثمنه
-    // لا يُذكر، والفائدة أن يجد المستخدم اللون مسمّى بدل أن يؤلّفه.
-    final t = context.l10n;
+    // **الاختيار السريع من الهويات المحفوظة وحدها.**
+    //
+    // كان يضيف هوية كل ملفّ مفتوح مستخرَجةً في حينها. على ملفٍّ أو ملفَّين
+    // بدا مفيدًا، وعلى مجلدٍ ملأ النافذة بعشرات الصفوف حتى تعذّر اعتماد لون —
+    // **والقائمة التي تطول بطول المجموعة ليست اقتراحًا بل حائط.** ومن أراد
+    // ستايل ملفٍّ فطريقه أن يحفظه هوية، وهو بابٌ قائم في لوحة الهويات.
     final suggestions = <QuickPickGroup>[
       for (final identity in widget.identities.items)
         (source: identity.name, colors: identity.colors),
-      for (final other in store.otherDocuments())
-        // الملفّ الذي لم يُفحَص بعد لا يقترح ألوانًا؛ يلحق حين يُفحَص.
-        if (store.documentAt(other.index)?.report case final report?)
-          (
-            source: other.fileName,
-            colors: extractIdentity(
-              report,
-              name: other.fileName,
-              labels: identityLabels(t),
-            ).colors,
-          ),
     ];
 
     final Widget child;
@@ -315,9 +306,48 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         color: Shade.canvas,
         border: Border(right: BorderSide(color: Shade.border)),
       ),
-      child: child,
+      // **الملفّ المقفل يقول قفله فوق لوحاته الثلاث.** بدونه يكتب المستخدم
+      // قاعدةً عامّة من شاشته فلا يرى أثرًا، ولا شيء يقول لماذا.
+      child: store.locked
+          ? Column(
+              children: [
+                const _LockedBanner(),
+                Expanded(child: child),
+              ],
+            )
+          : child,
     );
   }
+}
+
+/// شريطٌ فوق لوحات التحكّم: هذا الملفّ مقفل عن الخطة العامّة.
+///
+/// **الحال يُقال حيث يقع أثره.** القفل يُضبَط من الشجرة، وأثره هنا: كل قاعدة
+/// تُكتب في هذه اللوحات تخصّ هذا الملفّ وحده.
+class _LockedBanner extends StatelessWidget {
+  const _LockedBanner();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+    decoration: const BoxDecoration(
+      color: Shade.mirrorDeep,
+      border: Border(bottom: BorderSide(color: Shade.border)),
+    ),
+    child: Row(
+      children: [
+        const Icon(LucideIcons.lock, size: 13, color: Shade.mirror),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            context.l10n.lockedBanner,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// مسافة الشريط عن حوافّه — **نفسها فوق وتحت ويمينًا ويسارًا**.
@@ -485,7 +515,40 @@ class _TopBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             if (store.hasChanges) ...[
-              TextButton(onPressed: store.resetChanges, child: Text(t.reset)),
+              // **زرّ المحو يقول أيّ طبقة يمحو.** الطبقتان قائمتان معًا،
+              // ومحوُ الخاصّة وحدها يُبقي العدّاد على حاله — فيبدو الزرّ
+              // عاطلًا وهو يعمل.
+              if (store.hasGeneralEdits)
+                AppMenuButton<EditScope>(
+                  tooltip: t.reset,
+                  onSelected: store.resetChanges,
+                  items: () => [
+                    AppMenuChoice(
+                      value: EditScope.file,
+                      label: t.resetFileEdits,
+                    ),
+                    AppMenuChoice(
+                      value: EditScope.general,
+                      label: t.resetGeneralEdits,
+                    ),
+                  ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      t.reset,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: Type.semiBold,
+                        color: Shade.mirror,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                TextButton(onPressed: store.resetChanges, child: Text(t.reset)),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -547,17 +610,16 @@ class _LanguageMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.l10n;
-    return PopupMenuButton<Locale>(
+    return AppMenuButton<Locale>(
       tooltip: t.language,
-      color: Shade.surfaceHigh,
-      initialValue: settings.locale,
       onSelected: settings.setLocale,
-      itemBuilder: (_) => [
+      items: () => [
         for (final locale in SettingsStore.supported)
-          PopupMenuItem(
+          AppMenuChoice(
             value: locale,
             // اسم كل لغة بلغتها نفسها — أوضح ما يمكن لمن لا يقرأ الحالية.
-            child: Text(nativeLanguageName(locale)),
+            label: nativeLanguageName(locale),
+            selected: locale == settings.locale,
           ),
       ],
       child: Container(

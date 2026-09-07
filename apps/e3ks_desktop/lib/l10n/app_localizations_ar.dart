@@ -743,6 +743,47 @@ class LAr extends L {
   String get fileReviewed => 'راجعته';
 
   @override
+  String get scopeFileOnly => 'خاصّ بهذا الملفّ';
+
+  @override
+  String get scopeFileOnlyOn =>
+      'القاعدة على هذا الملفّ وحده. رفعُها ينقلها إلى الخطة العامّة.';
+
+  @override
+  String get scopeFileOnlyOff =>
+      'القاعدة في الخطة العامّة. وضعُها يحصرها في هذا الملفّ.';
+
+  @override
+  String get scopeExcluded => 'مستثنى من الخطة العامّة';
+
+  @override
+  String get lockedBanner => 'هذا الملفّ مقفل: الخطة العامّة لا تسري عليه.';
+
+  @override
+  String get fileNote => 'ملاحظة';
+
+  @override
+  String get fileNoteAdd => 'اكتب ملاحظة';
+
+  @override
+  String get fileNoteEdit => 'عدّل الملاحظة';
+
+  @override
+  String get fileNoteHint => 'ما يلزم تذكّره عن هذا الملفّ';
+
+  @override
+  String get removeFromSet => 'أخرجه من المجموعة';
+
+  @override
+  String get fileActions => 'خيارات الملفّ';
+
+  @override
+  String get resetFileEdits => 'امحُ تعديلات هذا الملفّ';
+
+  @override
+  String get resetGeneralEdits => 'امحُ الخطة العامّة';
+
+  @override
   String get tabMarks => 'التمييز';
 
   @override

@@ -14,6 +14,7 @@ import '../../data/workspace_store.dart';
 import '../../shared/widgets/panel.dart';
 import '../../shared/widgets/swatch.dart';
 import 'color_picker.dart';
+import 'scope_box.dart';
 
 class ColorsPanel extends StatefulWidget {
   const ColorsPanel({
@@ -61,16 +62,25 @@ class _ColorsPanelState extends State<ColorsPanel> {
   ///
   /// **والمفتاح لكل صفٍّ حاله هو**: تبديلُ لونٍ يُسقط صفَّه وحده، لا الصفوف
   /// كلّها — وهذا ما يجعل الذاكرة تنفع أصلًا.
-  final Map<String, ({Widget row, bool focused, String? target})> _rows = {};
+  final Map<String, ({Widget row, bool focused, String? target, String scope})>
+  _rows = {};
 
   Widget _rowFor(ColorUsage usage, HexColor? focused) {
+    final store = widget.store;
     final key = usage.color.value;
     final isFocused = focused?.value == key;
-    final target = widget.store.colorMap[usage.color]?.value;
+    final target = store.colorMap[usage.color]?.value;
+    // **الطبقة جزءٌ من حال الصفّ**: نقلُ قاعدةٍ بين الطبقتين لا يغيّر بديلها،
+    // فبصمةٌ بالبديل وحده تُبقي المربّع على حاله الأول ولا يستجيب لضغطة.
+    final scope =
+        '${store.canScope}'
+        '${store.isFileSpecific(usage.color)}'
+        '${store.isColorExcluded(usage.color)}';
     final cached = _rows[key];
     if (cached != null &&
         cached.focused == isFocused &&
-        cached.target == target) {
+        cached.target == target &&
+        cached.scope == scope) {
       return cached.row;
     }
     final row = _ColorRow(
@@ -79,7 +89,7 @@ class _ColorsPanelState extends State<ColorsPanel> {
       state: this,
       focused: isFocused,
     );
-    _rows[key] = (row: row, focused: isFocused, target: target);
+    _rows[key] = (row: row, focused: isFocused, target: target, scope: scope);
     return row;
   }
 
@@ -191,7 +201,13 @@ class _ColorsPanelState extends State<ColorsPanel> {
       quickPicks: widget.suggestions,
     );
     if (picked == null) return;
-    store.mapColor(usage.color, picked == usage.color ? null : picked);
+    // **حيث تسكن القاعدة تُكتب**: رفعُ قاعدةٍ خاصّة بافتراضٍ عامّ يمحو من
+    // العامّة ما ليس فيها، فلا يتغيّر شيء على الشاشة.
+    store.mapColor(
+      usage.color,
+      picked == usage.color ? null : picked,
+      store.scopeForColor(usage.color),
+    );
   }
 }
 
@@ -213,8 +229,10 @@ class _ColorRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final t = context.l10n;
-    final target = state.widget.store.colorMap[usage.color];
+    final store = state.widget.store;
+    final target = store.colorMap[usage.color];
     final changed = target != null;
+    final excluded = store.isColorExcluded(usage.color);
     final parts = usage.byPart.keys
         .map((p) => partLabel(t, p))
         .toSet()
@@ -313,6 +331,19 @@ class _ColorRow extends StatelessWidget {
               ),
             ],
           ),
+          // **الطبقة تُقال على القاعدة نفسها**، ولا تُقال حيث لا معنى لها:
+          // مجموعةٌ فيها ملفّ واحد ليست فيها طبقتان.
+          if (store.canScope && (changed || excluded)) ...[
+            const SizedBox(height: 6),
+            ScopeBox(
+              specific: store.isFileSpecific(usage.color),
+              excluded: excluded,
+              onChanged: (value) => store.setColorScope(
+                usage.color,
+                value ? EditScope.file : EditScope.general,
+              ),
+            ),
+          ],
           if (usage.samples.isNotEmpty) ...[
             const SizedBox(height: 10),
             // عيّنة النصّ تُرسَم بلون اللون نفسه على خلفية فاتحة — يفهمها

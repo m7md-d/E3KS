@@ -15,6 +15,8 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/file_tree.dart';
 import '../../data/workspace_store.dart';
+import '../../shared/widgets/app_dialog.dart';
+import '../../shared/widgets/app_menu.dart';
 
 class FileTreePanel extends StatefulWidget {
   const FileTreePanel({
@@ -140,7 +142,16 @@ class _FileTreePanelState extends State<FileTreePanel> {
     switch (node) {
       case FileNode(:final name, :final index):
         return [
-          _FileRow(name: name, depth: depth, store: widget.store, index: index),
+          _FileRow(
+            // **مفتاحٌ بموضع الملفّ في المجموعة.** بدونه يُعاد استعمال حالة
+            // الصفّ لملفٍّ آخر عند تغيّر الشجرة، فتنتقل قائمةٌ مفتوحة إلى
+            // جاره.
+            key: ValueKey(index),
+            name: name,
+            depth: depth,
+            store: widget.store,
+            index: index,
+          ),
         ];
       case FolderNode(:final name, :final children):
         final key = '$parent/$name';
@@ -246,8 +257,15 @@ class _FolderRow extends StatelessWidget {
   );
 }
 
-class _FileRow extends StatelessWidget {
+/// ما يفعله المستخدم بملفٍّ من الشجرة.
+///
+/// **عائلتان لا تختلطان** (`ADR 0005` §٤): «راجعته» و«ملاحظة» قولُ المستخدم
+/// عن الملفّ، والقفل قرارُه في التعديل عليه. وكلاهما منه لا من الفحص.
+enum _FileAction { reviewed, locked, note, remove }
+
+class _FileRow extends StatefulWidget {
   const _FileRow({
+    super.key,
     required this.name,
     required this.depth,
     required this.store,
@@ -260,79 +278,250 @@ class _FileRow extends StatelessWidget {
   final int index;
 
   @override
+  State<_FileRow> createState() => _FileRowState();
+}
+
+class _FileRowState extends State<_FileRow> {
+  bool _hover = false;
+
+  /// **قائمته مفتوحة الآن.** خروج المؤشّر إلى القائمة يُنهي التصويب، فلولا
+  /// هذه لاختفى الزرّ من تحت القائمة المفتوحة — ولسقط الاختيار معه صامتًا،
+  /// لأن `PopupMenuButton` تتجاهل ما وصلها وزرُّها غير مركَّب.
+  bool _menuOpen = false;
+
+  /// **قائمة واحدة لبابين**: الزرّ والضغطة اليمنى. قائمتان تنحرف إحداهما عن
+  /// الأخرى عند أول إضافة، فيختلف ما يراه المستخدم باختلاف كيف وصل إليه.
+  List<AppMenuEntry<_FileAction>> _items() {
+    final t = context.l10n;
+    final file = widget.store.files[widget.index];
+    return [
+      AppMenuChoice(
+        value: _FileAction.reviewed,
+        label: t.fileReviewed,
+        selected: file.reviewed,
+      ),
+      AppMenuChoice(
+        value: _FileAction.locked,
+        label: t.fileLocked,
+        selected: file.locked,
+      ),
+      AppMenuChoice(
+        value: _FileAction.note,
+        label: file.note == null ? t.fileNoteAdd : t.fileNoteEdit,
+      ),
+      const AppMenuSeparator(),
+      AppMenuChoice(value: _FileAction.remove, label: t.removeFromSet),
+    ];
+  }
+
+  Future<void> _run(_FileAction action) async {
+    final store = widget.store;
+    final index = widget.index;
+    final file = store.files[index];
+    switch (action) {
+      case _FileAction.reviewed:
+        store.setReviewed(index, !file.reviewed);
+      case _FileAction.locked:
+        store.setLocked(index, !file.locked);
+      case _FileAction.note:
+        final written = await _askNote(context, widget.name, file.note);
+        if (written != null) store.setNote(index, written);
+      case _FileAction.remove:
+        store.removeFile(index);
+    }
+  }
+
+  /// الضغطة اليمنى تفتح القائمة عند المؤشّر لا عند حافّة الصفّ.
+  Future<void> _openAt(Offset position) async {
+    setState(() => _menuOpen = true);
+    final chosen = await showAppMenu<_FileAction>(
+      context: context,
+      at: position,
+      items: _items(),
+    );
+    if (!mounted) return;
+    setState(() => _menuOpen = false);
+    if (chosen != null) await _run(chosen);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.l10n;
-    final tab = store.files[index];
-    final selected = store.activeIndex == index;
-    final changes = store.changeCountAt(index);
+    final store = widget.store;
+    final file = store.files[widget.index];
+    final selected = store.activeIndex == widget.index;
+    final changes = store.changeCountAt(widget.index);
+    final shown = _hover || selected || _menuOpen;
 
     return _Guides(
-      depth: depth,
+      depth: widget.depth,
       child: Material(
-        color: selected ? Shade.mirrorDeep : Colors.transparent,
-        child: InkWell(
-          onTap: () => store.selectDocument(index),
-          hoverColor: Shade.surfaceHover,
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              _indent(depth) + 17,
-              6,
-              10,
-              6,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  LucideIcons.fileText,
-                  size: 13,
-                  color: selected ? Shade.mirror : Shade.textFaint,
+        // **الصفّ يبقى معلَّمًا وقائمته مفتوحة.** بدونها تُفتح القائمة على
+        // صفٍّ لا شيء يشير إليه، فلا يعرف المستخدم أي ملفّ يخاطب.
+        color: selected
+            ? Shade.mirrorDeep
+            : (_menuOpen ? Shade.surfaceHover : Colors.transparent),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _hover = true),
+          onExit: (_) => setState(() => _hover = false),
+          child: GestureDetector(
+            onSecondaryTapDown: (details) => _openAt(details.globalPosition),
+            child: InkWell(
+              onTap: () => store.selectDocument(widget.index),
+              hoverColor: Shade.surfaceHover,
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  _indent(widget.depth) + 17,
+                  2,
+                  4,
+                  2,
                 ),
-                const SizedBox(width: 7),
-                Expanded(
-                  child: Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: selected ? Shade.mirror : Shade.text,
-                      fontWeight: selected ? Type.semiBold : Type.regular,
-                    ),
-                  ),
-                ),
-                // **ما يقوله المستخدم** — قرارٌ منه، وشاراته أوّلًا.
-                if (tab.reviewed)
-                  Tooltip(
-                    message: t.fileReviewed,
-                    child: const Icon(
-                      LucideIcons.check,
+                child: Row(
+                  children: [
+                    Icon(
+                      LucideIcons.fileText,
                       size: 13,
-                      color: Shade.textMuted,
+                      color: selected ? Shade.mirror : Shade.textFaint,
                     ),
-                  ),
-                if (tab.locked)
-                  Tooltip(
-                    message: t.fileLocked,
-                    child: const Icon(
-                      LucideIcons.lock,
-                      size: 12,
-                      color: Shade.textMuted,
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        widget.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: selected ? Shade.mirror : Shade.text,
+                          fontWeight: selected ? Type.semiBold : Type.regular,
+                        ),
+                      ),
                     ),
-                  ),
-                if (changes > 0) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    '$changes',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
-              ],
+                    // **ما يقوله المستخدم** — قرارٌ منه، وشاراته أوّلًا.
+                    if (file.reviewed)
+                      Tooltip(
+                        message: t.fileReviewed,
+                        child: const Icon(
+                          LucideIcons.check,
+                          size: 13,
+                          color: Shade.textMuted,
+                        ),
+                      ),
+                    if (file.note case final note?)
+                      Tooltip(
+                        message: note,
+                        child: const Padding(
+                          padding: EdgeInsetsDirectional.only(start: 4),
+                          child: Icon(
+                            LucideIcons.messageSquare,
+                            size: 12,
+                            color: Shade.textMuted,
+                          ),
+                        ),
+                      ),
+                    if (file.locked)
+                      Tooltip(
+                        message: t.fileLocked,
+                        child: const Padding(
+                          padding: EdgeInsetsDirectional.only(start: 4),
+                          child: Icon(
+                            LucideIcons.lock,
+                            size: 12,
+                            color: Shade.textMuted,
+                          ),
+                        ),
+                      ),
+                    if (changes > 0) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '$changes',
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ],
+                    // **الباب يظهر عند التصويب.** زرٌّ دائم على كل صفّ يزاحم
+                    // الاسم في شريطٍ عرضه ٢١٤، والضغطة اليمنى وحدها بابٌ لا
+                    // يُرى.
+                    SizedBox(
+                      width: 22,
+                      height: 22,
+                      // **يبقى مركَّبًا ويختفي بالشفافية.** نزعُه من الشجرة
+                      // عند انتهاء التصويب يُسقط اختيار القائمة المفتوحة.
+                      // وما لا يُرى لا يُضغط، فالشفافية وحدها لا تمنع اللمس.
+                      child: IgnorePointer(
+                        ignoring: !shown,
+                        child: AnimatedOpacity(
+                          duration: Motion.instant,
+                          curve: Motion.standard,
+                          opacity: shown ? 1 : 0,
+                          child: AppMenuButton<_FileAction>(
+                            tooltip: t.fileActions,
+                            items: _items,
+                            onOpened: () => setState(() => _menuOpen = true),
+                            onClosed: () {
+                              if (mounted) setState(() => _menuOpen = false);
+                            },
+                            onSelected: _run,
+                            child: const Icon(
+                              LucideIcons.ellipsis,
+                              size: 14,
+                              color: Shade.textMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+/// حوار الملاحظة. يُرجع النصّ، أو `null` إن أُلغي.
+Future<String?> _askNote(
+  BuildContext context,
+  String fileName,
+  String? current,
+) async {
+  final controller = TextEditingController(text: current ?? '');
+  final t = context.l10n;
+  final written = await showAppDialog<String>(
+    context,
+    (context) => AlertDialog(
+      title: Text(t.fileNote),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(fileName, style: Theme.of(context).textTheme.labelSmall),
+          const SizedBox(height: 10),
+          TextField(
+            controller: controller,
+            autofocus: true,
+            maxLines: 3,
+            minLines: 2,
+            decoration: InputDecoration(hintText: t.fileNoteHint),
+            onSubmitted: (value) => Navigator.of(context).pop(value),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(t.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(controller.text),
+          child: Text(t.save),
+        ),
+      ],
+    ),
+  );
+  controller.dispose();
+  return written;
 }
 
 /// زرٌّ صغير في رأس الصندوق.

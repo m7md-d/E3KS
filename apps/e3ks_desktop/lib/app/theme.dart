@@ -63,8 +63,17 @@ ThemeData buildTheme() {
     scaffoldBackgroundColor: Shade.canvas,
     canvasColor: Shade.canvas,
     dividerColor: Shade.border,
+    // **و`dividerTheme` معه.** في Material 3 يأخذ `Divider` لونه من
+    // `colorScheme.outlineVariant` لا من `dividerColor`، فخرج فاصل القائمة
+    // خطًّا أبيض ساطعًا على أرضيةٍ داكنة. مرجعٌ واحد لا يُغني عن ضبط الطريق
+    // الذي تسلكه الودجة فعلًا.
+    dividerTheme: const DividerThemeData(color: Shade.border),
     splashFactory: NoSplash.splashFactory,
     highlightColor: Colors.transparent,
+    // **التصويب يُرى في كل مكان بلون واحد.** الافتراضي في الثيم الداكن
+    // سوادٌ شفّاف يذوب على أسطحنا، فكانت كل ودجة تمرّر `Shade.surfaceHover`
+    // بيدها — وما لا تمرّره (عناصر القوائم) يبقى بلا أثر تحت المؤشّر.
+    hoverColor: Shade.surfaceHover,
     textTheme: TextTheme(
       displaySmall: body(28, weight: Type.semiBold),
       headlineSmall: body(20, weight: Type.semiBold),
@@ -84,6 +93,22 @@ ThemeData buildTheme() {
       ),
       textStyle: body(12),
       waitDuration: Motion.tooltipDelay,
+    ),
+    // **هوية القوائم في مرجعها الواحد.** كل قائمة اختيار في التطبيق تمرّ
+    // من هنا: الأرضية والحدّ والانحناء والمقاس. وضبطُها عند كل نداء يعني
+    // قوائم تختلف بعضها عن بعض بفارقٍ تلتقطه العين ولا تسمّيه.
+    popupMenuTheme: PopupMenuThemeData(
+      color: Shade.surfaceHigh,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Shade.canvas,
+      elevation: 8,
+      position: PopupMenuPosition.under,
+      menuPadding: const EdgeInsets.symmetric(vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(Metrics.radius),
+        side: const BorderSide(color: Shade.borderStrong),
+      ),
+      textStyle: body(13),
     ),
     scrollbarTheme: ScrollbarThemeData(
       thickness: WidgetStateProperty.all(8),

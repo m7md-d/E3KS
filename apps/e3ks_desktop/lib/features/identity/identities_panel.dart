@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../shared/widgets/app_menu.dart';
 import '../../shared/widgets/app_dialog.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
@@ -64,7 +65,9 @@ class IdentitiesPanel extends StatelessWidget {
         for (final identity in identities.items)
           _IdentityCard(
             identity: identity,
-            onApply: () => store.applyIdentity(identity),
+            // الهوية أوّل ما يُطبَّق على مجلد، فتُكتب حيث يقول السياق:
+            // قاعدةً للمجموعة، أو لهذا الملفّ إن كان وحده أو مقفلًا.
+            onApply: () => store.applyIdentity(identity, store.defaultScope),
             onDelete: () => identities.delete(identity),
           ),
         const SizedBox(height: 30),
@@ -244,20 +247,12 @@ class _ExtractButton extends StatelessWidget {
       );
     }
 
-    return PopupMenuButton<int>(
+    return AppMenuButton<int>(
       tooltip: t.extractIdentityHint,
-      color: Shade.surfaceHigh,
       onSelected: (index) => _extract(context, index),
-      itemBuilder: (_) => [
+      items: () => [
         for (final other in others)
-          PopupMenuItem(
-            value: other.index,
-            child: Text(
-              other.fileName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          AppMenuChoice(value: other.index, label: other.fileName),
       ],
       child: OutlinedButton.icon(
         // الضغط يتولّاه `PopupMenuButton`؛ الزرّ هنا مظهر لا فعل.

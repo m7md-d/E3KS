@@ -16,6 +16,7 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/panel.dart';
+import 'scope_box.dart';
 import '../../shared/widgets/swatch.dart';
 
 class MarksPanel extends StatelessWidget {
@@ -55,7 +56,7 @@ class MarksPanel extends StatelessWidget {
               // فعلٌ واحد للجدول كلّه: من وصله ملفّ مليء بالتحديد يريده
               // كلّه، وضغطُ عشرين صفًّا عقوبة لا أداة.
               : TextButton(
-                  onPressed: () => store.liftAllMarks(!all),
+                  onPressed: () => store.liftAllMarks(!all, store.defaultScope),
                   child: Text(all ? t.keepAll : t.liftAll),
                 ),
         ),
@@ -182,10 +183,22 @@ class _MarkRow extends StatelessWidget {
               const SizedBox(width: 10),
               _LiftButton(
                 lifted: lifted,
-                onTap: () => store.liftMark(mark, !lifted),
+                onTap: () =>
+                    store.liftMark(mark, !lifted, store.scopeForMark(mark)),
               ),
             ],
           ),
+          // **الطبقة تُقال على العلامة المرفوعة نفسها** — كما على اللون.
+          if (store.canScope && lifted) ...[
+            const SizedBox(height: 6),
+            ScopeBox(
+              specific: store.isMarkSpecific(mark),
+              onChanged: (value) => store.setMarkScope(
+                mark,
+                value ? EditScope.file : EditScope.general,
+              ),
+            ),
+          ],
           if (usage.samples.isNotEmpty) ...[
             const SizedBox(height: 10),
             // العيّنة تُرسَم على أرضية العلامة نفسها: يفهمها المستخدم في

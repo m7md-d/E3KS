@@ -750,6 +750,48 @@ class LEn extends L {
   String get fileReviewed => 'Reviewed';
 
   @override
+  String get scopeFileOnly => 'This file only';
+
+  @override
+  String get scopeFileOnlyOn =>
+      'The rule applies to this file alone. Clearing it moves the rule to the general plan.';
+
+  @override
+  String get scopeFileOnlyOff =>
+      'The rule lives in the general plan. Checking it limits the rule to this file.';
+
+  @override
+  String get scopeExcluded => 'Excluded from the general plan';
+
+  @override
+  String get lockedBanner =>
+      'This file is locked: the general plan does not apply to it.';
+
+  @override
+  String get fileNote => 'Note';
+
+  @override
+  String get fileNoteAdd => 'Write a note';
+
+  @override
+  String get fileNoteEdit => 'Edit the note';
+
+  @override
+  String get fileNoteHint => 'What to remember about this file';
+
+  @override
+  String get removeFromSet => 'Remove from the set';
+
+  @override
+  String get fileActions => 'File options';
+
+  @override
+  String get resetFileEdits => 'Undo this file\'s edits';
+
+  @override
+  String get resetGeneralEdits => 'Undo the general plan';
+
+  @override
   String get tabMarks => 'Highlights';
 
   @override

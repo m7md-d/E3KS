@@ -1453,6 +1453,84 @@ abstract class L {
   /// **'راجعته'**
   String get fileReviewed;
 
+  /// No description provided for @scopeFileOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'خاصّ بهذا الملفّ'**
+  String get scopeFileOnly;
+
+  /// No description provided for @scopeFileOnlyOn.
+  ///
+  /// In ar, this message translates to:
+  /// **'القاعدة على هذا الملفّ وحده. رفعُها ينقلها إلى الخطة العامّة.'**
+  String get scopeFileOnlyOn;
+
+  /// No description provided for @scopeFileOnlyOff.
+  ///
+  /// In ar, this message translates to:
+  /// **'القاعدة في الخطة العامّة. وضعُها يحصرها في هذا الملفّ.'**
+  String get scopeFileOnlyOff;
+
+  /// No description provided for @scopeExcluded.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستثنى من الخطة العامّة'**
+  String get scopeExcluded;
+
+  /// No description provided for @lockedBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الملفّ مقفل: الخطة العامّة لا تسري عليه.'**
+  String get lockedBanner;
+
+  /// No description provided for @fileNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة'**
+  String get fileNote;
+
+  /// No description provided for @fileNoteAdd.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب ملاحظة'**
+  String get fileNoteAdd;
+
+  /// No description provided for @fileNoteEdit.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدّل الملاحظة'**
+  String get fileNoteEdit;
+
+  /// No description provided for @fileNoteHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ما يلزم تذكّره عن هذا الملفّ'**
+  String get fileNoteHint;
+
+  /// No description provided for @removeFromSet.
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرجه من المجموعة'**
+  String get removeFromSet;
+
+  /// No description provided for @fileActions.
+  ///
+  /// In ar, this message translates to:
+  /// **'خيارات الملفّ'**
+  String get fileActions;
+
+  /// No description provided for @resetFileEdits.
+  ///
+  /// In ar, this message translates to:
+  /// **'امحُ تعديلات هذا الملفّ'**
+  String get resetFileEdits;
+
+  /// No description provided for @resetGeneralEdits.
+  ///
+  /// In ar, this message translates to:
+  /// **'امحُ الخطة العامّة'**
+  String get resetGeneralEdits;
+
   /// No description provided for @tabMarks.
   ///
   /// In ar, this message translates to:

@@ -7,6 +7,7 @@ library;
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:e3ks_desktop/data/identity.dart';
 import 'package:e3ks_desktop/data/style_edits.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
 import 'package:e3ks_engine/e3ks_engine.dart';
@@ -140,6 +141,110 @@ void main() {
       store.selectDocument(1);
       expect(store.reviewed, isTrue);
       expect(store.note, equals('يحتاج مراجعة العنوان'));
+    });
+
+    test('الافتراض عامٌّ في المجموعة، وخاصٌّ للمقفل وللملفّ الواحد', () async {
+      // **الافتراض يقرّره السياق** (`ADR 0005` §٢). والمقفل يكتب لنفسه
+      // دائمًا: قاعدةٌ عامّة تُكتب من شاشته لا تسري عليه، فيرى المستخدم
+      // تعديلًا بلا أثر ولا يعرف لماذا.
+      expect(store.defaultScope, equals(EditScope.general));
+      store.setLocked(store.activeIndex, true);
+      expect(store.defaultScope, equals(EditScope.file));
+
+      final single = WorkspaceStore();
+      await single.open(
+        _demo,
+        'وحده.docx',
+        Uint8List.fromList(File(_demo).readAsBytesSync()),
+      );
+      expect(single.defaultScope, equals(EditScope.file));
+      expect(single.canScope, isFalse);
+    });
+
+    test('التعديل يُكتب حيث تسكن قاعدته لا حيث يقول الافتراض', () {
+      // **رفعُ قاعدةٍ خاصّة بافتراضٍ عامّ** يمحو من العامّة ما ليس فيها،
+      // فلا يتغيّر شيء على الشاشة والمستخدم يظنّ الزرّ عاطلًا.
+      store.selectDocument(0);
+      store.mapColor(_a, _b, EditScope.file);
+      expect(store.scopeForColor(_a), equals(EditScope.file));
+      expect(
+        store.scopeForColor(_c),
+        equals(EditScope.general),
+        reason: 'بلا قاعدة يقول الافتراض',
+      );
+
+      store.mapColor(_a, null, store.scopeForColor(_a));
+      expect(store.planFor(0).colors, isNot(contains(_a)));
+    });
+
+    test('نقل قاعدة إلى الملفّ يُخرجها من غيره', () {
+      store.mapColor(_a, _b, EditScope.general);
+      store.selectDocument(0);
+      store.setColorScope(_a, EditScope.file);
+
+      expect(store.planFor(0).colors[_a], equals(_b), reason: 'بقيت هنا');
+      expect(
+        store.planFor(1).colors,
+        isNot(contains(_a)),
+        reason: 'نقلٌ لا نسخ',
+      );
+      expect(store.isFileSpecific(_a), isTrue);
+    });
+
+    test('نقل قاعدة إلى العامّة يعمّمها', () {
+      store.selectDocument(0);
+      store.mapColor(_a, _b, EditScope.file);
+      store.setColorScope(_a, EditScope.general);
+
+      expect(store.planFor(1).colors[_a], equals(_b));
+      expect(store.isFileSpecific(_a), isFalse);
+    });
+
+    test('رفع الاستثناء عودةٌ إلى العامّة لا نقلٌ إليها', () {
+      // الاستثناء `null` قولٌ لا قيمة؛ نقلُه إلى العامّة يمحو القاعدة عن
+      // الأربعين بدل أن يُعيد هذا الملفّ إليها.
+      store.mapColor(_a, _b, EditScope.general);
+      store.selectDocument(0);
+      store.mapColor(_a, null, EditScope.file);
+      expect(store.isColorExcluded(_a), isTrue);
+
+      store.setColorScope(_a, EditScope.general);
+      expect(
+        store.planFor(0).colors[_a],
+        equals(_b),
+        reason: 'عاد إلى العامّة',
+      );
+      expect(store.planFor(1).colors[_a], equals(_b), reason: 'وغيره لم يُمَس');
+    });
+
+    test('الخطّ والعلامة تنتقلان بين الطبقتين كاللون', () {
+      final mark = TextMark(MarkKind.highlight, 'yellow');
+      store.selectDocument(0);
+      store.setLatinFont('Inter', EditScope.file);
+      store.liftMark(mark, true, EditScope.file);
+
+      store.setFontScope(latin: true, to: EditScope.general);
+      store.setMarkScope(mark, EditScope.general);
+      expect(store.planFor(1).fonts?.latin, equals('Inter'));
+      expect(store.planFor(1).removeMarks, contains(mark));
+
+      store.setFontScope(latin: true, to: EditScope.file);
+      store.setMarkScope(mark, EditScope.file);
+      expect(store.planFor(1).fonts?.latin, isNull);
+      expect(store.planFor(1).removeMarks, isNot(contains(mark)));
+      expect(store.planFor(0).fonts?.latin, equals('Inter'));
+    });
+
+    test('الهوية تُطبَّق قاعدةً عامّة فتبلغ بقيّة الملفات', () {
+      store.selectDocument(0);
+      final report = store.report;
+      // فُتح المستند وفُحص في `setUp`، فالتقرير حاضر ولا يخلو من لون.
+      final source = report!.contentColors.first.color;
+      store.applyIdentity(
+        Identity(name: 'اختبار', map: {source: _b}),
+        EditScope.general,
+      );
+      expect(store.planFor(1).colors[source], equals(_b));
     });
 
     test('محو العامّة لا يمحو الخاصّة', () {
