@@ -37,7 +37,7 @@ class DocumentTabs extends StatelessWidget {
               itemCount: store.tabs.length,
               itemBuilder: (context, i) => _Tab(
                 label: store.tabs[i].document.fileName,
-                changes: store.tabs[i].changeCount,
+                changes: store.changeCountAt(i),
                 selected: i == store.activeIndex,
                 onTap: () => store.selectDocument(i),
                 onClose: () => store.closeDocument(i),

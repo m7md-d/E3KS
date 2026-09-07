@@ -9,8 +9,16 @@ import 'package:flutter/foundation.dart';
 
 import 'document_loader.dart';
 import 'identity.dart';
+import 'style_edits.dart';
 
 enum WorkspaceTab { colors, fonts, marks, identities }
+
+/// أين يُكتب التعديل: قاعدةً تسري على المجموعة، أم استثناءً لهذا الملفّ.
+///
+/// **والافتراض يقرّره السياق لا المخزَن** (`ADR 0005` §٢): من فتح مجلدًا
+/// فالشائع عنده ما يسري على ملفاته كلّها، ومن فتح ملفًّا واحدًا فلا معنى
+/// للعموم عنده.
+enum EditScope { general, file }
 
 /// مستند مفتوح ومعه خطّته. كل تبويب يحمل خطّته الخاصّة، فلا تتسرّب
 /// تعديلات ملفٍ إلى آخر.
@@ -26,13 +34,20 @@ class OpenTab {
 
   /// الفحص جارٍ ولم تصل حصيلته بعد.
   bool inspecting = true;
-  final Map<HexColor, HexColor> colorMap = {};
-  final Set<String> preserveFonts = {};
 
-  /// علامات النصّ التي طلب المستخدم رفعها من هذا الملف.
-  final Set<TextMark> liftedMarks = {};
-  String? latinFont;
-  String? arabicFont;
+  /// ما قرّره المستخدم لهذا الملفّ وحده. يفوز على العامّ دائمًا.
+  final StyleEdits own = StyleEdits();
+
+  /// **مقفلٌ عن العامّ.** لا تسري عليه القواعد العامّة، ويبقى على ما قرّره
+  /// له صاحبه. **ويُصدَّر مع البقيّة**: القفل يستثني من التعديل لا من الكتابة.
+  bool locked = false;
+
+  /// راجعه المستخدم. **قرارٌ منه لا ملاحظةٌ من الفحص**، والعائلتان لا
+  /// تختلطان في العرض (`ADR 0005` §٤).
+  bool reviewed = false;
+
+  /// ملاحظة يكتبها المستخدم على الملفّ.
+  String? note;
 
   DocumentPreview? cachedPreview;
   int cachedPlanHash = -1;
@@ -45,22 +60,17 @@ class OpenTab {
   /// يعنيان شريطَي تتبّع فوق الورقة، وتمييزين متنافسين على المقطع نفسه.
   TextMark? focusedMark;
 
-  StylePlan get plan => StylePlan(
-    colors: Map.of(colorMap),
-    fonts: FontPlan(latin: latinFont, arabic: arabicFont),
-    preserveFonts: Set.of(preserveFonts),
-    removeMarks: Set.of(liftedMarks),
-  );
-
-  int get changeCount =>
-      colorMap.length +
-      liftedMarks.length +
-      (latinFont != null ? 1 : 0) +
-      (arabicFont != null ? 1 : 0);
+  /// الخطة الفعّالة: العامّة ثم الخاصّة فوقها، ما لم يكن الملفّ مقفلًا.
+  StylePlan planWith(StyleEdits general) =>
+      resolvePlan(locked ? null : general, own);
 }
 
 class WorkspaceStore extends ChangeNotifier {
   final List<OpenTab> _tabs = [];
+
+  /// القواعد التي تسري على كل ملفات المجموعة، إلا المقفل منها.
+  final StyleEdits _general = StyleEdits();
+
   int _active = -1;
   LoadFailure? _failure;
   bool _busy = false;
@@ -152,8 +162,9 @@ class WorkspaceStore extends ChangeNotifier {
   /// الألوان مفهرسة بألوان **المصدر**. فالضغط على لون بديل كان يطلب تتبّع
   /// لونٍ لا صفَّ له، فلا يحدث شيء. نردّه إلى مصدره فيجد صفّه.
   HexColor? _sourceOf(OpenTab tab, HexColor color) {
-    if (tab.colorMap.containsKey(color)) return color;
-    for (final entry in tab.colorMap.entries) {
+    final resolved = tab.planWith(_general).colors;
+    if (resolved.containsKey(color)) return color;
+    for (final entry in resolved.entries) {
       if (entry.value == color) return entry.key;
     }
     return color;
@@ -163,21 +174,47 @@ class WorkspaceStore extends ChangeNotifier {
   bool get onlyChanged => _onlyChanged;
   bool get showAfter => _showAfter;
 
-  Map<HexColor, HexColor> get colorMap =>
-      Map.unmodifiable(current?.colorMap ?? const {});
-  Set<TextMark> get liftedMarks =>
-      Set.unmodifiable(current?.liftedMarks ?? const <TextMark>{});
-  String? get latinFont => current?.latinFont;
-  String? get arabicFont => current?.arabicFont;
-  Set<String> get preserveFonts =>
-      Set.unmodifiable(current?.preserveFonts ?? const {});
+  /// **ما يُعرَض للمستخدم هو الخطة الفعّالة**، لا إحدى طبقتيها: هو يرى ملفَّه
+  /// كما سيخرج، والطبقتان تفصيلٌ في كيفية بنائها.
+  Map<HexColor, HexColor> get colorMap => Map.unmodifiable(plan.colors);
+  Set<TextMark> get liftedMarks => Set.unmodifiable(plan.removeMarks);
+  String? get latinFont => plan.fonts?.latin;
+  String? get arabicFont => plan.fonts?.arabic;
+  Set<String> get preserveFonts => Set.unmodifiable(plan.preserveFonts);
+
+  /// هل هذه القاعدة عامّة أم استثناءٌ لهذا الملفّ؟ تعرضه الواجهة على
+  /// القاعدة نفسها لحظة كتابتها.
+  bool isFileSpecific(HexColor from) =>
+      current?.own.colors.containsKey(from) ?? false;
+
+  /// الملفّ مقفلٌ عن الخطة العامّة.
+  bool get locked => current?.locked ?? false;
+  bool get reviewed => current?.reviewed ?? false;
+  String? get note => current?.note;
 
   /// عدد التغييرات في المستند النشط — يظهر في الشريط العلوي.
-  int get changeCount => current?.changeCount ?? 0;
+  int get changeCount =>
+      plan.colors.length +
+      plan.removeMarks.length +
+      (plan.fonts?.latin != null ? 1 : 0) +
+      (plan.fonts?.arabic != null ? 1 : 0);
 
   bool get hasChanges => changeCount > 0;
 
-  StylePlan get plan => current?.plan ?? const StylePlan();
+  StylePlan get plan => current?.planWith(_general) ?? const StylePlan();
+
+  StylePlan planFor(int index) => index >= 0 && index < _tabs.length
+      ? _tabs[index].planWith(_general)
+      : const StylePlan();
+
+  /// عدد تغييرات ملفٍّ بعينه — يظهر على تبويبه وفي شجرة الملفات.
+  int changeCountAt(int index) {
+    final resolved = planFor(index);
+    return resolved.colors.length +
+        resolved.removeMarks.length +
+        (resolved.fonts?.latin != null ? 1 : 0) +
+        (resolved.fonts?.arabic != null ? 1 : 0);
+  }
 
   /// المعاينة بعد تطبيق الخطة، محسوبة عند الحاجة ومحفوظة لكل تبويب.
   DocumentPreview? get previewAfter {
@@ -187,7 +224,10 @@ class WorkspaceStore extends ChangeNotifier {
     if (tab.cachedPreview != null && tab.cachedPlanHash == hash) {
       return tab.cachedPreview;
     }
-    tab.cachedPreview = restylePreview(tab.document.preview, tab.plan);
+    tab.cachedPreview = restylePreview(
+      tab.document.preview,
+      tab.planWith(_general),
+    );
     tab.cachedPlanHash = hash;
     return tab.cachedPreview;
   }
@@ -195,13 +235,17 @@ class WorkspaceStore extends ChangeNotifier {
   int get _planHash {
     final tab = current;
     if (tab == null) return -1;
+    // **البصمة على الخطة الفعّالة**: تغيّرُ العامّة يمسّ هذا الملفّ كتغيّر
+    // خاصّته، وحصرُها في الخاصّة يُبقي معاينةً محفوظة لا تعرف أنها بطلت.
+    final resolved = tab.planWith(_general);
     return Object.hashAll([
-      for (final entry in tab.colorMap.entries) entry.key.value,
-      for (final entry in tab.colorMap.entries) entry.value.value,
-      for (final mark in tab.liftedMarks) mark.toString(),
-      tab.latinFont,
-      tab.arabicFont,
-      tab.preserveFonts.length,
+      for (final entry in resolved.colors.entries) entry.key.value,
+      for (final entry in resolved.colors.entries) entry.value.value,
+      for (final mark in resolved.removeMarks) mark.toString(),
+      resolved.fonts?.latin,
+      resolved.fonts?.arabic,
+      resolved.preserveFonts.length,
+      tab.locked,
     ]);
   }
 
@@ -249,7 +293,7 @@ class WorkspaceStore extends ChangeNotifier {
     tab.document = tab.document.withReport(report);
     // الخطوط أحادية العرض تُحمى تلقائيًا، والمستخدم يرى ذلك ويستطيع تغييره.
     for (final font in report.monospacedCandidates) {
-      tab.preserveFonts.add(font.name);
+      tab.own.preserveFonts.add(font.name);
     }
     notifyListeners();
   }
@@ -281,13 +325,17 @@ class WorkspaceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void resetChanges() {
-    final tab = current;
-    if (tab == null) return;
-    tab.colorMap.clear();
-    tab.liftedMarks.clear();
-    tab.latinFont = null;
-    tab.arabicFont = null;
+  /// يمحو ما قرّره المستخدم. [scope] يحدّد أي طبقة تُمحى.
+  ///
+  /// **والعامّة تُمحى للمجموعة كلّها**، فتُسقط معاينات كل الملفات لا الحاليَّ
+  /// وحده.
+  void resetChanges([EditScope scope = EditScope.file]) {
+    if (scope == EditScope.general) {
+      _general.clear();
+      _invalidateAll();
+      return;
+    }
+    current?.own.clear();
     _invalidate();
   }
 
@@ -295,60 +343,135 @@ class WorkspaceStore extends ChangeNotifier {
   ///
   /// **الرفع قرار ملفٍّ لا هوية**: الهوية تصف ألوانًا وخطوطًا، وأثرُ لصقٍ
   /// في ملفٍّ بعينه لا يوصف في هوية تُطبَّق على غيره.
-  void liftMark(TextMark mark, bool lifted) {
-    final tab = current;
-    if (tab == null) return;
+  void liftMark(
+    TextMark mark,
+    bool lifted, [
+    EditScope scope = EditScope.file,
+  ]) {
+    final edits = _editsFor(scope);
+    if (edits == null) return;
     if (lifted) {
-      tab.liftedMarks.add(mark);
+      edits.liftedMarks.add(mark);
     } else {
-      tab.liftedMarks.remove(mark);
+      edits.liftedMarks.remove(mark);
     }
-    _invalidate();
+    _invalidateFor(scope);
   }
 
   /// يرفع كل علامات المستند دفعةً واحدة، أو يعيدها كلّها.
-  void liftAllMarks(bool lifted) {
+  void liftAllMarks(bool lifted, [EditScope scope = EditScope.file]) {
     final tab = current;
-    if (tab == null) return;
-    tab.liftedMarks.clear();
+    final edits = _editsFor(scope);
+    if (tab == null || edits == null) return;
+    edits.liftedMarks.clear();
     if (lifted) {
       for (final usage in tab.document.report?.marks ?? const <MarkUsage>[]) {
-        tab.liftedMarks.add(usage.mark);
+        edits.liftedMarks.add(usage.mark);
       }
     }
-    _invalidate();
+    _invalidateFor(scope);
   }
 
-  void mapColor(HexColor from, HexColor? to) {
-    final tab = current;
-    if (tab == null) return;
-    if (to == null || to == from) {
-      tab.colorMap.remove(from);
+  /// يبدّل لونًا. [scope] يقرّر أتسري القاعدة على المجموعة أم على هذا الملفّ.
+  ///
+  /// **ورفعُ التبديل عن لونٍ تحكمه قاعدة عامّة ليس حذفًا بل استثناء**: يُسجَّل
+  /// في الطبقة الخاصّة بقيمة `null`، فيقول «هذا الملفّ يُبقيه» بدل أن يعود
+  /// إلى العامّة صامتًا.
+  void mapColor(
+    HexColor from,
+    HexColor? to, [
+    EditScope scope = EditScope.file,
+  ]) {
+    final edits = _editsFor(scope);
+    if (edits == null) return;
+    final clearing = to == null || to == from;
+
+    if (scope == EditScope.general) {
+      if (clearing) {
+        edits.colors.remove(from);
+      } else {
+        edits.colors[from] = to;
+      }
+      _invalidateAll();
+      return;
+    }
+
+    if (!clearing) {
+      edits.colors[from] = to;
+    } else if (_general.colors[from] != null) {
+      edits.colors[from] = null; // استثناءٌ صريح من قاعدةٍ عامّة
     } else {
-      tab.colorMap[from] = to;
+      edits.colors.remove(from);
     }
     _invalidate();
   }
 
-  void setLatinFont(String? name) {
-    current?.latinFont = (name == null || name.isEmpty) ? null : name;
+  /// يُلغي استثناء الملفّ فيعود اللون إلى ما تقوله القاعدة العامّة.
+  void clearFileColor(HexColor from) {
+    if (current?.own.colors.remove(from) == null) return;
     _invalidate();
   }
 
-  void setArabicFont(String? name) {
-    current?.arabicFont = (name == null || name.isEmpty) ? null : name;
-    _invalidate();
+  StyleEdits? _editsFor(EditScope scope) =>
+      scope == EditScope.general ? _general : current?.own;
+
+  void _invalidateFor(EditScope scope) =>
+      scope == EditScope.general ? _invalidateAll() : _invalidate();
+
+  /// يُسقط معاينات كل الملفات: القاعدة العامّة تمسّها جميعًا.
+  void _invalidateAll() {
+    for (final tab in _tabs) {
+      tab.cachedPreview = null;
+      tab.cachedPlanHash = -1;
+    }
+    notifyListeners();
   }
 
-  void togglePreserved(String font, bool preserved) {
-    final tab = current;
-    if (tab == null) return;
+  /// يقفل ملفًّا عن الخطة العامّة أو يفتحه.
+  void setLocked(int index, bool value) {
+    if (index < 0 || index >= _tabs.length) return;
+    _tabs[index].locked = value;
+    _tabs[index].cachedPreview = null;
+    _tabs[index].cachedPlanHash = -1;
+    notifyListeners();
+  }
+
+  /// علامة «راجعته» — قرارُ المستخدم، لا ملاحظةُ الفحص.
+  void setReviewed(int index, bool value) {
+    if (index < 0 || index >= _tabs.length) return;
+    _tabs[index].reviewed = value;
+    notifyListeners();
+  }
+
+  void setNote(int index, String? value) {
+    if (index < 0 || index >= _tabs.length) return;
+    _tabs[index].note = (value == null || value.trim().isEmpty) ? null : value;
+    notifyListeners();
+  }
+
+  void setLatinFont(String? name, [EditScope scope = EditScope.file]) {
+    _editsFor(scope)?.latinFont = (name == null || name.isEmpty) ? null : name;
+    _invalidateFor(scope);
+  }
+
+  void setArabicFont(String? name, [EditScope scope = EditScope.file]) {
+    _editsFor(scope)?.arabicFont = (name == null || name.isEmpty) ? null : name;
+    _invalidateFor(scope);
+  }
+
+  void togglePreserved(
+    String font,
+    bool preserved, [
+    EditScope scope = EditScope.file,
+  ]) {
+    final edits = _editsFor(scope);
+    if (edits == null) return;
     if (preserved) {
-      tab.preserveFonts.add(font);
+      edits.preserveFonts.add(font);
     } else {
-      tab.preserveFonts.remove(font);
+      edits.preserveFonts.remove(font);
     }
-    _invalidate();
+    _invalidateFor(scope);
   }
 
   void selectTab(WorkspaceTab value) {
@@ -384,7 +507,7 @@ class WorkspaceStore extends ChangeNotifier {
       // التي تجعل الملف الحادي والأربعين يخرج مطابقًا لما قبله.
       final explicit = identity.map[usage.color];
       if (explicit != null) {
-        tab.colorMap[usage.color] = explicit;
+        tab.own.colors[usage.color] = explicit;
         continue;
       }
       if (identity.colors.isEmpty) continue;
@@ -404,12 +527,12 @@ class WorkspaceStore extends ChangeNotifier {
           best = candidate;
         }
       }
-      tab.colorMap[usage.color] = best.hex;
+      tab.own.colors[usage.color] = best.hex;
     }
 
-    tab.latinFont = identity.latinFont ?? tab.latinFont;
-    tab.arabicFont = identity.arabicFont ?? tab.arabicFont;
-    tab.preserveFonts.addAll(identity.preserveFonts);
+    tab.own.latinFont = identity.latinFont ?? tab.own.latinFont;
+    tab.own.arabicFont = identity.arabicFont ?? tab.own.arabicFont;
+    tab.own.preserveFonts.addAll(identity.preserveFonts);
     _invalidate();
   }
 

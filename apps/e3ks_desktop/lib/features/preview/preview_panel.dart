@@ -76,6 +76,41 @@ class _PreviewPanelState extends State<PreviewPanel> {
 
   GlobalKey _keyFor(int index) => _pageKeys.putIfAbsent(index, GlobalKey.new);
 
+  /// ودجات الصفحات المبنيّة، لتُعاد **بذاتها** حين لا يتغيّر شيء فيها.
+  ///
+  /// **هذا هو ما يُنزل الإطار تحت ميزانيته.** كان تبديلُ لونٍ يعيد تخطيط كل
+  /// صفحة مرئية ولو لم يكن اللون فيها، لأن `restylePreview` كان يبني نموذجًا
+  /// جديدًا كاملًا فتتغيّر كل ودجة. والآن يُعيد المحرّك الصفحةَ بذاتها إن لم
+  /// تتغيّر، ونُعيد نحن ودجتَها بذاتها — و`Element.updateChild` يتخطّى
+  /// الشجرة الفرعية كلّها حين تكون الودجة هي هي: بناءً وتخطيطًا ورسمًا.
+  final List<PreviewPage?> _sheetPages = [];
+  final List<bool> _sheetHighlight = [];
+  final List<Widget?> _sheets = [];
+
+  /// ما يخصّ العرض كلَّه لا صفحةً بعينها. تغيّرُ أيٍّ منه يُسقط الذاكرة كلّها.
+  List<Object?> _sheetSignature = const [];
+
+  void _resetSheets(int count, List<Object?> signature) {
+    _sheetSignature = signature;
+    _sheetPages
+      ..clear()
+      ..addAll(List<PreviewPage?>.filled(count, null));
+    _sheetHighlight
+      ..clear()
+      ..addAll(List<bool>.filled(count, false));
+    _sheets
+      ..clear()
+      ..addAll(List<Widget?>.filled(count, null));
+  }
+
+  bool _sameSignature(List<Object?> a, List<Object?> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -234,6 +269,31 @@ class _PreviewPanelState extends State<PreviewPanel> {
     if (_match >= matches.length) _match = matches.length - 1;
 
     // ترقيم الكتل متّصل عبر الصفحات كي يبقى المرجع ثابتًا.
+    // **مجموعات التغيير لا تُمرَّر إلا حين تُرسَم.** `_PageSheet` لا يقرؤها
+    // إلا مع مفتاح العلامات، وتمريرُها دائمًا كان يجعل كل تبديل لون يغيّر
+    // إعداد **كل** صفحة — فتسقط ذاكرة الودجات كلّها ولا يُتخطّى شيء.
+    final markColors = _marks ? colors : const <String>{};
+    final markFonts = _marks ? fonts : const <String>{};
+    final markMarks = _marks ? lifted : const <TextMark>{};
+
+    // ما يمسّ كل الصفحات: تغيّرُه يُسقط ذاكرة الودجات كلّها، وما عداه
+    // يُقارَن صفحةً صفحة بهُويّتها.
+    final signature = <Object?>[
+      pages.length,
+      _numbers,
+      _marks,
+      showAfter,
+      store.hasChanges,
+      focused?.value,
+      focusedMark?.toString(),
+      markColors.join('|'),
+      markFonts.join('|'),
+      markMarks.map((m) => m.toString()).join('|'),
+    ];
+    if (!_sameSignature(signature, _sheetSignature)) {
+      _resetSheets(pages.length, signature);
+    }
+
     final blockStart = <int>[];
     var running = 1;
     for (final entry in pages) {
@@ -350,30 +410,50 @@ class _PreviewPanelState extends State<PreviewPanel> {
                                   // العرض المُحجَّم: مستند من ٣٧ صفحة يبني منها
                                   // المرئي فقط.
                                   itemCount: pages.length,
-                                  itemBuilder: (context, i) => _PageSheet(
-                                    key: _keyFor(i),
-                                    entry: pages[i],
-                                    zoom: zoom,
-                                    startNumber: blockStart[i],
-                                    showNumbers: _numbers,
-                                    label: _pageLabel(
-                                      t,
-                                      pages[i],
-                                      pages.length,
-                                    ),
-                                    marks: _marks,
-                                    highlight:
+                                  itemBuilder: (context, i) {
+                                    final highlight =
                                         _marks &&
                                         store.hasChanges &&
-                                        changed.contains(i),
-                                    changedColors: colors,
-                                    changedFonts: fonts,
-                                    changedMarks: lifted,
-                                    focusedColor: focused,
-                                    onColorTap: store.focusColor,
-                                    focusedMark: focusedMark,
-                                    onMarkTap: store.focusMark,
-                                  ),
+                                        changed.contains(i);
+                                    final cached = _sheets[i];
+                                    if (cached != null &&
+                                        identical(
+                                          _sheetPages[i],
+                                          pages[i].page,
+                                        ) &&
+                                        _sheetHighlight[i] == highlight) {
+                                      return cached;
+                                    }
+                                    // حدُّ إعادة رسمٍ لكل ورقة: صفحةٌ تتغيّر
+                                    // لا تُوسِّخ طبقةَ جاراتها.
+                                    final sheet = RepaintBoundary(
+                                      child: _PageSheet(
+                                        key: _keyFor(i),
+                                        entry: pages[i],
+                                        zoom: zoom,
+                                        startNumber: blockStart[i],
+                                        showNumbers: _numbers,
+                                        label: _pageLabel(
+                                          t,
+                                          pages[i],
+                                          pages.length,
+                                        ),
+                                        marks: _marks,
+                                        highlight: highlight,
+                                        changedColors: markColors,
+                                        changedFonts: markFonts,
+                                        changedMarks: markMarks,
+                                        focusedColor: focused,
+                                        onColorTap: store.focusColor,
+                                        focusedMark: focusedMark,
+                                        onMarkTap: store.focusMark,
+                                      ),
+                                    );
+                                    _sheetPages[i] = pages[i].page;
+                                    _sheetHighlight[i] = highlight;
+                                    _sheets[i] = sheet;
+                                    return sheet;
+                                  },
                                 ),
                               ),
                             ),

@@ -52,6 +52,37 @@ class _ColorsPanelState extends State<ColorsPanel> {
   GlobalKey _keyFor(HexColor color) =>
       _rowKeys.putIfAbsent(color.value, GlobalKey.new);
 
+  /// صفوف مبنيّة، تُعاد **بذاتها** ما لم يتغيّر ما يخصّ صفَّها.
+  ///
+  /// **لماذا:** `notifyListeners()` تعيد بناء الشاشة كلّها، وقياسُ الإطار
+  /// الخامل قال إن هذه اللوحة وحدها ١٦ms من ٢٨ — الصفوف المرئية تُعاد
+  /// بناءً وتخطيطًا في كل إشعار ولو لم يمسّها شيء. و`Element.updateChild`
+  /// يتخطّى الشجرة الفرعية حين تكون الودجة هي هي.
+  ///
+  /// **والمفتاح لكل صفٍّ حاله هو**: تبديلُ لونٍ يُسقط صفَّه وحده، لا الصفوف
+  /// كلّها — وهذا ما يجعل الذاكرة تنفع أصلًا.
+  final Map<String, ({Widget row, bool focused, String? target})> _rows = {};
+
+  Widget _rowFor(ColorUsage usage, HexColor? focused) {
+    final key = usage.color.value;
+    final isFocused = focused?.value == key;
+    final target = widget.store.colorMap[usage.color]?.value;
+    final cached = _rows[key];
+    if (cached != null &&
+        cached.focused == isFocused &&
+        cached.target == target) {
+      return cached.row;
+    }
+    final row = _ColorRow(
+      key: _keyFor(usage.color),
+      usage: usage,
+      state: this,
+      focused: isFocused,
+    );
+    _rows[key] = (row: row, focused: isFocused, target: target);
+    return row;
+  }
+
   /// يمرّر إلى اللون المتتبَّع بعد أن تُبنى صفوفه.
   ///
   /// **هذا نصف الجسر الثاني**: الضغط في الصفحة يتتبّع اللون، وهذا يُظهره في
@@ -137,13 +168,7 @@ class _ColorsPanelState extends State<ColorsPanel> {
           hint: t.identityColorsHint,
           count: identity.length,
         ),
-        for (final usage in identity)
-          _ColorRow(
-            key: _keyFor(usage.color),
-            usage: usage,
-            state: this,
-            focused: focused?.value == usage.color.value,
-          ),
+        for (final usage in identity) _rowFor(usage, focused),
         const SizedBox(height: 22),
         _InheritedSection(
           count: inherited.length,
@@ -151,13 +176,7 @@ class _ColorsPanelState extends State<ColorsPanel> {
           onToggle: () => setState(() => _showInherited = !_showInherited),
         ),
         if (_showInherited)
-          for (final usage in inherited)
-            _ColorRow(
-              key: _keyFor(usage.color),
-              usage: usage,
-              state: this,
-              focused: focused?.value == usage.color.value,
-            ),
+          for (final usage in inherited) _rowFor(usage, focused),
         const SizedBox(height: 30),
       ],
     );
