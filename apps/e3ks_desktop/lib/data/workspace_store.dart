@@ -21,10 +21,13 @@ enum WorkspaceTab { colors, fonts, marks, identities }
 /// للعموم عنده.
 enum EditScope { general, file }
 
-/// مستند مفتوح ومعه خطّته. كل تبويب يحمل خطّته الخاصّة، فلا تتسرّب
-/// تعديلات ملفٍ إلى آخر.
-class OpenTab {
-  OpenTab(this.document);
+/// ملفٌّ في مجموعة العمل، ومعه ما قرّره المستخدم له.
+///
+/// **وهو في المجموعة لا في الشريط.** الشريط يعرض ما فُتح منه للنظر، والشجرة
+/// تعرض المجموعة كلّها — كما في محرّرات الأكواد: إغلاق تبويبٍ لا يُخرج ملفَّه
+/// من المشروع.
+class SetFile {
+  SetFile(this.document);
 
   /// **يُستبدَل مرّةً واحدة**: يُفتح بأوّل صفحات المعاينة ثم يحلّ محلّها
   /// المستندُ كاملًا حين يجهز. ما عداه ثابت.
@@ -67,7 +70,12 @@ class OpenTab {
 }
 
 class WorkspaceStore extends ChangeNotifier {
-  final List<OpenTab> _tabs = [];
+  /// المجموعة كلّها. تظهر في الشجرة.
+  final List<SetFile> _files = [];
+
+  /// ما فُتح منها في الشريط، بترتيب فتحه. **مؤشّرات إلى [_files]**، فإغلاق
+  /// تبويبٍ يحذف من هنا وحده.
+  final List<int> _open = [];
 
   /// القواعد التي تسري على كل ملفات المجموعة، إلا المقفل منها.
   final StyleEdits _general = StyleEdits();
@@ -83,10 +91,20 @@ class WorkspaceStore extends ChangeNotifier {
   bool _onlyChanged = true;
   bool _showAfter = true;
 
-  List<OpenTab> get tabs => List.unmodifiable(_tabs);
+  /// المجموعة كلّها — للشجرة.
+  List<SetFile> get files => List.unmodifiable(_files);
+
+  /// ما فُتح في الشريط، مؤشّراتٍ إلى [files].
+  List<int> get openTabs => List.unmodifiable(_open);
+
+  /// موضع الملفّ النشط في المجموعة.
   int get activeIndex => _active;
-  OpenTab? get current =>
-      _active >= 0 && _active < _tabs.length ? _tabs[_active] : null;
+
+  /// موضعه في الشريط — «٣ / ٧» تُقرأ منه.
+  int get activeTab => _open.indexOf(_active);
+
+  SetFile? get current =>
+      _active >= 0 && _active < _files.length ? _files[_active] : null;
 
   LoadedDocument? get document => current?.document;
   LoadFailure? get failure => _failure;
@@ -103,9 +121,9 @@ class WorkspaceStore extends ChangeNotifier {
   /// ألوان المستندات الأخرى المفتوحة — أساس «خذ الهوية من ملف ثانٍ».
   List<ColorUsage> otherDocumentColors() {
     final result = <ColorUsage>[];
-    for (var i = 0; i < _tabs.length; i++) {
+    for (var i = 0; i < _files.length; i++) {
       if (i == _active) continue;
-      final report = _tabs[i].document.report;
+      final report = _files[i].document.report;
       if (report != null) result.addAll(report.contentColors);
     }
     return result;
@@ -113,15 +131,15 @@ class WorkspaceStore extends ChangeNotifier {
 
   /// الملفات الأخرى المفتوحة، بأسمائها — مصدر الهويات الجاهزة.
   List<({int index, String fileName})> otherDocuments() => [
-    for (var i = 0; i < _tabs.length; i++)
-      if (i != _active) (index: i, fileName: _tabs[i].document.fileName),
+    for (var i = 0; i < _files.length; i++)
+      if (i != _active) (index: i, fileName: _files[i].document.fileName),
   ];
 
   /// شجرة المجموعة. [loose] اسم حاضنة الملفات المفردة، من ملفّ الترجمة.
   List<TreeRoot> fileTree(String loose) => buildFileTree(
     [
-      for (var i = 0; i < _tabs.length; i++)
-        (path: _tabs[i].document.path, index: i),
+      for (var i = 0; i < _files.length; i++)
+        (path: _files[i].document.path, index: i),
     ],
     _directories,
     loose: loose,
@@ -134,7 +152,7 @@ class WorkspaceStore extends ChangeNotifier {
   }
 
   LoadedDocument? documentAt(int index) =>
-      index >= 0 && index < _tabs.length ? _tabs[index].document : null;
+      index >= 0 && index < _files.length ? _files[index].document : null;
 
   /// اللون المتتبَّع: يُبرَز في المعاينة، ويُتنقَّل بين مواضعه، ويُمرَّر
   /// إليه في قائمة الألوان.
@@ -181,7 +199,7 @@ class WorkspaceStore extends ChangeNotifier {
   /// **خللٌ حقيقي كان هنا:** في عرض «بعد» تحمل الصفحة ألوان البدائل، وقائمة
   /// الألوان مفهرسة بألوان **المصدر**. فالضغط على لون بديل كان يطلب تتبّع
   /// لونٍ لا صفَّ له، فلا يحدث شيء. نردّه إلى مصدره فيجد صفّه.
-  HexColor? _sourceOf(OpenTab tab, HexColor color) {
+  HexColor? _sourceOf(SetFile tab, HexColor color) {
     final resolved = tab.planWith(_general).colors;
     if (resolved.containsKey(color)) return color;
     for (final entry in resolved.entries) {
@@ -223,8 +241,8 @@ class WorkspaceStore extends ChangeNotifier {
 
   StylePlan get plan => current?.planWith(_general) ?? const StylePlan();
 
-  StylePlan planFor(int index) => index >= 0 && index < _tabs.length
-      ? _tabs[index].planWith(_general)
+  StylePlan planFor(int index) => index >= 0 && index < _files.length
+      ? _files[index].planWith(_general)
       : const StylePlan();
 
   /// عدد تغييرات ملفٍّ بعينه — يظهر على تبويبه وفي شجرة الملفات.
@@ -282,17 +300,17 @@ class WorkspaceStore extends ChangeNotifier {
       return;
     }
 
-    // الملف نفسه مفتوح؟ ننتقل إليه بدل تكرار تبويبه.
-    final existing = _tabs.indexWhere((t) => t.document.path == path);
+    // الملف نفسه في المجموعة؟ ننتقل إليه بدل تكراره.
+    final existing = _files.indexWhere((t) => t.document.path == path);
     if (existing >= 0) {
-      _active = existing;
-      notifyListeners();
+      selectDocument(existing);
       return;
     }
 
-    final tab = OpenTab(result.document!);
-    _tabs.add(tab);
-    _active = _tabs.length - 1;
+    final tab = SetFile(result.document!);
+    _files.add(tab);
+    _active = _files.length - 1;
+    _open.add(_active);
     notifyListeners();
 
     // **الصفحة معروضة الآن؛ الباقي يلحق بترتيب ما يُرى.** اللوحات أوّلًا
@@ -301,10 +319,10 @@ class WorkspaceStore extends ChangeNotifier {
     await _completePreview(tab, bytes);
   }
 
-  Future<void> _completeInspection(OpenTab tab, Uint8List bytes) async {
+  Future<void> _completeInspection(SetFile tab, Uint8List bytes) async {
     final report = await loadInspection(bytes);
     // أُغلق التبويب أثناء الفحص؟ لا شيء يُحدَّث.
-    if (!_tabs.contains(tab)) return;
+    if (!_files.contains(tab)) return;
     tab.inspecting = false;
     if (report == null) {
       notifyListeners();
@@ -318,10 +336,10 @@ class WorkspaceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _completePreview(OpenTab tab, Uint8List bytes) async {
+  Future<void> _completePreview(SetFile tab, Uint8List bytes) async {
     final full = await loadFullPreview(bytes);
     // أُغلق التبويب أثناء الاستخراج؟ لا شيء يُحدَّث.
-    if (full == null || !_tabs.contains(tab)) return;
+    if (full == null || !_files.contains(tab)) return;
     tab.document = tab.document.withPreview(full);
     tab.previewPartial = false;
     // المعاينة المحفوظة بُنيت على الأوائل، فتسقط.
@@ -330,17 +348,52 @@ class WorkspaceStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// يختار ملفًّا من المجموعة، **ويفتحه في الشريط إن لم يكن مفتوحًا**.
   void selectDocument(int index) {
-    if (index < 0 || index >= _tabs.length || index == _active) return;
+    if (index < 0 || index >= _files.length) return;
+    if (!_open.contains(index)) _open.add(index);
+    if (index == _active) {
+      notifyListeners();
+      return;
+    }
     _active = index;
     notifyListeners();
   }
 
-  void closeDocument([int? index]) {
+  /// يُغلق تبويبًا. **الملفّ يبقى في المجموعة** وفي الشجرة — إغلاق التبويب
+  /// إخفاءٌ من النظر لا إخراجٌ من العمل.
+  void closeTab([int? index]) {
     final at = index ?? _active;
-    if (at < 0 || at >= _tabs.length) return;
-    _tabs.removeAt(at);
-    _active = _tabs.isEmpty ? -1 : at.clamp(0, _tabs.length - 1);
+    final position = _open.indexOf(at);
+    if (position < 0) return;
+    _open.removeAt(position);
+    _failure = null;
+    if (at != _active) {
+      notifyListeners();
+      return;
+    }
+    // ننتقل إلى جار التبويب المُغلَق، وإلّا فلا نشِط.
+    _active = _open.isEmpty ? -1 : _open[position.clamp(0, _open.length - 1)];
+    notifyListeners();
+  }
+
+  /// يُخرج ملفًّا من المجموعة كلّها. **الإخراج تامّ** ولا حالة بين بين
+  /// (`ADR 0005` §١): المقفل داخلها ويُصدَّر، والمُخرَج ليس فيها.
+  void removeFile(int index) {
+    if (index < 0 || index >= _files.length) return;
+    _files.removeAt(index);
+    _open
+      ..removeWhere((i) => i == index)
+      // ما بعد المحذوف انزاح موضعه.
+      ..setAll(0, [
+        for (final i in _open)
+          if (i > index) i - 1 else i,
+      ]);
+    if (_active == index) {
+      _active = _open.isEmpty ? -1 : _open.first;
+    } else if (_active > index) {
+      _active--;
+    }
     _failure = null;
     notifyListeners();
   }
@@ -440,7 +493,7 @@ class WorkspaceStore extends ChangeNotifier {
 
   /// يُسقط معاينات كل الملفات: القاعدة العامّة تمسّها جميعًا.
   void _invalidateAll() {
-    for (final tab in _tabs) {
+    for (final tab in _files) {
       tab.cachedPreview = null;
       tab.cachedPlanHash = -1;
     }
@@ -449,23 +502,23 @@ class WorkspaceStore extends ChangeNotifier {
 
   /// يقفل ملفًّا عن الخطة العامّة أو يفتحه.
   void setLocked(int index, bool value) {
-    if (index < 0 || index >= _tabs.length) return;
-    _tabs[index].locked = value;
-    _tabs[index].cachedPreview = null;
-    _tabs[index].cachedPlanHash = -1;
+    if (index < 0 || index >= _files.length) return;
+    _files[index].locked = value;
+    _files[index].cachedPreview = null;
+    _files[index].cachedPlanHash = -1;
     notifyListeners();
   }
 
   /// علامة «راجعته» — قرارُ المستخدم، لا ملاحظةُ الفحص.
   void setReviewed(int index, bool value) {
-    if (index < 0 || index >= _tabs.length) return;
-    _tabs[index].reviewed = value;
+    if (index < 0 || index >= _files.length) return;
+    _files[index].reviewed = value;
     notifyListeners();
   }
 
   void setNote(int index, String? value) {
-    if (index < 0 || index >= _tabs.length) return;
-    _tabs[index].note = (value == null || value.trim().isEmpty) ? null : value;
+    if (index < 0 || index >= _files.length) return;
+    _files[index].note = (value == null || value.trim().isEmpty) ? null : value;
     notifyListeners();
   }
 

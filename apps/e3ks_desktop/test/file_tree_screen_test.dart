@@ -72,42 +72,49 @@ void main() {
     expect(tester.widget<IconButton>(button).onPressed, isNotNull);
   });
 
-  testWidgets('الشجرة تظهر بملفّين وتبقى عند أضيق نافذة', skip: !ready, (
-    tester,
-  ) async {
-    final store = WorkspaceStore();
-    final bytes = Uint8List.fromList(File(_demo).readAsBytesSync());
+  testWidgets(
+    'الشجرة ظاهرة دائمًا، وتُظهر البنية، وتبقى عند أضيق نافذة',
+    skip: !ready,
+    (tester) async {
+      final store = WorkspaceStore();
+      final bytes = Uint8List.fromList(File(_demo).readAsBytesSync());
 
-    await tester.binding.setSurfaceSize(const Size(1600, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.binding.setSurfaceSize(const Size(1600, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await tester.runAsync(() => store.open('/عمل/أول.docx', 'أول.docx', bytes));
-    await _pump(tester, store);
-    await tester.pumpAndSettle();
-    expect(
-      find.byType(FileTreePanel),
-      findsNothing,
-      reason: 'ملفٌّ واحد لا يحتاج شجرة',
-    );
+      // **الشجرة ظاهرة قبل أي ملف.** زرّاها هما الطريق إلى فتح الملفات،
+      // فإخفاؤها حتى تُفتح ملفاتٌ يخفي معها بابَها — وهو الخلل نفسه الذي
+      // وقع حين سكن زرّ «أضف مجلدًا» داخل شجرةٍ لا تظهر إلا بملفَّين.
+      await _pump(tester, store);
+      await tester.pumpAndSettle();
+      expect(find.byType(FileTreePanel), findsOneWidget);
+      expect(find.text('لا ملفات بعد. أضف ملفات أو مجلدًا.'), findsOneWidget);
 
-    await tester.runAsync(
-      () => store.open('/عمل/فرع/ثانٍ.docx', 'ثانٍ.docx', bytes),
-    );
-    store.addDirectory('/عمل');
-    await tester.pumpAndSettle();
+      await tester.runAsync(
+        () => store.open('/عمل/أول.docx', 'أول.docx', bytes),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(FileTreePanel), findsOneWidget);
-    expect(find.text('عمل'), findsOneWidget, reason: 'الجذر باسمه');
-    expect(find.text('فرع'), findsOneWidget, reason: 'البنية تحته');
-    expect(find.text('أول.docx'), findsWidgets);
-    expect(tester.takeException(), isNull);
+      await tester.runAsync(
+        () => store.open('/عمل/فرع/ثانٍ.docx', 'ثانٍ.docx', bytes),
+      );
+      store.addDirectory('/عمل');
+      await tester.pumpAndSettle();
 
-    // أضيق نافذة مسموحة: المساحة الفائضة للمعاينة، فتنسحب الشجرة.
-    await tester.binding.setSurfaceSize(const Size(1180, 720));
-    await tester.pumpAndSettle();
-    expect(find.byType(FileTreePanel), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.byType(FileTreePanel), findsOneWidget);
+      expect(find.text('عمل'), findsOneWidget, reason: 'الجذر باسمه');
+      expect(find.text('فرع'), findsOneWidget, reason: 'البنية تحته');
+      expect(find.text('أول.docx'), findsWidgets);
+      expect(tester.takeException(), isNull);
+
+      // **أضيق نافذة مسموحة، والشجرة باقية.** موضعها تحت لوحة التحكّم لا في
+      // عمودٍ خامس، فلا تزاحم المعاينة أصلًا.
+      await tester.binding.setSurfaceSize(const Size(1180, 720));
+      await tester.pumpAndSettle();
+      expect(find.byType(FileTreePanel), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'تجاوز عند أضيق نافذة');
+    },
+  );
 
   testWidgets('الضغط على ملفٍّ في الشجرة ينتقل إليه', skip: !ready, (
     tester,
@@ -129,5 +136,38 @@ void main() {
     await tester.tap(find.text('أول.docx').last);
     await tester.pumpAndSettle();
     expect(store.activeIndex, equals(0));
+  });
+
+  testWidgets('إغلاق تبويبٍ لا يُخرج ملفَّه من الشجرة', skip: !ready, (
+    tester,
+  ) async {
+    // **الشريط غير الشجرة.** كما في محرّرات الأكواد: إغلاق تبويبٍ إخفاءٌ من
+    // النظر لا إخراجٌ من العمل. وكان الاثنان قائمةً واحدة عندنا.
+    final store = WorkspaceStore();
+    final bytes = Uint8List.fromList(File(_demo).readAsBytesSync());
+    await tester.binding.setSurfaceSize(const Size(1400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.runAsync(() => store.open('/عمل/أول.docx', 'أول.docx', bytes));
+    await tester.runAsync(
+      () => store.open('/عمل/ثانٍ.docx', 'ثانٍ.docx', bytes),
+    );
+    store.addDirectory('/عمل');
+    await _pump(tester, store);
+    await tester.pumpAndSettle();
+
+    expect(store.openTabs, hasLength(2));
+    store.closeTab(1);
+    await tester.pumpAndSettle();
+
+    expect(store.openTabs, hasLength(1), reason: 'لم يُغلَق التبويب');
+    expect(store.files, hasLength(2), reason: 'خرج الملفّ من المجموعة');
+    expect(find.text('ثانٍ.docx'), findsOneWidget, reason: 'اختفى من الشجرة');
+
+    // والإخراج التامّ فعلٌ آخر معلَن (`ADR 0005` §١).
+    store.removeFile(1);
+    await tester.pumpAndSettle();
+    expect(store.files, hasLength(1));
+    expect(find.text('ثانٍ.docx'), findsNothing);
   });
 }

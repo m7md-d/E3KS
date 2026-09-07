@@ -2,6 +2,10 @@
 ///
 /// يظهر فقط عند فتح ملف ثانٍ — الملف الواحد لا يحتاج تبويبًا، وإظهاره
 /// دائمًا يسرق سطرًا من المعاينة بلا مقابل.
+///
+/// **وهو غير الشجرة.** الشريط ما فُتح للنظر، والشجرة المجموعة كلّها. إغلاق
+/// تبويبٍ هنا يُخفي ملفَّه عن النظر ولا يُخرجه من العمل — كما في محرّرات
+/// الأكواد تمامًا.
 library;
 
 import 'package:flutter/material.dart';
@@ -19,7 +23,8 @@ class DocumentTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (store.tabs.length < 2) return const SizedBox.shrink();
+    final open = store.openTabs;
+    if (open.length < 2) return const SizedBox.shrink();
     final t = context.l10n;
 
     return Container(
@@ -34,13 +39,13 @@ class DocumentTabs extends StatelessWidget {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              itemCount: store.tabs.length,
+              itemCount: open.length,
               itemBuilder: (context, i) => _Tab(
-                label: store.tabs[i].document.fileName,
-                changes: store.changeCountAt(i),
-                selected: i == store.activeIndex,
-                onTap: () => store.selectDocument(i),
-                onClose: () => store.closeDocument(i),
+                label: store.files[open[i]].document.fileName,
+                changes: store.changeCountAt(open[i]),
+                selected: open[i] == store.activeIndex,
+                onTap: () => store.selectDocument(open[i]),
+                onClose: () => store.closeTab(open[i]),
               ),
             ),
           ),
@@ -48,7 +53,7 @@ class DocumentTabs extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              t.tabPosition(store.activeIndex + 1, store.tabs.length),
+              t.tabPosition(store.activeTab + 1, open.length),
               style: Theme.of(context).textTheme.labelSmall,
             ),
           ),

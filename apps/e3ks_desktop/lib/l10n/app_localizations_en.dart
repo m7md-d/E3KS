@@ -726,6 +726,9 @@ class LEn extends L {
   }
 
   @override
+  String get filesEmpty => 'No files yet. Add files or a folder.';
+
+  @override
   String get filesPanel => 'Files';
 
   @override

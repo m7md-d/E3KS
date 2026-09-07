@@ -37,7 +37,6 @@ import '../preview/font_notice.dart';
 import '../preview/preview_panel.dart';
 import '../settings/settings_sheet.dart';
 import 'document_tabs.dart';
-import 'file_tree_panel.dart';
 import 'export_result_sheet.dart';
 import 'sidebar.dart';
 
@@ -187,7 +186,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 exporting: _exporting,
                 onExport: _export,
                 onBrowse: _browse,
-                onClose: store.closeDocument,
+                onClose: store.closeTab,
               ),
             ),
             DocumentTabs(store: store, onAdd: _browse),
@@ -197,10 +196,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  // **الشجرة تظهر حين تصير المجموعة مجموعة**، وتنسحب أولًا
-                  // عند الضيق: المساحة الفائضة للمعاينة (`03`).
-                  final showTree = store.tabs.length > 1 && width >= 1240;
-                  final compactSidebar = width < (showTree ? 1500 : 1340);
+                  final compactSidebar = width < 1340;
                   final controlsWidth = width < 1280 ? 370.0 : 430.0;
                   // اللوحات تتشكّل بالترتيب الذي تُقرأ به: التنقّل، ثم
                   // أدوات العمل، ثم المعاينة. مرّةً واحدة عند الدخول —
@@ -210,19 +206,15 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                     children: [
                       Entrance(
                         order: 1,
-                        child: Sidebar(store: store, compact: compactSidebar),
-                      ),
-                      if (showTree)
-                        Entrance(
-                          order: 2,
-                          child: FileTreePanel(
-                            store: store,
-                            onAddFiles: _browse,
-                            onAddFolder: _browseFolder,
-                          ),
+                        child: Sidebar(
+                          store: store,
+                          compact: compactSidebar,
+                          onAddFiles: _browse,
+                          onAddFolder: _browseFolder,
                         ),
+                      ),
                       Entrance(
-                        order: 3,
+                        order: 2,
                         child: SizedBox(
                           width: controlsWidth,
                           child: _controls(store),
@@ -231,7 +223,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                       const VerticalDivider(width: 1, color: Shade.border),
                       Expanded(
                         child: Entrance(
-                          order: 4,
+                          order: 3,
                           child: Column(
                             children: [
                               // إشعار الخطوط فوق المعاينة مباشرةً: مكانه حيث
@@ -453,8 +445,7 @@ class _TopBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    TextButton(onPressed: onBrowse, child: Text(t.openAnother)),
-                    if (store.tabs.length < 2)
+                    if (store.openTabs.length < 2)
                       IconButton(
                         onPressed: onClose,
                         icon: const Icon(LucideIcons.x, size: 15),

@@ -42,21 +42,37 @@ class _FileTreePanelState extends State<FileTreePanel> {
     final roots = widget.store.fileTree(t.looseFiles);
 
     return Container(
-      width: Metrics.treeWidth,
-      decoration: const BoxDecoration(
-        color: Shade.surface,
-        border: Border(right: BorderSide(color: Shade.border)),
+      margin: const EdgeInsets.fromLTRB(10, 4, 10, 0),
+      decoration: BoxDecoration(
+        color: Shade.canvas,
+        borderRadius: BorderRadius.circular(Metrics.radiusSmall),
+        border: Border.all(color: Shade.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 6, 6),
+          // **رأسٌ يُرى رأسًا.** بلا حدٍّ يفصله يبدو العنوان وزرّاه صفًّا
+          // أوّل في القائمة، فيلتبس ما يصفها بما فيها. والحدّ هو ما يقول
+          // «هذا عنه لا منه».
+          Container(
+            padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 6, 8),
+            decoration: const BoxDecoration(
+              // أرضيةٌ تفصله عن جسم الصندوق، وحدٌّ تحته. الحدّ وحده باهتٌ
+              // على أرضيةٍ واحدة، فيبقى الرأس يبدو صفًّا أوّل في القائمة.
+              color: Shade.surface,
+              borderRadius: BorderRadiusDirectional.only(
+                topStart: Radius.circular(Metrics.radiusSmall),
+                topEnd: Radius.circular(Metrics.radiusSmall),
+              ),
+              border: Border(bottom: BorderSide(color: Shade.border)),
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     t.filesPanel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
@@ -65,6 +81,7 @@ class _FileTreePanelState extends State<FileTreePanel> {
                   tooltip: t.addFiles,
                   onTap: widget.onAddFiles,
                 ),
+                const SizedBox(width: 2),
                 _Action(
                   icon: LucideIcons.folderPlus,
                   tooltip: t.addFolder,
@@ -74,10 +91,24 @@ class _FileTreePanelState extends State<FileTreePanel> {
             ),
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 12),
-              children: [for (final root in roots) ..._root(root)],
-            ),
+            // **الفارغة تقول حالها ولا تُترك بيضاء** (`00` §5).
+            child: roots.isEmpty
+                ? Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      12,
+                      12,
+                      12,
+                      14,
+                    ),
+                    child: Text(
+                      t.filesEmpty,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                  )
+                : ListView(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    children: [for (final root in roots) ..._root(root)],
+                  ),
           ),
         ],
       ),
@@ -131,7 +162,41 @@ class _FileTreePanelState extends State<FileTreePanel> {
   }
 }
 
-double _indent(int depth) => 10 + depth * 12.0;
+/// عرض مستوى العمق الواحد. **ثابتٌ لأن الخطوط تُرسم عليه**: كل خطٍّ إرشادي
+/// يقع في منتصف مستواه، فتغيّرُ أحدهما دون الآخر يفكّ السلّم.
+const double _step = 14;
+const double _origin = 10;
+
+/// خطوط العمق: خطٌّ رأسيّ لكل مستوى فوق هذا الصفّ.
+///
+/// **الإزاحة وحدها لا تكفي.** بلا خطٍّ يصير العمق تخمينًا بالعين: صفٌّ مزاح
+/// عشرين بكسلًا وآخر أربعة عشر لا يُعرَف أيّهما ابنُ أيّ. والخطّ يصل الابن
+/// بأبيه كما تفعل الأشجار الحقيقية.
+class _Guides extends StatelessWidget {
+  const _Guides({required this.depth, required this.child});
+
+  final int depth;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      for (var level = 0; level < depth; level++)
+        PositionedDirectional(
+          start: _origin + level * _step + _step / 2,
+          top: 0,
+          bottom: 0,
+          child: const SizedBox(
+            width: 1,
+            child: ColoredBox(color: Shade.border),
+          ),
+        ),
+      child,
+    ],
+  );
+}
+
+double _indent(int depth) => _origin + depth * _step;
 
 class _FolderRow extends StatelessWidget {
   const _FolderRow({
@@ -149,30 +214,33 @@ class _FolderRow extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    hoverColor: Shade.surfaceHover,
-    child: Padding(
-      padding: EdgeInsets.fromLTRB(_indent(depth), 6, 10, 6),
-      child: Row(
-        children: [
-          Icon(
-            collapsed ? LucideIcons.chevronRightDir : LucideIcons.chevronDown,
-            size: 13,
-            color: Shade.textFaint,
-          ),
-          const SizedBox(width: 4),
-          Icon(icon, size: 14, color: Shade.textMuted),
-          const SizedBox(width: 7),
-          Expanded(
-            child: Text(
-              name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
+  Widget build(BuildContext context) => _Guides(
+    depth: depth,
+    child: InkWell(
+      onTap: onTap,
+      hoverColor: Shade.surfaceHover,
+      child: Padding(
+        padding: EdgeInsetsDirectional.fromSTEB(_indent(depth), 6, 10, 6),
+        child: Row(
+          children: [
+            Icon(
+              collapsed ? LucideIcons.chevronRightDir : LucideIcons.chevronDown,
+              size: 13,
+              color: Shade.textFaint,
             ),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Icon(icon, size: 14, color: Shade.textMuted),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -194,61 +262,72 @@ class _FileRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.l10n;
-    final tab = store.tabs[index];
+    final tab = store.files[index];
     final selected = store.activeIndex == index;
     final changes = store.changeCountAt(index);
 
-    return Material(
-      color: selected ? Shade.mirrorDeep : Colors.transparent,
-      child: InkWell(
-        onTap: () => store.selectDocument(index),
-        hoverColor: Shade.surfaceHover,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(_indent(depth) + 17, 6, 10, 6),
-          child: Row(
-            children: [
-              Icon(
-                LucideIcons.fileText,
-                size: 13,
-                color: selected ? Shade.mirror : Shade.textFaint,
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: selected ? Shade.mirror : Shade.text,
-                    fontWeight: selected ? Type.semiBold : Type.regular,
+    return _Guides(
+      depth: depth,
+      child: Material(
+        color: selected ? Shade.mirrorDeep : Colors.transparent,
+        child: InkWell(
+          onTap: () => store.selectDocument(index),
+          hoverColor: Shade.surfaceHover,
+          child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              _indent(depth) + 17,
+              6,
+              10,
+              6,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  LucideIcons.fileText,
+                  size: 13,
+                  color: selected ? Shade.mirror : Shade.textFaint,
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: selected ? Shade.mirror : Shade.text,
+                      fontWeight: selected ? Type.semiBold : Type.regular,
+                    ),
                   ),
                 ),
-              ),
-              // **ما يقوله المستخدم** — قرارٌ منه، وشاراته أوّلًا.
-              if (tab.reviewed)
-                Tooltip(
-                  message: t.fileReviewed,
-                  child: const Icon(
-                    LucideIcons.check,
-                    size: 13,
-                    color: Shade.textMuted,
+                // **ما يقوله المستخدم** — قرارٌ منه، وشاراته أوّلًا.
+                if (tab.reviewed)
+                  Tooltip(
+                    message: t.fileReviewed,
+                    child: const Icon(
+                      LucideIcons.check,
+                      size: 13,
+                      color: Shade.textMuted,
+                    ),
                   ),
-                ),
-              if (tab.locked)
-                Tooltip(
-                  message: t.fileLocked,
-                  child: const Icon(
-                    LucideIcons.lock,
-                    size: 12,
-                    color: Shade.textMuted,
+                if (tab.locked)
+                  Tooltip(
+                    message: t.fileLocked,
+                    child: const Icon(
+                      LucideIcons.lock,
+                      size: 12,
+                      color: Shade.textMuted,
+                    ),
                   ),
-                ),
-              if (changes > 0) ...[
-                const SizedBox(width: 6),
-                Text('$changes', style: Theme.of(context).textTheme.labelSmall),
+                if (changes > 0) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    '$changes',
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -256,6 +335,10 @@ class _FileRow extends StatelessWidget {
   }
 }
 
+/// زرٌّ صغير في رأس الصندوق.
+///
+/// **بمقاسٍ مضبوط لا افتراضي**: `IconButton` يحجز ٤٠×٤٠ قبل أي كثافة، فيفيض
+/// عن رأسٍ ارتفاعه أقلّ منه ويُنزل العنوان عن محوره.
 class _Action extends StatelessWidget {
   const _Action({
     required this.icon,
@@ -268,11 +351,17 @@ class _Action extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    onPressed: onTap,
-    icon: Icon(icon, size: 15),
-    color: Shade.textMuted,
-    tooltip: tooltip,
-    visualDensity: VisualDensity.compact,
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(Metrics.radiusSmall),
+      hoverColor: Shade.surfaceHover,
+      child: SizedBox(
+        width: 26,
+        height: 26,
+        child: Icon(icon, size: 15, color: Shade.textMuted),
+      ),
+    ),
   );
 }

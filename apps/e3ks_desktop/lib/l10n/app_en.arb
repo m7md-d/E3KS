@@ -343,6 +343,7 @@
       }
     }
   },
+  "filesEmpty": "No files yet. Add files or a folder.",
   "filesPanel": "Files",
   "openFolder": "Open a folder",
   "looseFiles": "Added files",

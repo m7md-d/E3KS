@@ -1,4 +1,7 @@
-/// الشريط الجانبي: التنقّل بين اللوحات، ومعلومات المستند.
+/// الشريط الجانبي: التنقّل بين اللوحات، وشجرة الملفات، ومعلومات المستند.
+///
+/// **الترتيب من فوق إلى تحت هو ترتيب الاستعمال**: التنقّل بين الأدوات، ثم
+/// الملفّ الذي تعمل عليه، ثم حقائقه. والشجرة تملأ ما كان فراغًا بينهما.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,13 +10,26 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/workspace_store.dart';
+import 'file_tree_panel.dart';
 
 class Sidebar extends StatelessWidget {
-  const Sidebar({super.key, required this.store, this.compact = false});
+  const Sidebar({
+    super.key,
+    required this.store,
+    required this.onAddFiles,
+    required this.onAddFolder,
+    this.compact = false,
+  });
 
   final WorkspaceStore store;
+  final VoidCallback onAddFiles;
+  final VoidCallback onAddFolder;
 
-  /// نافذة ضيّقة: أيقونات فقط. المساحة تذهب للمعاينة، وهي الأهمّ.
+  /// نافذة ضيّقة: **الشريط يضيق ولا يُطوى**.
+  ///
+  /// كان يصير أيقوناتٍ بلا نصّ، فتختفي معه شجرة الملفات — وهي أداة عمل لا
+  /// زينة. والشحّ ما زال يُقتطع من هنا أوّلًا (`03`)، لكن اقتطاعًا في العرض
+  /// لا إخفاءً لما بداخله.
   final bool compact;
 
   @override
@@ -21,7 +37,7 @@ class Sidebar extends StatelessWidget {
     final report = store.report;
     final t = context.l10n;
     return Container(
-      width: compact ? 60 : Metrics.sidebarWidth,
+      width: compact ? Metrics.sidebarNarrow : Metrics.sidebarWidth,
       decoration: const BoxDecoration(
         color: Shade.surface,
         border: Border(right: BorderSide(color: Shade.border)),
@@ -66,8 +82,20 @@ class Sidebar extends StatelessWidget {
             compact: compact,
             onTap: () => store.selectTab(WorkspaceTab.identities),
           ),
-          const Spacer(),
-          if (!compact) _DocumentFacts(store: store),
+          // **الشجرة صندوقٌ كصندوق الحقائق**، بينه وبين خانة الهويات. وهي
+          // تملأ الفراغ الذي كان معطَّلًا، وتُمرَّر داخلها حين تطول.
+          //
+          // **وتظهر دائمًا، فارغةً كانت أو ملأى.** إخفاؤها حتى تُفتح ملفات
+          // يخفي معها زرَّيها — وهما الطريق إلى فتح الملفات أصلًا. وهذا
+          // بعينه ما وقع أوّل مرّة: بابٌ داخل الغرفة التي يفتحها.
+          Expanded(
+            child: FileTreePanel(
+              store: store,
+              onAddFiles: onAddFiles,
+              onAddFolder: onAddFolder,
+            ),
+          ),
+          _DocumentFacts(store: store),
         ],
       ),
     );
@@ -106,7 +134,7 @@ class _NavItem extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 10 : 12,
-            vertical: 13,
+            vertical: compact ? 11 : 13,
           ),
           child: Row(
             children: [
@@ -114,23 +142,22 @@ class _NavItem extends StatelessWidget {
                 message: compact ? label : '',
                 child: Icon(
                   icon,
-                  size: 18,
+                  size: 17,
                   color: selected ? Shade.mirror : Shade.textMuted,
                 ),
               ),
-              if (!compact) const SizedBox(width: 11),
-              if (!compact)
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: selected ? Type.semiBold : Type.regular,
-                      color: selected ? Shade.mirror : Shade.text,
-                    ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: selected ? Type.semiBold : Type.regular,
+                    color: selected ? Shade.mirror : Shade.text,
                   ),
                 ),
-              if (changes > 0 && !compact)
+              ),
+              if (changes > 0)
                 Container(
                   margin: const EdgeInsets.only(left: 6),
                   padding: const EdgeInsets.symmetric(
@@ -150,7 +177,7 @@ class _NavItem extends StatelessWidget {
                     ),
                   ),
                 )
-              else if (badge != null && !compact)
+              else if (badge != null)
                 Text(badge!, style: Theme.of(context).textTheme.labelSmall),
             ],
           ),

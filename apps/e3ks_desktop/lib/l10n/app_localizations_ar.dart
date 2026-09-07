@@ -719,6 +719,9 @@ class LAr extends L {
   }
 
   @override
+  String get filesEmpty => 'لا ملفات بعد. أضف ملفات أو مجلدًا.';
+
+  @override
   String get filesPanel => 'الملفات';
 
   @override

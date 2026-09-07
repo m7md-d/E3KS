@@ -1405,6 +1405,12 @@ abstract class L {
   /// **'{at} / {total}'**
   String tabPosition(int at, int total);
 
+  /// No description provided for @filesEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا ملفات بعد. أضف ملفات أو مجلدًا.'**
+  String get filesEmpty;
+
   /// No description provided for @filesPanel.
   ///
   /// In ar, this message translates to:
