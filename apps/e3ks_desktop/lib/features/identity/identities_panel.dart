@@ -271,10 +271,12 @@ class _ExtractButton extends StatelessWidget {
   Future<void> _extract(BuildContext context, int index) async {
     final t = context.l10n;
     final document = store.documentAt(index);
-    if (document == null) return;
+    // بلا فحصٍ بعد لا هوية تُستخرَج: الهوية ألوان الملفّ، والألوان حصيلته.
+    final report = document?.report;
+    if (document == null || report == null) return;
     await identities.save(
       extractIdentity(
-        document,
+        report,
         name: document.fileName,
         labels: identityLabels(t),
       ),

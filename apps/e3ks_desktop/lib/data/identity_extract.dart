@@ -11,7 +11,6 @@ library;
 
 import 'package:e3ks_engine/e3ks_engine.dart';
 
-import 'document_loader.dart';
 import 'identity.dart';
 
 /// التسميات المرجَّحة، مترجَمةً. تأتي من الواجهة لأن `data/` لا يعرف لغة.
@@ -33,11 +32,11 @@ const int _minOccurrences = 2;
 
 /// يستخرج هوية من مستند مفتوح: ألوانه مرتّبةً ومسمّاة، وخطّاه.
 Identity extractIdentity(
-  LoadedDocument document, {
+  InspectionReport report, {
   required String name,
   required IdentityLabels labels,
 }) {
-  final colors = document.report.contentColors
+  final colors = report.contentColors
       .where((c) => c.count >= _minOccurrences)
       .take(_maxColors)
       .toList();
@@ -80,11 +79,9 @@ Identity extractIdentity(
   return Identity(
     name: name,
     colors: named,
-    latinFont: _dominantFont(document.report, FontSlot.ascii),
-    arabicFont: _dominantFont(document.report, FontSlot.complexScript),
-    preserveFonts: [
-      for (final font in document.report.monospacedCandidates) font.name,
-    ],
+    latinFont: _dominantFont(report, FontSlot.ascii),
+    arabicFont: _dominantFont(report, FontSlot.complexScript),
+    preserveFonts: [for (final font in report.monospacedCandidates) font.name],
   );
 }
 

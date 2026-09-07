@@ -231,11 +231,12 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       for (final identity in widget.identities.items)
         (source: identity.name, colors: identity.colors),
       for (final other in store.otherDocuments())
-        if (store.documentAt(other.index) case final document?)
+        // الملفّ الذي لم يُفحَص بعد لا يقترح ألوانًا؛ يلحق حين يُفحَص.
+        if (store.documentAt(other.index)?.report case final report?)
           (
             source: other.fileName,
             colors: extractIdentity(
-              document,
+              report,
               name: other.fileName,
               labels: identityLabels(t),
             ).colors,

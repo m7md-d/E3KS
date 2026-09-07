@@ -92,6 +92,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('الصفحة تُعرَض قبل الفحص، واللوحات تلحق', () async {
+    // **الخلل الذي وُلد منه الاختبار:** الفحص كان يسبق أوّل رسمة ويكلّف
+    // ٣٢٥ms لمئة صفحة، وأوّلُ صفحات المعاينة ٤١ — فكان المستخدم ينتظر
+    // حصيلةً لا ينظر إليها بعد ليرى صفحةً ينظر إليها الآن.
+    final file = File(_realPath);
+    if (!file.existsSync()) {
+      markTestSkipped('لا يوجد مستند حقيقي');
+      return;
+    }
+
+    final store = WorkspaceStore();
+    final reports = <bool>[];
+    store.addListener(() {
+      if (store.hasDocument) reports.add(store.report != null);
+    });
+
+    await store.open(
+      _realPath,
+      'manual.docx',
+      Uint8List.fromList(file.readAsBytesSync()),
+    );
+
+    expect(reports, isNotEmpty, reason: 'لم يُعرَض المستند قطّ');
+    expect(
+      reports.first,
+      isFalse,
+      reason: 'وصل الفحص مع أوّل عرض: ما زال على المسار الحرج',
+    );
+    expect(reports.last, isTrue, reason: 'لم تصل حصيلة الفحص قطّ');
+    expect(store.inspecting, isFalse);
+  });
+
   test('المعاينة تصل على دفعتين: أوّل الصفحات ثم تمامها', () async {
     // **الخلل الذي وُلد منه الاختبار:** كانت المعاينة تُستخرَج كاملةً قبل
     // أن يُعرَض شيء، فينتظر المستخدم آخر المستند ليرى أوّله — ٦٠٩ms لمئة

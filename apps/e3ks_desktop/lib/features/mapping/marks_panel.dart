@@ -26,8 +26,18 @@ class MarksPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final report = store.report;
-    if (report == null) return const SizedBox.shrink();
     final t = context.l10n;
+    // **الفحص خارج مسار أوّل رسمة**، فالصفحة تُعرَض قبل أن يصل. ولوحةٌ بيضاء
+    // في تلك اللحظة تقول «لا شيء هنا» وهي كاذبة (`00` §5).
+    if (report == null) {
+      return Padding(
+        padding: const EdgeInsets.all(Metrics.gutter),
+        child: EmptyNote(
+          text: t.inspectingDocument,
+          icon: LucideIcons.highlighter,
+        ),
+      );
+    }
 
     final marks = report.marks;
     final lifted = store.liftedMarks;

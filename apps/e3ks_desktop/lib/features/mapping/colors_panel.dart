@@ -101,8 +101,15 @@ class _ColorsPanelState extends State<ColorsPanel> {
   @override
   Widget build(BuildContext context) {
     final report = widget.store.report;
-    if (report == null) return const SizedBox.shrink();
     final t = context.l10n;
+    // **الفحص خارج مسار أوّل رسمة**، فالصفحة تُعرَض قبل أن يصل. ولوحةٌ بيضاء
+    // في تلك اللحظة تقول «لا شيء هنا» وهي كاذبة (`00` §5).
+    if (report == null) {
+      return Padding(
+        padding: const EdgeInsets.all(Metrics.gutter),
+        child: EmptyNote(text: t.inspectingDocument, icon: LucideIcons.palette),
+      );
+    }
 
     final identity = report.contentColors;
     final inherited = report.inheritedColors;

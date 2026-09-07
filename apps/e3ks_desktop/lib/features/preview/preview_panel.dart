@@ -181,7 +181,7 @@ class _PreviewPanelState extends State<PreviewPanel> {
     };
     final fonts = <String>{
       if (store.latinFont != null || store.arabicFont != null)
-        for (final font in document.report.fonts)
+        for (final font in document.report?.fonts ?? const <FontUsage>[])
           if (!store.preserveFonts.contains(font.name))
             showAfter
                 ? (store.arabicFont ?? store.latinFont ?? font.name)
@@ -191,7 +191,8 @@ class _PreviewPanelState extends State<PreviewPanel> {
     // ألوان المستند **كما تُرسم الآن**: في عرض «بعد» هي ألوان البدائل،
     // وإليها يقارن المنتقي بكسلات الشاشة.
     final palette = <HexColor>[
-      for (final usage in document.report.contentColors)
+      for (final usage
+          in document.report?.contentColors ?? const <ColorUsage>[])
         showAfter ? (store.colorMap[usage.color] ?? usage.color) : usage.color,
     ];
 

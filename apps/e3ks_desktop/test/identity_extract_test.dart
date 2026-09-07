@@ -23,17 +23,15 @@ const IdentityLabels _labels = (
 );
 
 void main() {
-  late LoadedDocument document;
-
+  late final InspectionReport report;
   setUpAll(() async {
     final file = File(_realPath);
     if (!file.existsSync()) return;
-    final result = await loadDocument(
-      _realPath,
-      'manual.docx',
+    // **الفحص يُطلَب صراحةً**: فتحُ المستند صار يعرض صفحته ولا يفحصه، وهذا
+    // الاختبار يخصّ الفحص وحده.
+    report = (await loadInspection(
       Uint8List.fromList(file.readAsBytesSync()),
-    );
-    document = result.document!;
+    ))!;
   });
 
   test('الأدوار تُحفَظ حقولًا لا أسماءً', () {
@@ -42,7 +40,7 @@ void main() {
       return;
     }
     // الاسم مترجَم فلا يُقارَن به شيء؛ الدور يُقارَن، فيجب أن يكون حقلًا.
-    final identity = extractIdentity(document, name: 'مرجع', labels: _labels);
+    final identity = extractIdentity(report, name: 'مرجع', labels: _labels);
     expect(identity.colors.first.role, equals(IdentityRole.primary));
     expect(
       identity.colors.map((c) => c.role),
@@ -82,7 +80,7 @@ void main() {
       markTestSkipped('لا يوجد مستند حقيقي');
       return;
     }
-    final identity = extractIdentity(document, name: 'مرجع', labels: _labels);
+    final identity = extractIdentity(report, name: 'مرجع', labels: _labels);
 
     expect(identity.colors, isNotEmpty);
     expect(
@@ -92,7 +90,7 @@ void main() {
     );
 
     // الترتيب هو ترتيب التقرير نفسه: كثرة الاستعمال، وهي حقيقة مقيسة.
-    final expected = document.report.contentColors
+    final expected = report.contentColors
         .where((c) => c.count >= 2)
         .take(8)
         .map((c) => c.color.value)
@@ -105,7 +103,7 @@ void main() {
       markTestSkipped('لا يوجد مستند حقيقي');
       return;
     }
-    final identity = extractIdentity(document, name: 'مرجع', labels: _labels);
+    final identity = extractIdentity(report, name: 'مرجع', labels: _labels);
     final names = identity.colors.map((c) => c.name).toList();
 
     expect(names.first, equals('الأساسي'), reason: 'الأكثر استعمالًا');
@@ -125,10 +123,10 @@ void main() {
       markTestSkipped('لا يوجد مستند حقيقي');
       return;
     }
-    final identity = extractIdentity(document, name: 'مرجع', labels: _labels);
+    final identity = extractIdentity(report, name: 'مرجع', labels: _labels);
 
     // من الموروث تأتي خطوط لا يراها القارئ أصلًا.
-    final contentNames = document.report.contentFonts.map((f) => f.name);
+    final contentNames = report.contentFonts.map((f) => f.name);
     expect(contentNames, contains(identity.latinFont));
 
     // والخطوط أحادية العرض تُحمَل في قائمة الحماية لا في قائمة التبديل.
@@ -141,7 +139,7 @@ void main() {
       markTestSkipped('لا يوجد مستند حقيقي');
       return;
     }
-    final identity = extractIdentity(document, name: 'مرجع', labels: _labels);
+    final identity = extractIdentity(report, name: 'مرجع', labels: _labels);
     // الحفظ JSON يقرؤه الإنسان؛ دورةٌ كاملة تثبت أنه لا يُضيّع شيئًا.
     final decoded = Identity.fromJson(jsonDecode(identity.encode()))!;
 

@@ -23,6 +23,9 @@ class OpenTab {
 
   /// ما زالت بقيّة الصفحات قيد الاستخراج.
   bool previewPartial = true;
+
+  /// الفحص جارٍ ولم تصل حصيلته بعد.
+  bool inspecting = true;
   final Map<HexColor, HexColor> colorMap = {};
   final Set<String> preserveFonts = {};
 
@@ -77,6 +80,9 @@ class WorkspaceStore extends ChangeNotifier {
 
   /// المستند معروض وبقيّة صفحاته في الطريق — تعرضه الواجهة إشعارًا هادئًا.
   bool get previewPartial => current?.previewPartial ?? false;
+
+  /// الصفحة معروضة والفحص جارٍ — اللوحات تقول ذلك ولا تبقى بيضاء.
+  bool get inspecting => current?.inspecting ?? false;
   bool get hasDocument => current != null;
   InspectionReport? get report => current?.document.report;
 
@@ -85,7 +91,8 @@ class WorkspaceStore extends ChangeNotifier {
     final result = <ColorUsage>[];
     for (var i = 0; i < _tabs.length; i++) {
       if (i == _active) continue;
-      result.addAll(_tabs[i].document.report.contentColors);
+      final report = _tabs[i].document.report;
+      if (report != null) result.addAll(report.contentColors);
     }
     return result;
   }
@@ -220,18 +227,31 @@ class WorkspaceStore extends ChangeNotifier {
     }
 
     final tab = OpenTab(result.document!);
-    // الخطوط أحادية العرض تُحمى تلقائيًا، والمستخدم يرى ذلك ويستطيع تغييره.
-    for (final font in result.document!.report.monospacedCandidates) {
-      tab.preserveFonts.add(font.name);
-    }
     _tabs.add(tab);
     _active = _tabs.length - 1;
     notifyListeners();
 
-    // **الصفحة معروضة الآن؛ البقيّة تلحق.** أوّل الصفحات يكلّف ٤١ms لمئة
-    // صفحة والكامل ٦٠٩ — فيُعرَض الأوّل ويُكمَّل خلفه، ولا ينتظر المستخدم
-    // آخر المستند ليرى أوّله.
+    // **الصفحة معروضة الآن؛ الباقي يلحق بترتيب ما يُرى.** اللوحات أوّلًا
+    // لأن المستخدم ينظر إليها بعد الصفحة، ثم بقيّة الصفحات.
+    await _completeInspection(tab, bytes);
     await _completePreview(tab, bytes);
+  }
+
+  Future<void> _completeInspection(OpenTab tab, Uint8List bytes) async {
+    final report = await loadInspection(bytes);
+    // أُغلق التبويب أثناء الفحص؟ لا شيء يُحدَّث.
+    if (!_tabs.contains(tab)) return;
+    tab.inspecting = false;
+    if (report == null) {
+      notifyListeners();
+      return;
+    }
+    tab.document = tab.document.withReport(report);
+    // الخطوط أحادية العرض تُحمى تلقائيًا، والمستخدم يرى ذلك ويستطيع تغييره.
+    for (final font in report.monospacedCandidates) {
+      tab.preserveFonts.add(font.name);
+    }
+    notifyListeners();
   }
 
   Future<void> _completePreview(OpenTab tab, Uint8List bytes) async {
@@ -292,7 +312,7 @@ class WorkspaceStore extends ChangeNotifier {
     if (tab == null) return;
     tab.liftedMarks.clear();
     if (lifted) {
-      for (final usage in tab.document.report.marks) {
+      for (final usage in tab.document.report?.marks ?? const <MarkUsage>[]) {
         tab.liftedMarks.add(usage.mark);
       }
     }
@@ -356,7 +376,9 @@ class WorkspaceStore extends ChangeNotifier {
       return;
     }
 
-    for (final usage in tab.document.report.contentColors) {
+    final report = tab.document.report;
+    if (report == null) return; // لا فحص بعد: لا ألوان تُوزَّع عليها هوية.
+    for (final usage in report.contentColors) {
       // **القاعدة الصريحة تسبق كل ترجيح**، وتسبق حارس المحايدين معه: من
       // كتب «هذا اللون يصير ذاك» قصده، ولا يُردّ عليه قصدُه بتخمين. وهي
       // التي تجعل الملف الحادي والأربعين يخرج مطابقًا لما قبله.

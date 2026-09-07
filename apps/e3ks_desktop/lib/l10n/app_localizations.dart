@@ -385,6 +385,12 @@ abstract class L {
   /// **'صفحة {n} من {total}'**
   String pageOf(int n, int total);
 
+  /// No description provided for @inspectingDocument.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ فحص المستند'**
+  String get inspectingDocument;
+
   /// No description provided for @previewLoadingRest.
   ///
   /// In ar, this message translates to:

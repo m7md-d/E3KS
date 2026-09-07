@@ -84,6 +84,7 @@
       }
     }
   },
+  "inspectingDocument": "جارٍ فحص المستند",
   "previewLoadingRest": "بقيّة الصفحات قيد الاستخراج",
   "previewTruncated": "عُرض جزء من المستند لأنه طويل.",
   "sectionBody": "المتن",

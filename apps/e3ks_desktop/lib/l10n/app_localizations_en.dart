@@ -168,6 +168,9 @@ class LEn extends L {
   }
 
   @override
+  String get inspectingDocument => 'Reading the document';
+
+  @override
   String get previewLoadingRest => 'The remaining pages are still being read';
 
   @override

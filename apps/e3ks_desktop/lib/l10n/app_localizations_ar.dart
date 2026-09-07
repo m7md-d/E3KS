@@ -165,6 +165,9 @@ class LAr extends L {
   }
 
   @override
+  String get inspectingDocument => 'جارٍ فحص المستند';
+
+  @override
   String get previewLoadingRest => 'بقيّة الصفحات قيد الاستخراج';
 
   @override

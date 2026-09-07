@@ -23,7 +23,14 @@ final class LoadedDocument {
   final String path;
   final String fileName;
   final Uint8List bytes;
-  final InspectionReport report;
+
+  /// حصيلة الفحص، أو `null` ما دام الفحص جاريًا.
+  ///
+  /// **الفحص خارج مسار أوّل رسمة.** يكلّف ٣٢٥ms لمئة صفحة وأوّلُ صفحاتِ
+  /// المعاينة ٤١، والصفحة لا تنتظره — يصل بعدها فتمتلئ اللوحات. و`null`
+  /// هنا حالٌ يُعلَن في الواجهة، لا تقريرٌ فارغ يزعم أن المستند بلا ألوان
+  /// (`00` §5).
+  final InspectionReport? report;
   final DocumentPreview preview;
 
   /// الصيغة كما تعرّف عليها المحرّك من محتوى الملف لا من امتداده.
@@ -36,6 +43,16 @@ final class LoadedDocument {
     bytes: bytes,
     report: report,
     preview: full,
+    format: format,
+  );
+
+  /// نسخةٌ بحصيلة الفحص، حين تصل.
+  LoadedDocument withReport(InspectionReport value) => LoadedDocument(
+    path: path,
+    fileName: fileName,
+    bytes: bytes,
+    report: value,
+    preview: preview,
     format: format,
   );
 }
@@ -58,11 +75,17 @@ typedef LoadResult = ({LoadedDocument? document, LoadFailure? failure});
 /// (٤ صفحات على أوسع نافذة)، وما بعده يصل قبل أن يبلغه التمرير.
 const int firstPages = 8;
 
-/// يفتح المستند ويستخرج منه **أوّل صفحات** المعاينة.
+/// يفتح المستند ويستخرج منه **أوّل صفحات** المعاينة، ولا يفحصه.
 ///
-/// **لأن الانتظار يُرى.** استخراج المعاينة كاملةً يكلّف ٦٠٩ms لمئة صفحة
-/// و٢٫٣ ثانية لثمانمئة، وأوّل صفحاتها ٤١ و١٧٣ — والمستخدم لا ينتظر آخر
-/// المستند ليرى أوّله. وتكملتها [loadFullPreview] بعد العرض.
+/// **لأن الانتظار يُرى.** ثلاث دفعات، وترتيبها هو ترتيب ما يراه المستخدم:
+///
+/// | الدفعة | تكلفتها لمئة صفحة | ما تُظهره |
+/// |---|---|---|
+/// | هذه | ٤١ms | الصفحة على الشاشة |
+/// | [loadInspection] | ٣٢٥ms | لوحات الألوان والخطوط والعلامات |
+/// | [loadFullPreview] | ٦٠٩ms | بقيّة الصفحات |
+///
+/// وكانت الثلاث دفعةً واحدة بـ١٣٣٧ms قبل أن يظهر شيء.
 Future<LoadResult> loadDocument(
   String path,
   String fileName,
@@ -83,22 +106,31 @@ Future<LoadResult> loadDocument(
   }
   final format = (detected as Ok<DocumentFormat>).value;
 
-  final inspected = format.inspect(package);
-  if (inspected case Failed(:final issues)) {
-    return (document: null, failure: LoadFailure(issues));
-  }
-
   return (
     document: LoadedDocument(
       path: path,
       fileName: fileName,
       bytes: bytes,
-      report: (inspected as Ok<InspectionReport>).value,
+      report: null,
       preview: format.preview(package, maxPages: maxPages),
       format: format.id,
     ),
     failure: null,
   );
+});
+
+/// حصيلة الفحص، بعد أن عُرضت الصفحة.
+///
+/// `null` عند تعذّره — والمستند معروضٌ على كل حال، فلا يُسقَط ما نجح لأجل
+/// ما فشل. وأسباب العطب الحقيقية يبلّغها فتحُ الملف قبل هذا بدفعة.
+Future<InspectionReport?> loadInspection(Uint8List bytes) => Isolate.run(() {
+  final opened = DocumentPackage.open(bytes);
+  if (opened case Failed()) return null;
+  final package = (opened as Ok<DocumentPackage>).value;
+  final detected = formatFor(package);
+  if (detected case Failed()) return null;
+  final inspected = (detected as Ok<DocumentFormat>).value.inspect(package);
+  return inspected is Ok<InspectionReport> ? inspected.value : null;
 });
 
 /// المعاينة كاملةً، بعد أن عُرضت أوائلها.
