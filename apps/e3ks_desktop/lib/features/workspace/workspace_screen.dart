@@ -525,23 +525,22 @@ class _TopBar extends StatelessWidget {
                       label: t.resetGeneralEdits,
                     ),
                   ],
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      t.reset,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: Type.semiBold,
-                        color: Shade.mirror,
-                      ),
+                  // **الزرّ نفسه لا نسخةٌ منه.** تأليف نمطه بيدي أسقط منه
+                  // `height` وتوزيعَ الفراغ المتساوي، فبُتر ذيل «تراجع عن
+                  // الكل» — وهو الخلل الموصوف في `07` §2/1 عائدًا من باب
+                  // آخر. و`textButtonTheme` يحمله كاملًا.
+                  child: IgnorePointer(
+                    child: TextButton(
+                      onPressed: () {},
+                      child: Text(t.reset, overflow: TextOverflow.visible),
                     ),
                   ),
                 )
               else
-                TextButton(onPressed: store.resetChanges, child: Text(t.reset)),
+                TextButton(
+                  onPressed: store.resetChanges,
+                  child: Text(t.reset, overflow: TextOverflow.visible),
+                ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(

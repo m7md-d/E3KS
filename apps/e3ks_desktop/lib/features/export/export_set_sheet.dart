@@ -61,6 +61,13 @@ class _SetExportState extends State<_SetExport> {
     });
   }
 
+  @visibleForTesting
+  void setDestinationForShot(String path) =>
+      setState(() => _destination = path);
+
+  @visibleForTesting
+  Future<void> runForShot() => _run();
+
   Future<void> _run() async {
     final destination = _destination;
     if (destination == null) return;
@@ -170,22 +177,23 @@ class _SetExportState extends State<_SetExport> {
   Widget _outcome(L t, SetExport outcome) {
     final report = outcome.report;
     final never = report.unmatchedEverywhere;
-    final text = Theme.of(context).textTheme;
 
     return ListView(
       shrinkWrap: true,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       children: [
-        Row(
-          children: [
-            _Tally(label: t.batchWritten, value: report.written.length),
-            _Tally(
+        _TallyBoard(
+          tallies: [
+            (label: t.batchWritten, value: report.written.length),
+            (
               label: t.batchFailedCount,
               value: report.failed.length + outcome.mishaps.length,
             ),
-            _Tally(label: t.batchUnchanged, value: report.unchanged.length),
+            (label: t.batchUnchanged, value: report.unchanged.length),
           ],
         ),
+        const SizedBox(height: 12),
+        _DestinationRow(path: _destination, onChoose: null),
         for (final entry in report.failed) ...[
           const SizedBox(height: 8),
           _Failure(
@@ -211,11 +219,6 @@ class _SetExportState extends State<_SetExport> {
           ),
         ],
         const SizedBox(height: 10),
-        Text(
-          '${t.batchOutput}: ${_destination ?? ''}',
-          style: text.labelSmall,
-          textDirection: TextDirection.ltr,
-        ),
       ],
     );
   }
@@ -260,7 +263,10 @@ class _DestinationRow extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(onPressed: onChoose, child: Text(t.batchChoose)),
+          // **بلا زرٍّ بعد الكتابة**: الوجهة صارت خبرًا لا اختيارًا، وزرٌّ
+          // معطَّل يقول إنها ما زالت تُختار.
+          if (onChoose != null)
+            TextButton(onPressed: onChoose, child: Text(t.batchChoose)),
         ],
       ),
     );
@@ -382,6 +388,44 @@ class _Failure extends StatelessWidget {
   }
 }
 
+/// حصيلة العدد في لوحةٍ واحدة.
+///
+/// **مجموعةٌ لا أرقامٌ سابحة.** ثلاثة أعمدة مرنة على عرض الحوار تترك بين
+/// كل رقمٍ وجاره فراغًا بقدر سطر، فلا تُقرأ الثلاثة معًا ولا يُعرف أيّها
+/// يخصّ أيّ عنوان. الإطار يجمعها، والفاصل يفصلها، والرقم فوق عنوانه.
+class _TallyBoard extends StatelessWidget {
+  const _TallyBoard({required this.tallies});
+
+  final List<({String label, int value})> tallies;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      color: Shade.canvas,
+      borderRadius: BorderRadius.circular(Metrics.radiusSmall),
+      border: Border.all(color: Shade.border),
+    ),
+    child: IntrinsicHeight(
+      child: Row(
+        children: [
+          for (final (index, tally) in tallies.indexed) ...[
+            if (index > 0)
+              const VerticalDivider(
+                width: 1,
+                thickness: 1,
+                indent: 10,
+                endIndent: 10,
+              ),
+            Expanded(
+              child: _Tally(label: tally.label, value: tally.value),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
 class _Tally extends StatelessWidget {
   const _Tally({required this.label, required this.value});
 
@@ -391,13 +435,18 @@ class _Tally extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Expanded(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: text.labelSmall),
+          Text(
+            '$value',
+            style: text.headlineSmall?.copyWith(
+              color: value == 0 ? Shade.textFaint : Shade.text,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text('$value', style: text.titleMedium),
+          Text(label, style: text.labelSmall),
         ],
       ),
     );
