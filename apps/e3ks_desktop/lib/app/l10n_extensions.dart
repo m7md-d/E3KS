@@ -128,6 +128,15 @@ String partLabel(L t, String partName) {
   return partName;
 }
 
+/// اسم الصيغة بلغة المستخدم.
+///
+/// **الاسم للعرض وحده.** القرار في الصيغة يبقى داخل `format/` (`01`)،
+/// وهذا ترجمةُ تعدادٍ كما يفعل [issueText] و[partLabel].
+String formatLabel(L t, FormatId id) => switch (id) {
+  FormatId.docx => t.formatDocx,
+  FormatId.pptx => t.formatPptx,
+};
+
 /// صياغة مشكلة من المحرّك بلغة المستخدم.
 String issueText(L t, EngineIssue issue) => switch (issue.code) {
   IssueCode.notAnArchive => t.errNotAnArchive,

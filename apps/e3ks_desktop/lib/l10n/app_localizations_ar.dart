@@ -745,6 +745,122 @@ class LAr extends L {
   String get fileReviewed => 'راجعته';
 
   @override
+  String get fileProperties => 'خصائص';
+
+  @override
+  String get propsTitle => 'خصائص الملفّ';
+
+  @override
+  String get propsPath => 'المسار';
+
+  @override
+  String get propsFormat => 'الصيغة';
+
+  @override
+  String get propsSize => 'الحجم';
+
+  @override
+  String get propsModified => 'آخر تعديل';
+
+  @override
+  String get propsPages => 'الصفحات';
+
+  @override
+  String get propsSlides => 'الشرائح';
+
+  @override
+  String propsSizeMb(double size) {
+    final intl.NumberFormat sizeNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString م.ب';
+  }
+
+  @override
+  String propsSizeKb(int size) {
+    final intl.NumberFormat sizeNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString ك.ب';
+  }
+
+  @override
+  String get propsPlan => 'ما ستفعله الخطة بهذا الملفّ';
+
+  @override
+  String get propsColorsLabel => 'ألوان تُبدَّل';
+
+  @override
+  String propsColorsValue(int mapped, int total, int spots) {
+    final intl.NumberFormat mappedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String mappedString = mappedNumberFormat.format(mapped);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+    final intl.NumberFormat spotsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String spotsString = spotsNumberFormat.format(spots);
+
+    return '$mappedString من $totalString · $spotsString موضعًا';
+  }
+
+  @override
+  String get propsNothing => 'لا شيء';
+
+  @override
+  String get propsReaches => 'يبلغ';
+
+  @override
+  String get propsMarksLabel => 'علامات تُرفع';
+
+  @override
+  String propsOf(int part, int total) {
+    final intl.NumberFormat partNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String partString = partNumberFormat.format(part);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$partString من $totalString';
+  }
+
+  @override
+  String localizedCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return '$nString';
+  }
+
+  @override
+  String get propsUnchanged => 'كما هو';
+
+  @override
+  String get propsUntouched => 'ألوان لا تمسّها الخطة';
+
+  @override
+  String get propsUntouchedHint =>
+      'موجودة في محتوى هذا الملفّ وبلا قاعدة تبدّلها.';
+
+  @override
+  String get propsAllMapped => 'كل ألوان المحتوى لها قاعدة.';
+
+  @override
+  String get formatDocx => 'Word';
+
+  @override
+  String get formatPptx => 'PowerPoint';
+
+  @override
   String get scopeFileOnly => 'خاصّ بهذا الملفّ';
 
   @override

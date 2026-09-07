@@ -352,6 +352,83 @@
   "addFolder": "Add a folder",
   "fileLocked": "Excluded from the general plan",
   "fileReviewed": "Reviewed",
+  "fileProperties": "Properties",
+  "propsTitle": "File properties",
+  "propsPath": "Path",
+  "propsFormat": "Format",
+  "propsSize": "Size",
+  "propsModified": "Last modified",
+  "propsPages": "Pages",
+  "propsSlides": "Slides",
+  "propsSizeMb": "{size} MB",
+  "propsSizeKb": "{size} KB",
+  "propsPlan": "What the plan does to this file",
+  "propsColorsLabel": "Colours replaced",
+  "propsColorsValue": "{mapped} of {total} · {spots} occurrences",
+  "propsNothing": "Nothing",
+  "propsReaches": "Reaches",
+  "propsMarksLabel": "Marks removed",
+  "propsOf": "{part} of {total}",
+  "localizedCount": "{n}",
+  "@localizedCount": {
+    "description": "عددٌ مجرّد يُصاغ بنظام أرقام اللغة",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "propsUnchanged": "Unchanged",
+  "propsUntouched": "Colours the plan does not touch",
+  "propsUntouchedHint": "Present in this file's content with no rule to replace them.",
+  "propsAllMapped": "Every content colour has a rule.",
+  "formatDocx": "Word",
+  "formatPptx": "PowerPoint",
+  "@propsSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@propsSizeKb": {
+    "placeholders": {
+      "size": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@propsColorsValue": {
+    "placeholders": {
+      "mapped": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "spots": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@propsOf": {
+    "placeholders": {
+      "part": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scopeFileOnly": "This file only",
   "scopeFileOnlyOn": "The rule applies to this file alone. Clearing it moves the rule to the general plan.",
   "scopeFileOnlyOff": "The rule lives in the general plan. Checking it limits the rule to this file.",

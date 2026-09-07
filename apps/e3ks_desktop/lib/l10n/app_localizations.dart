@@ -1459,6 +1459,150 @@ abstract class L {
   /// **'راجعته'**
   String get fileReviewed;
 
+  /// No description provided for @fileProperties.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصائص'**
+  String get fileProperties;
+
+  /// No description provided for @propsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصائص الملفّ'**
+  String get propsTitle;
+
+  /// No description provided for @propsPath.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسار'**
+  String get propsPath;
+
+  /// No description provided for @propsFormat.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصيغة'**
+  String get propsFormat;
+
+  /// No description provided for @propsSize.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجم'**
+  String get propsSize;
+
+  /// No description provided for @propsModified.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر تعديل'**
+  String get propsModified;
+
+  /// No description provided for @propsPages.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصفحات'**
+  String get propsPages;
+
+  /// No description provided for @propsSlides.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشرائح'**
+  String get propsSlides;
+
+  /// No description provided for @propsSizeMb.
+  ///
+  /// In ar, this message translates to:
+  /// **'{size} م.ب'**
+  String propsSizeMb(double size);
+
+  /// No description provided for @propsSizeKb.
+  ///
+  /// In ar, this message translates to:
+  /// **'{size} ك.ب'**
+  String propsSizeKb(int size);
+
+  /// No description provided for @propsPlan.
+  ///
+  /// In ar, this message translates to:
+  /// **'ما ستفعله الخطة بهذا الملفّ'**
+  String get propsPlan;
+
+  /// No description provided for @propsColorsLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألوان تُبدَّل'**
+  String get propsColorsLabel;
+
+  /// No description provided for @propsColorsValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'{mapped} من {total} · {spots} موضعًا'**
+  String propsColorsValue(int mapped, int total, int spots);
+
+  /// No description provided for @propsNothing.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا شيء'**
+  String get propsNothing;
+
+  /// No description provided for @propsReaches.
+  ///
+  /// In ar, this message translates to:
+  /// **'يبلغ'**
+  String get propsReaches;
+
+  /// No description provided for @propsMarksLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'علامات تُرفع'**
+  String get propsMarksLabel;
+
+  /// No description provided for @propsOf.
+  ///
+  /// In ar, this message translates to:
+  /// **'{part} من {total}'**
+  String propsOf(int part, int total);
+
+  /// عددٌ مجرّد يُصاغ بنظام أرقام اللغة
+  ///
+  /// In ar, this message translates to:
+  /// **'{n}'**
+  String localizedCount(int n);
+
+  /// No description provided for @propsUnchanged.
+  ///
+  /// In ar, this message translates to:
+  /// **'كما هو'**
+  String get propsUnchanged;
+
+  /// No description provided for @propsUntouched.
+  ///
+  /// In ar, this message translates to:
+  /// **'ألوان لا تمسّها الخطة'**
+  String get propsUntouched;
+
+  /// No description provided for @propsUntouchedHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'موجودة في محتوى هذا الملفّ وبلا قاعدة تبدّلها.'**
+  String get propsUntouchedHint;
+
+  /// No description provided for @propsAllMapped.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل ألوان المحتوى لها قاعدة.'**
+  String get propsAllMapped;
+
+  /// No description provided for @formatDocx.
+  ///
+  /// In ar, this message translates to:
+  /// **'Word'**
+  String get formatDocx;
+
+  /// No description provided for @formatPptx.
+  ///
+  /// In ar, this message translates to:
+  /// **'PowerPoint'**
+  String get formatPptx;
+
   /// No description provided for @scopeFileOnly.
   ///
   /// In ar, this message translates to:

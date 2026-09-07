@@ -17,6 +17,7 @@ import '../../data/file_tree.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/app_dialog.dart';
 import '../../shared/widgets/app_menu.dart';
+import 'file_properties_sheet.dart';
 
 class FileTreePanel extends StatefulWidget {
   const FileTreePanel({
@@ -261,7 +262,7 @@ class _FolderRow extends StatelessWidget {
 ///
 /// **عائلتان لا تختلطان** (`ADR 0005` §٤): «راجعته» و«ملاحظة» قولُ المستخدم
 /// عن الملفّ، والقفل قرارُه في التعديل عليه. وكلاهما منه لا من الفحص.
-enum _FileAction { reviewed, locked, note, remove }
+enum _FileAction { properties, reviewed, locked, note, remove }
 
 class _FileRow extends StatefulWidget {
   const _FileRow({
@@ -295,6 +296,8 @@ class _FileRowState extends State<_FileRow> {
     final t = context.l10n;
     final file = widget.store.files[widget.index];
     return [
+      AppMenuChoice(value: _FileAction.properties, label: t.fileProperties),
+      const AppMenuSeparator(),
       AppMenuChoice(
         value: _FileAction.reviewed,
         label: t.fileReviewed,
@@ -319,6 +322,8 @@ class _FileRowState extends State<_FileRow> {
     final index = widget.index;
     final file = store.files[index];
     switch (action) {
+      case _FileAction.properties:
+        await showFileProperties(context, store, index);
       case _FileAction.reviewed:
         store.setReviewed(index, !file.reviewed);
       case _FileAction.locked:

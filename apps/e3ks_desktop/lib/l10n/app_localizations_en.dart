@@ -752,6 +752,122 @@ class LEn extends L {
   String get fileReviewed => 'Reviewed';
 
   @override
+  String get fileProperties => 'Properties';
+
+  @override
+  String get propsTitle => 'File properties';
+
+  @override
+  String get propsPath => 'Path';
+
+  @override
+  String get propsFormat => 'Format';
+
+  @override
+  String get propsSize => 'Size';
+
+  @override
+  String get propsModified => 'Last modified';
+
+  @override
+  String get propsPages => 'Pages';
+
+  @override
+  String get propsSlides => 'Slides';
+
+  @override
+  String propsSizeMb(double size) {
+    final intl.NumberFormat sizeNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString MB';
+  }
+
+  @override
+  String propsSizeKb(int size) {
+    final intl.NumberFormat sizeNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String sizeString = sizeNumberFormat.format(size);
+
+    return '$sizeString KB';
+  }
+
+  @override
+  String get propsPlan => 'What the plan does to this file';
+
+  @override
+  String get propsColorsLabel => 'Colours replaced';
+
+  @override
+  String propsColorsValue(int mapped, int total, int spots) {
+    final intl.NumberFormat mappedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String mappedString = mappedNumberFormat.format(mapped);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+    final intl.NumberFormat spotsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String spotsString = spotsNumberFormat.format(spots);
+
+    return '$mappedString of $totalString · $spotsString occurrences';
+  }
+
+  @override
+  String get propsNothing => 'Nothing';
+
+  @override
+  String get propsReaches => 'Reaches';
+
+  @override
+  String get propsMarksLabel => 'Marks removed';
+
+  @override
+  String propsOf(int part, int total) {
+    final intl.NumberFormat partNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String partString = partNumberFormat.format(part);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$partString of $totalString';
+  }
+
+  @override
+  String localizedCount(int n) {
+    final intl.NumberFormat nNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String nString = nNumberFormat.format(n);
+
+    return '$nString';
+  }
+
+  @override
+  String get propsUnchanged => 'Unchanged';
+
+  @override
+  String get propsUntouched => 'Colours the plan does not touch';
+
+  @override
+  String get propsUntouchedHint =>
+      'Present in this file\'s content with no rule to replace them.';
+
+  @override
+  String get propsAllMapped => 'Every content colour has a rule.';
+
+  @override
+  String get formatDocx => 'Word';
+
+  @override
+  String get formatPptx => 'PowerPoint';
+
+  @override
   String get scopeFileOnly => 'This file only';
 
   @override

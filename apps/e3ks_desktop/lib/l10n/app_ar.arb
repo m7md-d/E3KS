@@ -352,6 +352,83 @@
   "addFolder": "أضف مجلدًا",
   "fileLocked": "مقفل عن الخطة العامّة",
   "fileReviewed": "راجعته",
+  "fileProperties": "خصائص",
+  "propsTitle": "خصائص الملفّ",
+  "propsPath": "المسار",
+  "propsFormat": "الصيغة",
+  "propsSize": "الحجم",
+  "propsModified": "آخر تعديل",
+  "propsPages": "الصفحات",
+  "propsSlides": "الشرائح",
+  "propsSizeMb": "{size} م.ب",
+  "propsSizeKb": "{size} ك.ب",
+  "propsPlan": "ما ستفعله الخطة بهذا الملفّ",
+  "propsColorsLabel": "ألوان تُبدَّل",
+  "propsColorsValue": "{mapped} من {total} · {spots} موضعًا",
+  "propsNothing": "لا شيء",
+  "propsReaches": "يبلغ",
+  "propsMarksLabel": "علامات تُرفع",
+  "propsOf": "{part} من {total}",
+  "localizedCount": "{n}",
+  "@localizedCount": {
+    "description": "عددٌ مجرّد يُصاغ بنظام أرقام اللغة",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "propsUnchanged": "كما هو",
+  "propsUntouched": "ألوان لا تمسّها الخطة",
+  "propsUntouchedHint": "موجودة في محتوى هذا الملفّ وبلا قاعدة تبدّلها.",
+  "propsAllMapped": "كل ألوان المحتوى لها قاعدة.",
+  "formatDocx": "Word",
+  "formatPptx": "PowerPoint",
+  "@propsSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "double",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@propsSizeKb": {
+    "placeholders": {
+      "size": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@propsColorsValue": {
+    "placeholders": {
+      "mapped": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "spots": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@propsOf": {
+    "placeholders": {
+      "part": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
   "scopeFileOnly": "خاصّ بهذا الملفّ",
   "scopeFileOnlyOn": "القاعدة على هذا الملفّ وحده. رفعُها ينقلها إلى الخطة العامّة.",
   "scopeFileOnlyOff": "القاعدة في الخطة العامّة. وضعُها يحصرها في هذا الملفّ.",
