@@ -651,16 +651,6 @@ class LAr extends L {
   String get noColorMatch => 'لا لون مطابق';
 
   @override
-  String get batchTitle => 'تطبيق على مجلد';
-
-  @override
-  String get batchHint =>
-      'الخطة نفسها على كل مستند في المجلد وما تحته، والبنية تُحفَظ.';
-
-  @override
-  String get batchSource => 'المجلد';
-
-  @override
   String get batchOutput => 'مجلد المخرَج';
 
   @override
@@ -671,20 +661,6 @@ class LAr extends L {
 
   @override
   String get batchConfirmOutput => 'اكتب في هذا المجلد';
-
-  @override
-  String batchDocuments(int count) {
-    return '$count مستندًا';
-  }
-
-  @override
-  String get batchPlan => 'الخطة';
-
-  @override
-  String get batchFromOpen => 'خطة الملف المفتوح';
-
-  @override
-  String get batchRun => 'شغّل';
 
   @override
   String batchProgress(int done, int total) {
@@ -738,16 +714,6 @@ class LAr extends L {
 
   @override
   String get exportSetEmpty => 'لا ملفات في المجموعة.';
-
-  @override
-  String get batchEmptyFolder => 'لا مستندات مدعومة في هذا المجلد.';
-
-  @override
-  String get batchNoPlan => 'بدّل ألوانًا أو اختر هوية محفوظة.';
-
-  @override
-  String get batchSameFolder =>
-      'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.';
 
   @override
   String tabPosition(int at, int total) {

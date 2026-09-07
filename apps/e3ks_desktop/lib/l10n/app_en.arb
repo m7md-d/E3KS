@@ -296,24 +296,10 @@
   "cancelPicking": "Cancel picking",
   "pickingHint": "Picking a colour — Esc to cancel",
   "noColorMatch": "No matching colour",
-  "batchTitle": "Apply to a folder",
-  "batchHint": "The same plan on every document in the folder and below; the structure is kept.",
-  "batchSource": "Folder",
   "batchOutput": "Output folder",
   "batchChoose": "Choose…",
   "batchConfirmSource": "Read from this folder",
   "batchConfirmOutput": "Write into this folder",
-  "batchDocuments": "{count} documents",
-  "@batchDocuments": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "batchPlan": "Plan",
-  "batchFromOpen": "The open file's plan",
-  "batchRun": "Run",
   "batchProgress": "{done} of {total}",
   "@batchProgress": {
     "placeholders": {
@@ -347,9 +333,6 @@
       }
     }
   },
-  "batchEmptyFolder": "No supported documents in this folder.",
-  "batchNoPlan": "Change some colours or pick a saved identity.",
-  "batchSameFolder": "The output folder is the source; the source is never written over.",
   "tabPosition": "{at} / {total}",
   "@tabPosition": {
     "placeholders": {

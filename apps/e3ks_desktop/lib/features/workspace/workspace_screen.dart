@@ -25,7 +25,6 @@ import '../../data/workspace_store.dart';
 import '../../shared/widgets/app_menu.dart';
 import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
-import '../batch/batch_sheet.dart';
 import '../export/export_set_sheet.dart';
 import '../identity/identities_panel.dart';
 import '../mapping/color_picker.dart';
@@ -182,7 +181,6 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 settings: widget.settings,
                 onSettings: () => showSettings(context, widget.fonts),
                 onOpenFolder: _browseFolder,
-                onBatch: () => showBatch(context, store, widget.identities),
                 exporting: _exporting,
                 onExport: _export,
                 onExportSet: () => showSetExport(context, store),
@@ -367,7 +365,6 @@ class _TopBar extends StatelessWidget {
     required this.settings,
     required this.onSettings,
     required this.onOpenFolder,
-    required this.onBatch,
     required this.exporting,
     required this.onExport,
     required this.onExportSet,
@@ -380,7 +377,6 @@ class _TopBar extends StatelessWidget {
   final SettingsStore settings;
   final VoidCallback onSettings;
   final VoidCallback onOpenFolder;
-  final VoidCallback onBatch;
   final bool exporting;
   final VoidCallback onExport;
   final VoidCallback onExportSet;
@@ -503,12 +499,6 @@ class _TopBar extends StatelessWidget {
               icon: const Icon(LucideIcons.folderOpen, size: 16),
               color: Shade.textMuted,
               tooltip: t.openFolder,
-            ),
-            IconButton(
-              onPressed: onBatch,
-              icon: const Icon(LucideIcons.folders, size: 16),
-              color: Shade.textMuted,
-              tooltip: t.batchTitle,
             ),
             IconButton(
               onPressed: onSettings,

@@ -1285,24 +1285,6 @@ abstract class L {
   /// **'لا لون مطابق'**
   String get noColorMatch;
 
-  /// No description provided for @batchTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'تطبيق على مجلد'**
-  String get batchTitle;
-
-  /// No description provided for @batchHint.
-  ///
-  /// In ar, this message translates to:
-  /// **'الخطة نفسها على كل مستند في المجلد وما تحته، والبنية تُحفَظ.'**
-  String get batchHint;
-
-  /// No description provided for @batchSource.
-  ///
-  /// In ar, this message translates to:
-  /// **'المجلد'**
-  String get batchSource;
-
   /// No description provided for @batchOutput.
   ///
   /// In ar, this message translates to:
@@ -1326,30 +1308,6 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'اكتب في هذا المجلد'**
   String get batchConfirmOutput;
-
-  /// No description provided for @batchDocuments.
-  ///
-  /// In ar, this message translates to:
-  /// **'{count} مستندًا'**
-  String batchDocuments(int count);
-
-  /// No description provided for @batchPlan.
-  ///
-  /// In ar, this message translates to:
-  /// **'الخطة'**
-  String get batchPlan;
-
-  /// No description provided for @batchFromOpen.
-  ///
-  /// In ar, this message translates to:
-  /// **'خطة الملف المفتوح'**
-  String get batchFromOpen;
-
-  /// No description provided for @batchRun.
-  ///
-  /// In ar, this message translates to:
-  /// **'شغّل'**
-  String get batchRun;
 
   /// No description provided for @batchProgress.
   ///
@@ -1446,24 +1404,6 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'لا ملفات في المجموعة.'**
   String get exportSetEmpty;
-
-  /// No description provided for @batchEmptyFolder.
-  ///
-  /// In ar, this message translates to:
-  /// **'لا مستندات مدعومة في هذا المجلد.'**
-  String get batchEmptyFolder;
-
-  /// No description provided for @batchNoPlan.
-  ///
-  /// In ar, this message translates to:
-  /// **'بدّل ألوانًا أو اختر هوية محفوظة.'**
-  String get batchNoPlan;
-
-  /// No description provided for @batchSameFolder.
-  ///
-  /// In ar, this message translates to:
-  /// **'مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.'**
-  String get batchSameFolder;
 
   /// No description provided for @tabPosition.
   ///

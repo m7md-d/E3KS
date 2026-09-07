@@ -14,6 +14,7 @@ import 'package:e3ks_desktop/data/font_service.dart';
 import 'package:e3ks_desktop/data/identity_store.dart';
 import 'package:e3ks_desktop/data/set_exporter.dart';
 import 'package:e3ks_desktop/data/settings_store.dart';
+import 'package:e3ks_desktop/features/export/export_set_sheet.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
 import 'package:e3ks_desktop/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -237,5 +238,95 @@ void main() {
 
     // ولا ملفّ كُتب: الشاشة عُرضت ولم يُنفَّذ شيء.
     expect(Directory('${work.path}/مخرَج').existsSync(), isFalse);
+  });
+
+  test('حوار مجلد المخرَج يسمح بصنع مجلد', () {
+    // **الخلل الذي وُلد منه الاختبار:** `NSOpenPanel` يخفي زرّ «مجلد جديد»
+    // افتراضًا، فكان المستخدم يُطالَب بمجلد مخرَج بلا وسيلة لصنعه. والراية
+    // تعبر إلى AppKit ولا يبلغها اختبار ودجة — الصندوق الرملي مثلها
+    // (`03`) — فالحارس على المصدر: أن تبقى مكتوبة.
+    final source = File(
+      'lib/features/export/export_set_sheet.dart',
+    ).readAsStringSync();
+    final pick = source.substring(
+      source.indexOf('Future<void> _chooseDestination'),
+    );
+    expect(
+      pick.substring(0, pick.indexOf('  }')),
+      contains('canCreateDirectories: true'),
+    );
+  });
+
+  test('الساقط لا يترك مؤقّتًا وراءه', () async {
+    if (!ready) return;
+    seed('مصدر/سليم.docx');
+    File('${work.path}/مصدر/تالف.docx').writeAsBytesSync([1, 2, 3]);
+
+    final store = WorkspaceStore()..addDirectory('${work.path}/مصدر');
+    await store.open('${work.path}/مصدر/سليم.docx', 'سليم.docx', bytes);
+    final out = Directory('${work.path}/مخرَج')..createSync();
+    await exportSet(
+      jobs: [
+        ...store.exportJobs(),
+        (
+          source: '${work.path}/مصدر/تالف.docx',
+          relative: 'تالف.docx',
+          name: 'تالف.docx',
+          plan: const StylePlan(),
+        ),
+      ],
+      outDirectory: out.path,
+    );
+
+    expect(File('${out.path}/تالف.docx').existsSync(), isFalse);
+    expect(
+      out.listSync(recursive: true).where((e) => e.path.endsWith('.part')),
+      isEmpty,
+      reason: 'مؤقّتٌ بقي بعد السقوط',
+    );
+  }, skip: !ready);
+
+  testWidgets('شاشة التصدير تُفتح عند أضيق نافذة بلا تجاوز', skip: !ready, (
+    tester,
+  ) async {
+    // أضيق نافذة مسموحة، وهي أكثر ما ينكسر عمليًّا (`03`).
+    await tester.binding.setSurfaceSize(const Size(1180, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final store = WorkspaceStore()..addDirectory('${work.path}/مصدر');
+    await tester.runAsync(
+      () => store.open(seed('مصدر/أول.docx'), 'أول.docx', bytes),
+    );
+    await tester.runAsync(
+      () => store.open(seed('مصدر/ثانٍ.docx'), 'ثانٍ.docx', bytes),
+    );
+
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(),
+        locale: const Locale('ar'),
+        supportedLocales: L.supportedLocales,
+        localizationsDelegates: const [
+          L.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Builder(
+          builder: (context) {
+            ctx = context;
+            return const Scaffold(body: SizedBox.shrink());
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    showSetExport(ctx, store);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

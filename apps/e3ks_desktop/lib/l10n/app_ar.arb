@@ -296,24 +296,10 @@
   "cancelPicking": "إلغاء الالتقاط",
   "pickingHint": "التقاط لون — Esc للإلغاء",
   "noColorMatch": "لا لون مطابق",
-  "batchTitle": "تطبيق على مجلد",
-  "batchHint": "الخطة نفسها على كل مستند في المجلد وما تحته، والبنية تُحفَظ.",
-  "batchSource": "المجلد",
   "batchOutput": "مجلد المخرَج",
   "batchChoose": "اختر…",
   "batchConfirmSource": "اقرأ من هذا المجلد",
   "batchConfirmOutput": "اكتب في هذا المجلد",
-  "batchDocuments": "{count} مستندًا",
-  "@batchDocuments": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "batchPlan": "الخطة",
-  "batchFromOpen": "خطة الملف المفتوح",
-  "batchRun": "شغّل",
   "batchProgress": "{done} من {total}",
   "@batchProgress": {
     "placeholders": {
@@ -347,9 +333,6 @@
       }
     }
   },
-  "batchEmptyFolder": "لا مستندات مدعومة في هذا المجلد.",
-  "batchNoPlan": "بدّل ألوانًا أو اختر هوية محفوظة.",
-  "batchSameFolder": "مجلد المخرَج هو المصدر — المصدر لا يُكتب فوقه.",
   "tabPosition": "{at} / {total}",
   "@tabPosition": {
     "placeholders": {
