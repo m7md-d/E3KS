@@ -6,8 +6,11 @@
 /// flutter test tool/capture_screenshots.dart
 /// ```
 ///
-/// يرسم الواجهة الإنجليزية بخطّها المضمَّن على مستند العرض في
-/// `docs/demo/`، ويكتب الصور في `docs/screenshots/`.
+/// يرسم الواجهة الإنجليزية بخطّها المضمَّن على مستند العرض في `docs/demo/`،
+/// ويكتب الصور في `docs/screenshots/`.
+///
+/// **والمشهد مجموعةٌ لا ملفًّا واحدًا**: صورةٌ بملفٍّ واحد لا تُظهر ما يفصل
+/// هذا التطبيق عن غيره — طبقتَي الخطّة، والشجرة، والمراجعة قبل الكتابة.
 library;
 
 import 'dart:convert';
@@ -17,29 +20,35 @@ import 'dart:ui' as ui;
 import 'package:e3ks_desktop/app/theme.dart';
 import 'package:e3ks_desktop/data/font_cache.dart';
 import 'package:e3ks_desktop/data/font_service.dart';
+import 'package:e3ks_desktop/data/identity.dart';
 import 'package:e3ks_desktop/data/identity_store.dart';
 import 'package:e3ks_desktop/data/settings_store.dart';
 import 'package:e3ks_desktop/data/workspace_store.dart';
-import 'package:e3ks_desktop/data/identity.dart';
-import 'package:e3ks_desktop/features/mapping/colors_panel.dart';
+import 'package:e3ks_desktop/features/export/export_set_sheet.dart';
 import 'package:e3ks_desktop/features/workspace/workspace_screen.dart';
 import 'package:e3ks_desktop/l10n/app_localizations.dart';
-import 'package:e3ks_desktop/shared/widgets/swatch.dart';
 import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _demo = '../../docs/demo/brand-guidelines.docx';
 const _outputDir = '../../docs/screenshots';
 const _size = Size(1560, 980);
 
+/// المجموعة في اللقطات: مستند العرض نفسه تحت مجلدٍ وفرعٍ منه، فتُرى البنية
+/// المحفوظة عند التصدير كما تُرى في الشجرة.
+const _set = [
+  'northwind/brand-guidelines.docx',
+  'northwind/reports/quarterly-review.docx',
+  'northwind/reports/service-catalogue.docx',
+];
+
 final _shot = GlobalKey();
 
-/// مخزن هويات مؤقّت فيه هويّتان — قائمة الخطط في حوار الدفعة تعرضهما.
+/// مخزن هويات مؤقّت فيه هويّتان — الاختيار السريع في منتقي البديل يعرضهما.
 late final IdentityStore _identities;
 
 Future<void> _seedIdentities() async {
@@ -77,10 +86,13 @@ Future<void> _seedIdentities() async {
 /// الهوية الجديدة المطبَّقة في اللقطات: من الكحلي إلى الأخضر المزرقّ.
 const _plan = {
   '#1F3864': '#0F3D3E',
-  '#2E74B5': '#2A9D8F',
   '#C55A11': '#E76F51',
   '#F2F2F2': '#EAF4F2',
 };
+
+/// استثناءٌ على القاعدة العامّة، فتُرى الطبقتان في صورة واحدة — وصفّه في
+/// إطار اللقطة، وإلّا لم يُرَ المربّع المؤشَّر الذي يقول إنه خاصّ.
+const _exception = MapEntry('#2E74B5', '#2A9D8F');
 
 /// `!` مضمون: القيم أعلاه مكتوبة بصيغة `#RRGGBB` صحيحة.
 HexColor _hex(String value) => HexColor.tryParse(value)!;
@@ -175,15 +187,21 @@ Future<void> _write(WidgetTester tester, String name) async {
   stdout.writeln('  → $_outputDir/$name');
 }
 
-Future<WorkspaceStore> _open(WidgetTester tester) async {
-  final store = WorkspaceStore();
-  await tester.runAsync(
-    () => store.open(
-      _demo,
-      'brand-guidelines.docx',
-      Uint8List.fromList(File(_demo).readAsBytesSync()),
-    ),
-  );
+/// ينسخ مستند العرض في مجلدٍ مؤقّت بمواضع [_set]، ويفتح المجموعة منه.
+Future<WorkspaceStore> _openSet(WidgetTester tester) async {
+  final bytes = Uint8List.fromList(File(_demo).readAsBytesSync());
+  final work = Directory.systemTemp.createTempSync('e3ks_shots_');
+  final store = WorkspaceStore()..addDirectory('${work.path}/northwind');
+
+  for (final relative in _set) {
+    final file = File('${work.path}/$relative');
+    file.parent.createSync(recursive: true);
+    file.writeAsBytesSync(bytes);
+    await tester.runAsync(
+      () => store.open(file.path, relative.split('/').last, bytes),
+    );
+  }
+  store.selectDocument(0);
   return store;
 }
 
@@ -197,34 +215,35 @@ void main() {
     await tester.binding.setSurfaceSize(_size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final store = await _open(tester);
-    expect(store.hasDocument, isTrue, reason: 'مستند العرض لم يُفتح');
+    final store = await _openSet(tester);
+    expect(store.files, hasLength(_set.length), reason: 'المجموعة لم تُفتح');
 
     await tester.pumpWidget(_harness(store));
     await tester.pumpAndSettle();
     await _write(tester, '01-workspace.png');
 
     // منتقي البديل على لون الهوية الأساسي: سلَّم الدرجات والتباين.
-    final swatches = find.descendant(
-      of: find.byType(ColorsPanel),
-      matching: find.byType(Swatch),
-    );
-    await tester.tap(swatches.at(3));
+    await tester.tap(find.byTooltip('Pick a replacement colour').at(1));
     await tester.pumpAndSettle();
     await _write(tester, '02-picker.png');
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
 
-    // الهوية الجديدة مطبَّقة، والمعاينة على «بعد».
+    // الهوية الجديدة على المجموعة كلّها، ولونٌ واحد يبقى في هذا الملفّ وحده.
     for (final entry in _plan.entries) {
-      store.mapColor(_hex(entry.key), _hex(entry.value));
+      final from = _hex(entry.key);
+      store.mapColor(from, _hex(entry.value), store.scopeForColor(from));
     }
+    final accent = _hex(_exception.key);
+    store.mapColor(accent, _hex(_exception.value), store.scopeForColor(accent));
+    store.setColorScope(accent, EditScope.file);
+    store.setShowAfter(true);
     await tester.pumpAndSettle();
     await _write(tester, '03-after.png');
 
-    // الدفعة: خطة واحدة على مجلد كامل.
-    await tester.tap(find.byIcon(LucideIcons.folders));
+    // التصدير: كل ملفّ بموضعه من المخرَج، ولا كتابة قبل اختيار الوجهة.
+    showSetExport(tester.element(find.byType(WorkspaceScreen)), store);
     await tester.pumpAndSettle();
-    await _write(tester, '04-batch.png');
+    await _write(tester, '04-export.png');
   });
 }

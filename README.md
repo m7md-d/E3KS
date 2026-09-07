@@ -7,7 +7,7 @@
 <p align="center">Swap the colours and fonts of Word and PowerPoint documents.</p>
 
 <p align="center">
-  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-2A2F35">
+  <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-2A2F35">
   <img alt="Flutter 3.47" src="https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white">
   <img alt="Dart 3.9" src="https://img.shields.io/badge/Dart-3.9-0175C2?logo=dart&logoColor=white">
   <img alt="macOS, Windows and Linux" src="https://img.shields.io/badge/desktop-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-111111">
@@ -15,7 +15,7 @@
   <img alt="GPL-3.0" src="https://img.shields.io/badge/licence-GPL--3.0-4FD6E8">
 </p>
 
-![E3KS with a document open](docs/screenshots/01-workspace.png)
+![E3KS with a set of documents open](docs/screenshots/01-workspace.png)
 
 ## What it is
 
@@ -23,15 +23,23 @@ A company changes its brand colours. The Word and PowerPoint files it already
 has still carry the old ones, spread across body text, headings, tables,
 headers and footers, and the document theme.
 
-E3KS opens the file, lists every colour and font inside it, takes a
-replacement for each, shows the result page by page, and writes a new file.
+E3KS opens a file — or a folder and everything under it — lists every colour
+and font inside, takes a replacement for each, shows the result page by page,
+and writes new files.
 
 ## Features
 
+- **Working set** — open files, a folder and everything under it, or drop them
+  on the tree, which keeps the folder structure. A file can be marked reviewed,
+  noted, locked, or taken out.
+- **One plan, with exceptions** — a replacement applies to every file in the
+  set. **This file only** keeps a rule to the file at hand, and a locked file
+  takes none of the general plan.
 - **Colour list** — each colour with its occurrence count, what it is used for
   and a sample of its text. Colours that came from an Office template sit in
   their own list.
-- **Preview** — pages at their real size, with a before/after toggle.
+- **Preview** — pages and slides at their real size, with a before/after toggle
+  and a step through the changed spots.
 - **Eyedropper** — point at a colour on the page to select it. The app follows
   it through the document and offers computed shades of it.
 - **Highlights** — the highlighter pen and the background shading that Word's
@@ -39,13 +47,17 @@ replacement for each, shows the result page by page, and writes a new file.
   all of them, for the open file.
 - **Fonts** — Latin and Arabic are set separately. Monospaced fonts stay as
   they are. Fonts missing from the machine are fetched from Google Fonts and
-  cached.
+  cached, or added from a file on disk.
 - **Identities** — save a palette and apply it to any document, or lift one
   from another open file. A saved identity keeps the exact colour-to-colour
   rules, so the next document comes out like the last one.
-- **Batch** — apply one plan to a whole folder and everything under it, keeping
-  the structure. A file that fails is named with its reason and the rest still
-  run. Also on the command line: `e3ks restyle-dir`.
+- **Properties** — per file: format, size, last modified, page count and path;
+  what the plan will do to it and which parts the change reaches; and the
+  colours it leaves untouched.
+- **Export** — one file, or the whole set, keeping the structure. Every file is
+  named with the path it will take before anything is written. A file that
+  fails is named with its reason and the rest still run. Also on the command
+  line: `e3ks restyle-dir`.
 - **Two languages** — Arabic and English, with the layout direction following
   the language.
 
@@ -55,15 +67,16 @@ replacement for each, shows the result page by page, and writes a new file.
 
 ![The replacement colour dialog](docs/screenshots/02-picker.png)
 
-**After applying a new palette**
+**A new palette over the set, with one rule kept to a single file**
 
 ![The document with the new palette applied](docs/screenshots/03-after.png)
 
-**Applying one plan to a folder**
+**Exporting the set**
 
-![The batch dialog](docs/screenshots/04-batch.png)
+![The set export screen](docs/screenshots/04-export.png)
 
-The document in the screenshots is [`docs/demo/brand-guidelines.docx`](docs/demo/brand-guidelines.docx).
+The document in the screenshots is [`docs/demo/brand-guidelines.docx`](docs/demo/brand-guidelines.docx),
+opened three times under one folder to stand in for a set.
 
 ## Output
 
@@ -103,6 +116,7 @@ packages/e3ks_engine/     Engine: inspect, transform, preview, validate
   lib/src/format/         Everything specific to a file format
 apps/e3ks_desktop/        Flutter UI
 tools/e3ks_cli/           Command line over the engine
+tools/checks.sh           Every check in one command — what CI runs too
 docs/adr/                 Architecture decisions
 brand/                    The mark and its usage
 ```
@@ -116,6 +130,9 @@ cd packages/e3ks_engine && dart pub get && dart test
 # App — swap the device for your platform: macos, windows, linux
 cd apps/e3ks_desktop && flutter pub get && flutter run -d macos
 
+# Every check in one command — the same list CI runs
+./tools/checks.sh
+
 # Release build. Each platform is built on its own operating system;
 # CI builds all three for a release.
 cd apps/e3ks_desktop && flutter build macos --release
@@ -124,12 +141,12 @@ cd apps/e3ks_desktop && flutter build macos --release
 ./brand/build-appicon.sh
 ```
 
-96 engine tests and 152 app tests. Documentation and project rules are in
+112 engine tests and 204 app tests. Documentation and project rules are in
 Arabic; code is in English.
 
 ## Versioning
 
-Current version **0.1.0**. The number describes the output contract: a patch
+Current version **0.2.0**. The number describes the output contract: a patch
 release produces the same bytes for the same plan, a minor release adds a
 capability, and a major release changes what the engine writes or what a saved
 identity file looks like. 1.0 follows metadata support and a manual acceptance
@@ -152,7 +169,7 @@ warranty of merchantability or fitness for a particular purpose. Full text in
 
 | | Licence |
 |---|---|
-| **IBM Plex Sans Arabic** — bundled UI typeface | SIL Open Font License 1.1, text in [`apps/e3ks_desktop/assets/fonts/OFL.txt`](apps/e3ks_desktop/assets/fonts/OFL.txt) |
+| **IBM Plex Sans Arabic** — bundled UI typeface | SIL Open Font License 1.1, text in [`apps/e3ks_desktop/assets/fonts/OFL-IBMPlexSansArabic.txt`](apps/e3ks_desktop/assets/fonts/OFL-IBMPlexSansArabic.txt) |
 | **Lucide** — UI icons | ISC |
 | Dart and Flutter packages | Listed in the app under Settings → Licences |
 
