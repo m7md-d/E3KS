@@ -1381,6 +1381,72 @@ abstract class L {
   /// **'ألوان في الخطة لم تُطابق أي ملف'**
   String get batchNeverMatched;
 
+  /// No description provided for @exportSetTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصدير المجموعة'**
+  String get exportSetTitle;
+
+  /// No description provided for @exportSetHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل ملفّ بخطّته الفعّالة، والبنية كما هي في الشجرة.'**
+  String get exportSetHint;
+
+  /// No description provided for @exportSetRun.
+  ///
+  /// In ar, this message translates to:
+  /// **'صدّر'**
+  String get exportSetRun;
+
+  /// No description provided for @exportThisFile.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الملفّ'**
+  String get exportThisFile;
+
+  /// No description provided for @exportWholeSet.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموعة كلّها'**
+  String get exportWholeSet;
+
+  /// No description provided for @exportOverwrite.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُكتب فوق ملفّ قائم'**
+  String get exportOverwrite;
+
+  /// No description provided for @exportOverwriteCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} من المسارات مشغولة، ويُكتب فوقها'**
+  String exportOverwriteCount(int count);
+
+  /// No description provided for @exportRenamedPath.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسارٌ تكرّر، فمُيّز برقم'**
+  String get exportRenamedPath;
+
+  /// No description provided for @exportNoChanges.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا تغيير'**
+  String get exportNoChanges;
+
+  /// No description provided for @exportDiskFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت الكتابة على القرص'**
+  String get exportDiskFailed;
+
+  /// No description provided for @exportSetEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا ملفات في المجموعة.'**
+  String get exportSetEmpty;
+
   /// No description provided for @batchEmptyFolder.
   ///
   /// In ar, this message translates to:

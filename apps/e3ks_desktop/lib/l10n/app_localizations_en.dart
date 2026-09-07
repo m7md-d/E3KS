@@ -711,6 +711,42 @@ class LEn extends L {
   String get batchNeverMatched => 'Colours in the plan matched no file';
 
   @override
+  String get exportSetTitle => 'Export the set';
+
+  @override
+  String get exportSetHint =>
+      'Each file with its effective plan; the tree structure is preserved.';
+
+  @override
+  String get exportSetRun => 'Export';
+
+  @override
+  String get exportThisFile => 'This file';
+
+  @override
+  String get exportWholeSet => 'The whole set';
+
+  @override
+  String get exportOverwrite => 'Overwrites an existing file';
+
+  @override
+  String exportOverwriteCount(int count) {
+    return '$count destination paths are taken and will be overwritten';
+  }
+
+  @override
+  String get exportRenamedPath => 'Path repeated, so it was numbered';
+
+  @override
+  String get exportNoChanges => 'No changes';
+
+  @override
+  String get exportDiskFailed => 'Writing to disk failed';
+
+  @override
+  String get exportSetEmpty => 'The set has no files.';
+
+  @override
   String get batchEmptyFolder => 'No supported documents in this folder.';
 
   @override

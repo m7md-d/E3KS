@@ -16,6 +16,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/batch_runner.dart';
+import '../../data/openable_files.dart';
 import '../../data/identity.dart';
 import '../../data/identity_store.dart';
 import '../../data/workspace_store.dart';

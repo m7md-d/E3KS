@@ -57,6 +57,27 @@ final class TreeRoot {
 
 const String _separator = '/';
 
+/// الجذور مرتّبةً كما تُطابَق: **الأطول أولًا**.
+///
+/// مجلدٌ داخل مجلدٍ مفتوحٍ آخر يأخذ ملفّاته، فلا يُنسب الملفّ إلى جدّه
+/// ويظهر بمسارٍ أطول مما ينبغي.
+List<String> orderedRoots(Iterable<String> directories) =>
+    directories.toList()..sort((a, b) => b.length.compareTo(a.length));
+
+/// موضع الملفّ من الجذور: جذرُه إن كان تحت واحد، ومسارُه النسبي.
+///
+/// **مرجعٌ واحد للشجرة وللتصدير معًا**: ما يُعرَض تحت «عمل/فرع» يُكتب تحت
+/// «عمل/فرع». وقاعدتان تنحرف إحداهما عن الأخرى، فيخرج المخرَج ببنيةٍ غير
+/// التي رآها المستخدم. و[roots] مرتّبة بـ[orderedRoots].
+({String? root, String relative}) rootedPath(String path, List<String> roots) {
+  for (final root in roots) {
+    if (path.startsWith('$root$_separator')) {
+      return (root: root, relative: path.substring(root.length + 1));
+    }
+  }
+  return (root: null, relative: _basename(path));
+}
+
 /// يبني الشجرة من الملفات المفتوحة والمجلدات التي فُتحت.
 ///
 /// [loose] اسم حاضنة الملفات المفردة — من ملفّ الترجمة، فالمحرّك والبيانات
@@ -66,23 +87,13 @@ List<TreeRoot> buildFileTree(
   Set<String> directories, {
   required String loose,
 }) {
-  // **الأطول أولًا**: مجلدٌ داخل مجلدٍ مفتوحٍ آخر يأخذ ملفّاته، فلا يُنسب
-  // الملفّ إلى جدّه ويظهر بمسارٍ أطول مما ينبغي.
-  final roots = directories.toList()
-    ..sort((a, b) => b.length.compareTo(a.length));
+  final roots = orderedRoots(directories);
 
   final grouped = <String?, List<({List<String> parts, int index})>>{};
   for (final entry in entries) {
-    final owner = roots.firstWhere(
-      (root) => entry.path.startsWith('$root$_separator'),
-      orElse: () => '',
-    );
-    final key = owner.isEmpty ? null : owner;
-    final relative = owner.isEmpty
-        ? _basename(entry.path)
-        : entry.path.substring(owner.length + 1);
-    grouped.putIfAbsent(key, () => []).add((
-      parts: relative.split(_separator),
+    final placed = rootedPath(entry.path, roots);
+    grouped.putIfAbsent(placed.root, () => []).add((
+      parts: placed.relative.split(_separator),
       index: entry.index,
     ));
   }

@@ -17,7 +17,6 @@ import '../../app/theme.dart';
 import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
 import '../../data/identity_store.dart';
-import '../../data/batch_runner.dart';
 import '../../data/openable_files.dart';
 import '../../data/output_writer.dart';
 import '../../data/settings_store.dart';
@@ -27,6 +26,7 @@ import '../../shared/widgets/app_menu.dart';
 import '../../shared/widgets/entrance.dart';
 import '../../shared/widgets/panel.dart';
 import '../batch/batch_sheet.dart';
+import '../export/export_set_sheet.dart';
 import '../identity/identities_panel.dart';
 import '../mapping/color_picker.dart';
 import '../mapping/colors_panel.dart';
@@ -185,6 +185,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 onBatch: () => showBatch(context, store, widget.identities),
                 exporting: _exporting,
                 onExport: _export,
+                onExportSet: () => showSetExport(context, store),
                 onBrowse: _browse,
                 onClose: store.closeTab,
               ),
@@ -369,6 +370,7 @@ class _TopBar extends StatelessWidget {
     required this.onBatch,
     required this.exporting,
     required this.onExport,
+    required this.onExportSet,
     required this.onBrowse,
     required this.onClose,
   });
@@ -381,6 +383,7 @@ class _TopBar extends StatelessWidget {
   final VoidCallback onBatch;
   final bool exporting;
   final VoidCallback onExport;
+  final VoidCallback onExportSet;
   final VoidCallback onBrowse;
   final VoidCallback onClose;
 
@@ -580,23 +583,67 @@ class _TopBar extends StatelessWidget {
                 icon: const Icon(LucideIcons.folderOpen, size: 16),
                 label: Text(t.chooseFile, overflow: TextOverflow.visible),
               )
-            else
-              FilledButton.icon(
-                onPressed: store.hasChanges && !exporting ? onExport : null,
-                icon: exporting
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(LucideIcons.share, size: 16),
-                label: Text(
-                  exporting ? t.exporting : t.export,
-                  overflow: TextOverflow.visible,
+            else ...[
+              // **الوجهتان تُسألان لا تُخمَّنان.** بمجموعةٍ مفتوحة قد يريد
+              // المستخدم ملفَّه وحده وقد يريدها كلّها، والزرّ الواحد يقرّر
+              // عنه أحدهما.
+              if (store.canScope && store.anyChanges)
+                AppMenuButton<bool>(
+                  tooltip: t.export,
+                  onSelected: (whole) => whole ? onExportSet() : onExport(),
+                  items: () => [
+                    AppMenuChoice(value: false, label: t.exportThisFile),
+                    AppMenuChoice(value: true, label: t.exportWholeSet),
+                  ],
+                  // **الزرّ مظهرٌ لا فعل**: تعطيلُه يُبهته وهو متاح،
+                  // وتركُه عاملًا يبتلع الضغطة فلا تُفتح القائمة.
+                  child: IgnorePointer(
+                    child: _ExportLabel(exporting: exporting),
+                  ),
+                )
+              else
+                FilledButton.icon(
+                  onPressed: store.hasChanges && !exporting ? onExport : null,
+                  icon: exporting
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(LucideIcons.share, size: 16),
+                  label: Text(
+                    exporting ? t.exporting : t.export,
+                    overflow: TextOverflow.visible,
+                  ),
                 ),
-              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// وجه زرّ التصدير حين تُفتح وجهتاه من قائمة.
+class _ExportLabel extends StatelessWidget {
+  const _ExportLabel({required this.exporting});
+  final bool exporting;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.l10n;
+    return FilledButton.icon(
+      onPressed: exporting ? null : () {},
+      icon: exporting
+          ? const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(LucideIcons.share, size: 16),
+      label: Text(
+        exporting ? t.exporting : t.export,
+        overflow: TextOverflow.visible,
       ),
     );
   }

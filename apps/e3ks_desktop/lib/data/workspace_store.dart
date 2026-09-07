@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'document_loader.dart';
 import 'file_tree.dart';
 import 'identity.dart';
+import 'set_exporter.dart';
 import 'style_edits.dart';
 
 enum WorkspaceTab { colors, fonts, marks, identities }
@@ -134,6 +135,44 @@ class WorkspaceStore extends ChangeNotifier {
     for (var i = 0; i < _files.length; i++)
       if (i != _active) (index: i, fileName: _files[i].document.fileName),
   ];
+
+  /// المجلدات التي فُتحت — جذور الشجرة، وجذور بنية المخرَج معها.
+  Set<String> get directories => Set.unmodifiable(_directories);
+
+  /// ملفات المجموعة، كلٌّ بخطّته الفعّالة وموضعه في المخرَج.
+  ///
+  /// **البنية كما تُعرَض**: ما يظهر تحت «عمل/فرع» في الشجرة يُكتب تحت
+  /// «عمل/فرع» في المخرَج، بنفس دالّة النسبة لا بقاعدةٍ ثانية.
+  ///
+  /// **ومسارٌ تكرّر يُميَّز برقم**: ملفّان باسمٍ واحد من جذرين مختلفين
+  /// يقعان على مسارٍ واحد، فيكتب أحدهما فوق الآخر بلا أن يُقال. والتمييز
+  /// هنا لا في الكتابة، فيراه المستخدم في شاشة المراجعة قبل أن يقع.
+  List<ExportJob> exportJobs() {
+    final roots = orderedRoots(_directories);
+    final taken = <String, int>{};
+    final jobs = <ExportJob>[];
+
+    for (final file in _files) {
+      final path = file.document.path;
+      var relative = rootedPath(path, roots).relative;
+      final seen = taken.update(relative, (n) => n + 1, ifAbsent: () => 1);
+      if (seen > 1) relative = _numbered(relative, seen);
+      jobs.add((
+        source: path,
+        relative: relative,
+        name: file.document.fileName,
+        plan: file.planWith(_general),
+      ));
+    }
+    return jobs;
+  }
+
+  static String _numbered(String relative, int n) {
+    final dot = relative.lastIndexOf('.');
+    return dot <= 0
+        ? '$relative ($n)'
+        : '${relative.substring(0, dot)} ($n)${relative.substring(dot)}';
+  }
 
   /// شجرة المجموعة. [loose] اسم حاضنة الملفات المفردة، من ملفّ الترجمة.
   List<TreeRoot> fileTree(String loose) => buildFileTree(
@@ -301,6 +340,15 @@ class WorkspaceStore extends ChangeNotifier {
       (plan.fonts?.arabic != null ? 1 : 0);
 
   bool get hasChanges => changeCount > 0;
+
+  /// في المجموعة ما يستحقّ الكتابة. **غير [hasChanges]**: هي عن الملفّ
+  /// المعروض، وقد يكون بلا تغيير بينما لغيره في المجموعة تغييرات.
+  bool get anyChanges {
+    for (var i = 0; i < _files.length; i++) {
+      if (changeCountAt(i) > 0) return true;
+    }
+    return false;
+  }
 
   StylePlan get plan => current?.planWith(_general) ?? const StylePlan();
 

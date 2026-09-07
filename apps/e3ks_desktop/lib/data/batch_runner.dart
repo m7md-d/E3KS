@@ -14,38 +14,10 @@ import 'dart:typed_data';
 
 import 'package:e3ks_engine/e3ks_engine.dart';
 
-/// امتدادات البحث في المجلد.
-///
-/// **للعثور على الملفات وحدها.** الصيغة الفعلية يقرّرها المحرّك من محتوى
-/// الملف، فملفٌ أُعيدت تسميته يُعالَج بما هو أو يسقط بتقرير.
-const Set<String> batchExtensions = {'.docx', '.pptx', '.ppsx', '.potx'};
+import 'openable_files.dart';
 
 /// ملفّ في الدفعة: مساره الكامل، ومساره النسبي كما سيخرج.
-typedef BatchFile = ({String path, String relative});
-
-/// يجمع مستندات المجلد وما تحته، مرتّبةً.
-List<BatchFile> findDocuments(Directory root) {
-  final base = root.absolute.path;
-  final found = <BatchFile>[];
-
-  for (final entity in root.listSync(recursive: true, followLinks: false)) {
-    if (entity is! File) continue;
-    final name = entity.uri.pathSegments.last;
-    // `~$` ملفات قفل يكتبها Word، والمخفيّة ليست مستندات المستخدم.
-    if (name.startsWith(r'~$') || name.startsWith('.')) continue;
-    final dot = name.lastIndexOf('.');
-    if (dot < 0) continue;
-    if (!batchExtensions.contains(name.substring(dot).toLowerCase())) continue;
-
-    found.add((
-      path: entity.absolute.path,
-      relative: entity.absolute.path.substring(base.length + 1),
-    ));
-  }
-
-  found.sort((a, b) => a.relative.compareTo(b.relative));
-  return found;
-}
+typedef BatchFile = FoundDocument;
 
 typedef BatchProgress = void Function(int done, int total, String name);
 

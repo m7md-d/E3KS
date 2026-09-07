@@ -704,6 +704,42 @@ class LAr extends L {
   String get batchNeverMatched => 'ألوان في الخطة لم تُطابق أي ملف';
 
   @override
+  String get exportSetTitle => 'تصدير المجموعة';
+
+  @override
+  String get exportSetHint =>
+      'كل ملفّ بخطّته الفعّالة، والبنية كما هي في الشجرة.';
+
+  @override
+  String get exportSetRun => 'صدّر';
+
+  @override
+  String get exportThisFile => 'هذا الملفّ';
+
+  @override
+  String get exportWholeSet => 'المجموعة كلّها';
+
+  @override
+  String get exportOverwrite => 'يُكتب فوق ملفّ قائم';
+
+  @override
+  String exportOverwriteCount(int count) {
+    return '$count من المسارات مشغولة، ويُكتب فوقها';
+  }
+
+  @override
+  String get exportRenamedPath => 'مسارٌ تكرّر، فمُيّز برقم';
+
+  @override
+  String get exportNoChanges => 'بلا تغيير';
+
+  @override
+  String get exportDiskFailed => 'تعذّرت الكتابة على القرص';
+
+  @override
+  String get exportSetEmpty => 'لا ملفات في المجموعة.';
+
+  @override
   String get batchEmptyFolder => 'لا مستندات مدعومة في هذا المجلد.';
 
   @override

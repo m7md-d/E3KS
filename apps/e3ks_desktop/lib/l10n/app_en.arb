@@ -329,6 +329,24 @@
   "batchFailedCount": "Failed",
   "batchUnchanged": "Unchanged",
   "batchNeverMatched": "Colours in the plan matched no file",
+  "exportSetTitle": "Export the set",
+  "exportSetHint": "Each file with its effective plan; the tree structure is preserved.",
+  "exportSetRun": "Export",
+  "exportThisFile": "This file",
+  "exportWholeSet": "The whole set",
+  "exportOverwrite": "Overwrites an existing file",
+  "exportOverwriteCount": "{count} destination paths are taken and will be overwritten",
+  "exportRenamedPath": "Path repeated, so it was numbered",
+  "exportNoChanges": "No changes",
+  "exportDiskFailed": "Writing to disk failed",
+  "exportSetEmpty": "The set has no files.",
+  "@exportOverwriteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "batchEmptyFolder": "No supported documents in this folder.",
   "batchNoPlan": "Change some colours or pick a saved identity.",
   "batchSameFolder": "The output folder is the source; the source is never written over.",
