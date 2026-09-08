@@ -1099,6 +1099,12 @@ abstract class L {
   /// **'التفاصيل'**
   String get showDetails;
 
+  /// No description provided for @originEmbedded.
+  ///
+  /// In ar, this message translates to:
+  /// **'مضمَّن في المستند'**
+  String get originEmbedded;
+
   /// No description provided for @originBundled.
   ///
   /// In ar, this message translates to:

@@ -75,6 +75,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     // والوعد لا يتحقّق بخطوط ناقصة.
     final report = widget.store.report;
     if (report == null) return;
+    // **ما حمله المستند يسبق كل بحث**: حروف كاتبه، بلا شبكة ولا بديل.
+    await widget.fonts.adoptEmbedded(report.embeddedFonts);
     await widget.fonts.resolveAll([for (final font in report.fonts) font.name]);
   }
 

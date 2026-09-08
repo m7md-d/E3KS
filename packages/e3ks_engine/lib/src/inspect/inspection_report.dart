@@ -5,6 +5,7 @@
 library;
 
 import 'color_usage.dart';
+import 'embedded_font.dart';
 import 'font_usage.dart';
 import 'text_mark.dart';
 
@@ -14,6 +15,7 @@ final class InspectionReport {
     required this.fonts,
     required this.marks,
     required this.scannedParts,
+    this.embeddedFonts = const [],
   });
 
   /// كل الألوان، مرتّبة تنازليًا بعدد الاستعمال.
@@ -30,6 +32,11 @@ final class InspectionReport {
 
   /// الأجزاء التي مرّ عليها الفحص فعلًا.
   final List<String> scannedParts;
+
+  /// خطوط ضمّنها المستند في نفسه — أصدق ما تُرسَم به معاينته.
+  ///
+  /// فارغة لصيغةٍ لا تضمّن أو لمستندٍ لم يضمّن، فلا تلزم الواجهة بشيء.
+  final List<EmbeddedFont> embeddedFonts;
 
   /// ألوان يراها القارئ في المتن أو الترويسات أو التذييلات.
   /// هذه هي هوية المستند الفعلية، وهي التي تُعرَض أولًا.

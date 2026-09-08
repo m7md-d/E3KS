@@ -241,6 +241,7 @@
   },
   "fontsFetching": "Fetching fonts…",
   "showDetails": "Details",
+  "originEmbedded": "Embedded in the document",
   "originBundled": "Bundled with the app",
   "originSystem": "Installed on this machine",
   "originCached": "Stored locally",

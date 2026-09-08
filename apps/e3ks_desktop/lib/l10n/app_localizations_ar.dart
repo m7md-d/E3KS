@@ -584,6 +584,9 @@ class LAr extends L {
   String get showDetails => 'التفاصيل';
 
   @override
+  String get originEmbedded => 'مضمَّن في المستند';
+
+  @override
   String get originBundled => 'مشحون مع التطبيق';
 
   @override

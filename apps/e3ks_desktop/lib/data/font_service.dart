@@ -3,9 +3,11 @@
 /// المعاينة تَعِد بعرض الملف **بشكله الحقيقي**. خطٌّ ناقص يجعلها كاذبةً بصمت،
 /// ولذلك لا يكفي أن نجلب — يجب أن نُبلّغ حين نعجز (`00` §5).
 ///
-/// الترتيب: مضمَّن ← منصَّب في النظام ← محفوظ عندنا ← يُجلَب من الشبكة.
+/// الترتيب: **مضمَّن في المستند** ← مشحون معنا ← منصَّب في النظام ← محفوظ
+/// عندنا ← يُجلَب من الشبكة ← بديل مطابق مقاسيًّا.
 library;
 
+import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -16,6 +18,9 @@ import 'font_substitutes.dart';
 
 /// من أين جاء الخطّ، أو لماذا لم يأتِ.
 enum FontOrigin {
+  /// حمله المستند في نفسه. **أصدقها**: حروف كاتبه، بلا شبكة ولا بديل.
+  embedded,
+
   /// مضمَّن في التطبيق.
   bundled,
 
@@ -44,6 +49,7 @@ enum FontOrigin {
 extension FontOriginX on FontOrigin {
   /// هل سيُرسَم النصّ بخطّه الحقيقي؟
   bool get isResolved =>
+      this == FontOrigin.embedded ||
       this == FontOrigin.bundled ||
       this == FontOrigin.system ||
       this == FontOrigin.cached ||
@@ -88,6 +94,32 @@ class FontService extends ChangeNotifier {
     for (final s in statuses)
       if (!s.origin.isResolved) s,
   ];
+
+  /// يتبنّى ما ضمّنه المستند في نفسه، قبل أي بحثٍ عن بديل.
+  ///
+  /// **ولا يُحفَظ على القرص.** المضمَّن حقّ هذا المستند: يُحمَّل في الذاكرة
+  /// لرسم معاينته، ولا يُوزَّع ولا يبقى بعده. وحفظُه في `FontCache` يجعله
+  /// خطًّا عندنا لمستنداتٍ أخرى — وهو ما لا يُخوّلنا إياه أحد.
+  Future<void> adoptEmbedded(Iterable<EmbeddedFont> fonts) async {
+    final byFamily = <String, List<EmbeddedFont>>{};
+    for (final font in fonts) {
+      byFamily.putIfAbsent(font.family.trim(), (() => [])).add(font);
+    }
+    if (byFamily.isEmpty) return;
+
+    for (final entry in byFamily.entries) {
+      if (_loaded.contains(entry.key)) continue;
+      final loader = FontLoader(entry.key);
+      for (final font in entry.value) {
+        loader.addFont(Future.value(ByteData.sublistView(font.bytes)));
+      }
+      await loader.load();
+      _loaded.add(entry.key);
+      forgetFontProbe(entry.key);
+      _known[entry.key] = FontOrigin.embedded;
+    }
+    notifyListeners();
+  }
 
   /// يحلّ كل الخطوط المطلوبة، ويحمّل ما أمكن.
   Future<void> resolveAll(Iterable<String> families) async {

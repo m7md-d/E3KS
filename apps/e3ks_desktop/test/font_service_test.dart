@@ -8,6 +8,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:e3ks_desktop/data/font_cache.dart';
+import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:e3ks_desktop/data/font_fetcher.dart';
 import 'package:e3ks_desktop/data/font_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -114,6 +115,29 @@ void main() {
       expect(service.statuses.single.origin, equals(FontOrigin.fetched));
       expect(cache.has('Amiri'), isTrue, reason: 'لم يُحفَظ للمرّة القادمة');
       expect(cache.list().single.bytes, greaterThan(0));
+    });
+
+    test('المضمَّن في المستند يسبق الجلب، ولا يُحفَظ على القرص', () async {
+      // **حقّ هذا المستند لا حقّنا.** يُرسَم به، ولا يصير خطًّا عندنا
+      // لمستنداتٍ أخرى — ولا يُطلَب من الشبكة ما هو بين أيدينا.
+      final fetcher = _FakeFetcher(FetchOutcome.fetched, bytes: fakeTtf());
+      final cache = freshCache();
+      final service = FontService(cache, fetcher: fetcher);
+
+      await service.adoptEmbedded([
+        EmbeddedFont(
+          family: 'Northwind Sans',
+          face: FontFace.regular,
+          bytes: fakeTtf(),
+          subsetted: true,
+        ),
+      ]);
+      await service.resolveAll(['Northwind Sans']);
+
+      expect(service.statuses.single.origin, equals(FontOrigin.embedded));
+      expect(fetcher.calls, isZero, reason: 'جلب ما بين يديه');
+      expect(cache.list(), isEmpty, reason: 'حفظ ما ليس له أن يحفظه');
+      expect(service.missing, isEmpty);
     });
 
     test('بديل غير مشحون يُجلب، فيصير بديلًا حقًّا', () async {

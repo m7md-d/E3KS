@@ -241,6 +241,7 @@
   },
   "fontsFetching": "جارٍ جلب الخطوط…",
   "showDetails": "التفاصيل",
+  "originEmbedded": "مضمَّن في المستند",
   "originBundled": "مشحون مع التطبيق",
   "originSystem": "على الجهاز",
   "originCached": "محفوظ على القرص",

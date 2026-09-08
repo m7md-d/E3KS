@@ -570,6 +570,9 @@ class LEn extends L {
   String get showDetails => 'Details';
 
   @override
+  String get originEmbedded => 'Embedded in the document';
+
+  @override
   String get originBundled => 'Bundled with the app';
 
   @override

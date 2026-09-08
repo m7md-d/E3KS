@@ -17,6 +17,7 @@ import '../../inspect/usage_accumulator.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
 import '../xml_stream_pass.dart';
+import 'pptx_embedded_fonts.dart';
 import 'pptx_parts.dart';
 
 /// فتحات الخطّ في DrawingML. `a:sym` خطّ الرموز — يُحصى ولا يُبدَّل افتراضًا.
@@ -57,6 +58,7 @@ final class PptxInspector {
         // قلم PowerPoint `a:highlight` بلون صريح، بلا أسماء Word الثابتة.
         marks: buildMarks(marks),
         scannedParts: scanned,
+        embeddedFonts: readEmbeddedFonts(package),
       ),
       warnings: warnings,
     );

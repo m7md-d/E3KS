@@ -15,6 +15,7 @@ import '../../inspect/usage_accumulator.dart';
 import '../../ooxml/ooxml_names.dart';
 import '../../package/document_package.dart';
 import '../xml_stream_pass.dart';
+import 'docx_embedded_fonts.dart';
 import 'docx_parts.dart';
 
 /// دور خلفية `w:shd` يُحدَّد من العنصر الأب.
@@ -55,6 +56,9 @@ final class DocxInspector {
         fonts: buildFonts(fonts),
         marks: buildMarks(marks),
         scannedParts: scanned,
+        // **يُقرأ مع الفحص لا بعده**: المعاينة تُرسَم أوّل ما يصل التقرير،
+        // ونداءٌ ثانٍ يفتح الحاوية من جديد ليقرأ ما كان بين يديه.
+        embeddedFonts: readEmbeddedFonts(package),
       ),
       warnings: warnings,
     );
