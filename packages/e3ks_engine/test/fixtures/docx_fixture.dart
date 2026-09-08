@@ -96,6 +96,26 @@ Uint8List buildFixtureDocx() {
   return ZipEncoder().encodeBytes(archive);
 }
 
+/// نفس المستند و`[Content_Types].xml` **آخر** مُدخَل فيه.
+///
+/// ليس افتراضًا: مستندٌ حقيقي كتبه مولّد غير Word جاء هكذا، وكان يُرفض عند
+/// التصدير فلا يخرج أبدًا — `02` §1.
+Uint8List buildContentTypesLastDocx() {
+  final archive = Archive();
+  const contentTypes = '[Content_Types].xml';
+  for (final entry in fixtureParts.entries) {
+    if (entry.key == contentTypes) continue;
+    archive.add(ArchiveFile.bytes(entry.key, utf8.encode(entry.value.trim())));
+  }
+  archive.add(
+    ArchiveFile.bytes(
+      contentTypes,
+      utf8.encode(fixtureParts[contentTypes]!.trim()),
+    ),
+  );
+  return ZipEncoder().encodeBytes(archive);
+}
+
 /// مستند بقسمين مختلفَي المقاس: Letter رأسي ثم A4 أفقي.
 ///
 /// القسم الأفقي شائع في المستندات الحقيقية (جدول عريض)، وعرضه بمقاس الصفحات

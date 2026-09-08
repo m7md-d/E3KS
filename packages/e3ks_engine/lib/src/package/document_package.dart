@@ -62,10 +62,10 @@ final class DocumentPackage {
       ]);
     }
 
-    return Ok(DocumentPackage._(archive, files.length));
+    return Ok(DocumentPackage._(_contentTypesFirst(archive), files.length));
   }
 
-  /// أسماء الأجزاء بترتيبها الأصلي داخل الأرشيف.
+  /// أسماء الأجزاء بترتيبها في الأرشيف، و`[Content_Types].xml` أولها.
   List<String> get partNames => [
     for (final f in _archive.files)
       if (f.isFile) f.name,
@@ -147,4 +147,30 @@ final class DocumentPackage {
       return Failed([EngineIssue(code: IssueCode.encodeFailed, detail: '$e')]);
     }
   }
+}
+
+/// يقدّم `[Content_Types].xml` إلى أول الأرشيف، وبقيّة المُدخَلات بترتيبها.
+///
+/// **كاتبٌ غير Word يضعه آخِرًا**، ومستنداتٌ كثيرة تُولَّد بغير Word. وكنّا
+/// نمرّر الترتيب كما ورد ثم نرفضه عند الكتابة (`02` §1)، فيتعذّر تصدير
+/// المستند **أبدًا** بلا سبيل إلى إصلاحه — وقع هذا على مستند حقيقي.
+///
+/// والترتيب شأن الغلاف لا شأن الأجزاء: الغلاف يُعاد بناؤه في كل الأحوال،
+/// وكل جزء يخرج ببايتاته كما دخل — حدّ الأمانة في
+/// [`ADR 0002`](../../../../docs/adr/0002-حدود-الأمانة-البايتية.md).
+/// والمُدخَلات تُنقَل كما هي، فيبقى تدفّقها المضغوط الأصلي بلا إعادة ضغط.
+Archive _contentTypesFirst(Archive archive) {
+  final entries = archive.files;
+  final at = entries.indexWhere(
+    (f) => f.name == DocumentPackage.contentTypesPart,
+  );
+  // 0 موضعه الصحيح، و-1 لا يقع: الفتح يرفض ما لا جزء أنواع محتوى فيه.
+  if (at <= 0) return archive;
+
+  final ordered = Archive()..comment = archive.comment;
+  ordered.add(entries[at]);
+  for (var i = 0; i < entries.length; i++) {
+    if (i != at) ordered.add(entries[i]);
+  }
+  return ordered;
 }

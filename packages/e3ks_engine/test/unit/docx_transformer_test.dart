@@ -76,6 +76,33 @@ void main() {
         );
       }
     });
+
+    test('مستندٌ جزء أنواع المحتوى فيه آخِرًا يُصدَّر', () {
+      // **وقع عند مستخدم:** مولّدٌ غير Word كتب `[Content_Types].xml` آخر
+      // مُدخَل، فرفضته البوابة عند الكتابة — «ترتيب أجزاء الملف غير سليم» —
+      // ولا سبيل عنده إلى إصلاح ترتيب أرشيف. الحاوية تقدّمه الآن، فيخرج
+      // المستند سليمًا بالترتيب الذي يفرضه `02` §1.
+      final source = buildContentTypesLastDocx();
+      final outcome = restyleOrFail(
+        source,
+        StylePlan(colors: {hex('4C2FB8'): hex('00635D')}),
+      );
+
+      final after = openOrFail(outcome.bytes);
+      expect(after.partNames.first, equals('[Content_Types].xml'));
+      expect(gateOf(after), isEmpty);
+
+      // والأجزاء نفسها لم تتحرّك: ما لم يُطلَب تبديله يخرج ببايتاته.
+      final before = openOrFail(source);
+      for (final name in before.partNames) {
+        if (outcome.report.changedParts.contains(name)) continue;
+        expect(
+          after.bytesOf(name),
+          equals(before.bytesOf(name)),
+          reason: 'الجزء $name تغيّر بلا سبب',
+        );
+      }
+    });
   });
 
   group('انحدار إلزامي', () {

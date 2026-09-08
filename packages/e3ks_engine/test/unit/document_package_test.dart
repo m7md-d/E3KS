@@ -13,6 +13,10 @@ import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:test/test.dart';
 
 import '../fixtures/docx_fixture.dart';
+import '../fixtures/real_documents.dart';
+
+/// اسم جزء أنواع المحتوى — نصًّا، كما يكتبه المولّد لا كما نسمّيه.
+const contentTypesName = '[Content_Types].xml';
 
 /// يفتح الحاوية أو يُسقط الاختبار برسالة المشكلة.
 DocumentPackage openOrFail(Uint8List bytes) {
@@ -109,6 +113,24 @@ void main() {
       expect(pkg.partNames, equals(fixtureParts.keys.toList()));
     });
 
+    test('يقدّم [Content_Types].xml إذا ورد آخِرًا', () {
+      // **خللٌ منع تصدير مستند حقيقي:** كاتبٌ غير Word وضعه آخِرًا، فمرّرنا
+      // الترتيب كما ورد ثم رفضناه عند الكتابة — فلا يخرج الملفّ أبدًا ولا
+      // سبيل عند المستخدم إلى إصلاحه.
+      final pkg = openOrFail(buildContentTypesLastDocx());
+
+      expect(pkg.partNames.first, equals(DocumentPackage.contentTypesPart));
+      expect(
+        pkg.partNames.skip(1),
+        equals(fixtureParts.keys.where((n) => n != contentTypesName)),
+        reason: 'بقيّة المُدخَلات تحرّكت عن ترتيبها',
+      );
+
+      final after = openOrFail(buildOrFail(pkg));
+      expect(after.partNames, equals(pkg.partNames));
+      expectPartsIdentical(pkg, after);
+    });
+
     test('لا يضيف علامة BOM عند كتابة نص', () {
       final pkg = openOrFail(buildFixtureDocx());
       pkg.putText('word/header1.xml', '<w:hdr/>');
@@ -155,6 +177,24 @@ void main() {
     // وإلّا تخطّينا — الاختبار الحقيقي أقوى بكثير من أي مستند مصنوع.
     const realPath =
         '../../../_lab/الحرس/SCyWF_Assessment_Operations_Manual_Stage0_PreExam_MainExam.docx';
+
+    test('دورة بلا تعديل على كل مستند في مجلد الاختبار', () {
+      // **هنا كان يُكشف الخلل الذي بلّغ عنه المالك:** مستندٌ كتبه مولّد غير
+      // Word لا يُبنى أصلًا، فيسقط `buildOrFail` قبل أي مقارنة. المجلد
+      // يملؤه المالك بما يمرّ به فعلًا، وكلّ ما فيه يدخل هذه الدورة.
+      final documents = realDocuments();
+      if (documents.isEmpty) {
+        markTestSkipped('لا مستندات في $realDocsDir');
+        return;
+      }
+
+      for (final file in documents) {
+        printOnFailure('المستند: ${file.path}');
+        final pkg = openOrFail(file.readAsBytesSync());
+        expect(pkg.partNames.first, equals(DocumentPackage.contentTypesPart));
+        expectPartsIdentical(pkg, openOrFail(buildOrFail(pkg)));
+      }
+    });
 
     test('دورة بلا تعديل على مستند Word حقيقي', () {
       final file = File(realPath);
