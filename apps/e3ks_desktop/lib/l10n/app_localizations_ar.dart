@@ -528,6 +528,15 @@ class LAr extends L {
       'يُرسَل اسم الخطّ فقط؛ لا يُرسَل المستند ولا اسمه.';
 
   @override
+  String get fontFolder => 'مجلد خطوط';
+
+  @override
+  String get fontFolderHint => 'مصدر إضافي لخطوط المعاينة.';
+
+  @override
+  String get fontFolderClear => 'أزل المجلد';
+
+  @override
   String get cachedFonts => 'خطوط محفوظة';
 
   @override
@@ -561,7 +570,7 @@ class LAr extends L {
 
   @override
   String fontsMissingOne(Object family) {
-    return '«$family» غير متاح، ويُرسَم بخط التطبيق.';
+    return '«$family» غير متاح. تم استعمال خط التطبيق.';
   }
 
   @override
@@ -569,12 +578,12 @@ class LAr extends L {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count خط غير متاح، ويُرسَم بخط التطبيق.',
-      many: '$count خط غير متاح، ويُرسَم بخط التطبيق.',
-      few: '$count خطوط غير متاحة، وتُرسَم بخط التطبيق.',
-      two: 'خطان غير متاحين، ويُرسمان بخط التطبيق.',
+      other: '$count خط غير متاح',
+      many: '$count خط غير متاح',
+      few: '$count خطوط غير متاحة',
+      two: 'خطان غير متاحين',
     );
-    return '$_temp0';
+    return '$_temp0. تم استعمال خط التطبيق.';
   }
 
   @override
@@ -582,6 +591,9 @@ class LAr extends L {
 
   @override
   String get showDetails => 'التفاصيل';
+
+  @override
+  String get retryFonts => 'أعد المحاولة';
 
   @override
   String get originEmbedded => 'مضمَّن في المستند';
@@ -593,6 +605,9 @@ class LAr extends L {
   String get originSystem => 'على الجهاز';
 
   @override
+  String get originFolder => 'من مجلد الخطوط';
+
+  @override
   String get originCached => 'محفوظ على القرص';
 
   @override
@@ -602,7 +617,7 @@ class LAr extends L {
   String get originUnavailable => 'غير موجود على Google Fonts';
 
   @override
-  String get originSubstituted => 'رُسم ببديل مطابق في المقاسات';
+  String get originSubstituted => 'بديل مطابق في المقاسات';
 
   @override
   String get originOffline => 'تعذّر الاتصال';
@@ -982,12 +997,11 @@ class LAr extends L {
   String get fitSubstitute => 'بديل مطابق';
 
   @override
-  String get fitFallback => 'غير متاح هنا';
+  String get fitFallback => 'غير متاح';
 
   @override
-  String get fitFallbackWhy => 'يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.';
+  String get fitFallbackWhy => 'تم استعمال خط التطبيق.';
 
   @override
-  String get fitSubstituteWhy =>
-      'يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره.';
+  String get fitSubstituteWhy => 'تم استعمال بديل مطابق في المقاسات.';
 }

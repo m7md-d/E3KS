@@ -27,6 +27,9 @@ enum FontOrigin {
   /// منصَّب على جهاز المستخدم.
   system,
 
+  /// من مجلد الخطوط الذي سمّاه المستخدم في الإعدادات.
+  folder,
+
   /// محفوظ على قرص المستخدم: جلبناه سابقًا، أو أضافه هو بنفسه.
   cached,
 
@@ -52,6 +55,7 @@ extension FontOriginX on FontOrigin {
       this == FontOrigin.embedded ||
       this == FontOrigin.bundled ||
       this == FontOrigin.system ||
+      this == FontOrigin.folder ||
       this == FontOrigin.cached ||
       this == FontOrigin.fetched ||
       this == FontOrigin.substituted;
@@ -61,20 +65,34 @@ typedef FontStatus = ({String family, FontOrigin origin});
 
 /// يحلّ الخطوط ويحمّلها وقت التشغيل، ويحتفظ بحصيلة آخر عملية.
 class FontService extends ChangeNotifier {
-  FontService(this.cache, {FontFetcher fetcher = const GoogleFontFetcher()})
-    : _fetcher = fetcher;
+  FontService(
+    this.cache, {
+    FontFetcher fetcher = const GoogleFontFetcher(),
+    FontFetcher? folder,
+  }) : _fetcher = fetcher,
+       _folder = folder;
 
   final FontCache cache;
   final FontFetcher _fetcher;
 
+  /// مزوّدٌ من قرص المستخدم، يُسأل قبل الشبكة ولا يحكمه مفتاح الجلب.
+  final FontFetcher? _folder;
+
   final Map<String, FontOrigin> _known = {};
   final Set<String> _loaded = {};
   bool _working = false;
+  bool _retrying = false;
 
   /// جلب الخطوط من الشبكة. يُطفأ من الإعدادات لمن لا يريد طلبًا خارجيًا.
   bool fetchEnabled = true;
 
   bool get working => _working;
+
+  /// هل الجاري إعادةُ محاولةٍ طلبها المستخدم من الإعدادات؟
+  ///
+  /// **الأثر يظهر حيث وقع الفعل.** بلا هذا التمييز يضيء شريط المعاينة
+  /// «جارٍ جلب الخطوط» لضغطةٍ وقعت في نافذة الإعدادات.
+  bool get retrying => _retrying;
 
   /// حصيلة آخر حلّ، مرتّبة: المتعذّر أولًا لأنه ما يهمّ المستخدم.
   List<FontStatus> get statuses {
@@ -94,6 +112,27 @@ class FontService extends ChangeNotifier {
     for (final s in statuses)
       if (!s.origin.isResolved) s,
   ];
+
+  /// يعيد محاولة ما لم يُحلّ.
+  ///
+  /// **العجز حالٌ لا حكم.** انقطاعٌ لحظيّ عند بدء التشغيل — والشبكة لم تصل
+  /// بعد — كان يبقى إلى آخر الجلسة: الحصيلة محفوظة، والمحاولة لا تتكرّر.
+  /// وإضافةُ مجلد خطوطٍ أو ملفٍّ فيه تغيّر الجواب كذلك.
+  Future<void> retryMissing() async {
+    final again = [
+      for (final status in statuses)
+        if (!status.origin.isResolved) status.family,
+    ];
+    if (again.isEmpty) return;
+    _known.removeWhere((_, origin) => !origin.isResolved);
+    _retrying = true;
+    try {
+      await resolveAll(again);
+    } finally {
+      _retrying = false;
+      notifyListeners();
+    }
+  }
 
   /// يتبنّى ما ضمّنه المستند في نفسه، قبل أي بحثٍ عن بديل.
   ///
@@ -149,6 +188,17 @@ class FontService extends ChangeNotifier {
     if (saved != null) {
       await _register(family, saved);
       return FontOrigin.cached;
+    }
+
+    // **قرص المستخدم قبل الشبكة**: أسرع، وبلا طلب خارجي، وهو الطريق الوحيد
+    // إلى خطٍّ مملوك يملكه هو. ولا يُحفَظ عندنا: ملفّه في مكانه.
+    final local = _folder;
+    if (local != null) {
+      final result = await local.fetch(family);
+      if (result.outcome == FetchOutcome.fetched) {
+        await _register(family, result.bytes!);
+        return FontOrigin.folder;
+      }
     }
 
     if (!fetchEnabled) return await _lastResort(family, FontOrigin.disabled);

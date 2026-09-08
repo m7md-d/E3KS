@@ -195,7 +195,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 frame: widget.frame,
                 store: store,
                 settings: widget.settings,
-                onSettings: () => showSettings(context, widget.fonts),
+                onSettings: () =>
+                    showSettings(context, widget.fonts, widget.settings),
                 onOpenFolder: _browseFolder,
                 exporting: _exporting,
                 onExport: _export,
@@ -246,8 +247,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                               if (store.hasDocument)
                                 FontNotice(
                                   service: widget.fonts,
-                                  onDetails: () =>
-                                      showSettings(context, widget.fonts),
+                                  onDetails: () => showSettings(
+                                    context,
+                                    widget.fonts,
+                                    widget.settings,
+                                  ),
                                 ),
                               Expanded(
                                 child: PreviewPanel(

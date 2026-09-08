@@ -208,6 +208,9 @@
   "fontsSectionHint": "The preview uses the document's fonts. Those not installed are fetched and stored here.",
   "fetchFonts": "Fetch missing fonts",
   "fetchFontsHint": "Only the font name is sent; the document and its name are not.",
+  "fontFolder": "Font folder",
+  "fontFolderHint": "An additional source for preview fonts.",
+  "fontFolderClear": "Remove the folder",
   "cachedFonts": "Saved fonts",
   "cacheSize": "Space used",
   "deleteAllFonts": "Delete all",
@@ -225,13 +228,13 @@
   "deleteFont": "Delete",
   "noCachedFonts": "No stored fonts.",
   "fontDeletedNote": "Deleted fonts stay on screen until the app restarts.",
-  "fontsMissingOne": "“{family}” is not available; it is drawn with the app font.",
+  "fontsMissingOne": "“{family}” is not available. The app font was used.",
   "@fontsMissingOne": {
     "placeholders": {
       "family": {}
     }
   },
-  "fontsMissingMany": "{count} fonts are not available; they are drawn with the app font.",
+  "fontsMissingMany": "{count} fonts are not available. The app font was used.",
   "@fontsMissingMany": {
     "placeholders": {
       "count": {
@@ -241,13 +244,15 @@
   },
   "fontsFetching": "Fetching fonts…",
   "showDetails": "Details",
+  "retryFonts": "Try again",
   "originEmbedded": "Embedded in the document",
   "originBundled": "Bundled with the app",
   "originSystem": "Installed on this machine",
+  "originFolder": "From your font folder",
   "originCached": "Stored locally",
   "originFetched": "Fetched",
   "originUnavailable": "Not found on Google Fonts",
-  "originSubstituted": "Drawn with a metric-compatible stand-in",
+  "originSubstituted": "Metric-compatible substitute",
   "originOffline": "Could not connect",
   "originDisabled": "Fetching is turned off in settings",
   "errNotAnArchive": "Not a valid OOXML archive; it could not be opened.",
@@ -452,7 +457,7 @@
   "exportFailed": "Could not write the file",
   "exportFailedWhy": "No file was created. Try another location, such as Documents or the Desktop.",
   "fitSubstitute": "Metric substitute",
-  "fitFallback": "Not available here",
-  "fitFallbackWhy": "Drawn with the app font, so the preview is approximate.",
-  "fitSubstituteWhy": "Drawn with a metric-compatible substitute: the layout is right, the letterforms are not."
+  "fitFallback": "Not available",
+  "fitFallbackWhy": "The app font was used.",
+  "fitSubstituteWhy": "A metric-compatible substitute was used."
 }

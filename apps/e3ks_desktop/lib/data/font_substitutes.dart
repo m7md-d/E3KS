@@ -18,6 +18,7 @@
 /// من يقرأ شاشة الرخص.
 library;
 
+import 'font_fetcher.dart';
 import 'font_probe.dart';
 
 /// **المقاسات مقيسة لا مدَّعاة.** قِسنا عرض كل محرف من ٧٣ محرفًا عند 100pt،
@@ -82,9 +83,17 @@ String previewFamily(String family) {
 }
 
 /// بديل هذه العائلة إن كان لها بديل — مشحونًا كان أو مجلوبًا.
+///
+/// **والاسم المجرَّد من لاحقة النمط يُجرَّب أيضًا**: «Calibri Light» بديلها
+/// بديلُ Calibri، وبدونها يسقط أشهر خطوط العناوين في Word إلى خطّ التطبيق.
 String? substituteFor(String family) {
   final key = family.trim().toLowerCase();
-  return _bundled[key] ?? _fetched[key];
+  final direct = _bundled[key] ?? _fetched[key];
+  if (direct != null) return direct;
+
+  final bare = familyWithoutStyleSuffix(family)?.toLowerCase();
+  if (bare == null) return null;
+  return _bundled[bare] ?? _fetched[bare];
 }
 
 /// بماذا سترسم المعاينة هذه العائلة **على هذا الجهاز**.

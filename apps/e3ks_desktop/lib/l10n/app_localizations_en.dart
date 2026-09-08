@@ -521,6 +521,15 @@ class LEn extends L {
       'Only the font name is sent; the document and its name are not.';
 
   @override
+  String get fontFolder => 'Font folder';
+
+  @override
+  String get fontFolderHint => 'An additional source for preview fonts.';
+
+  @override
+  String get fontFolderClear => 'Remove the folder';
+
+  @override
   String get cachedFonts => 'Saved fonts';
 
   @override
@@ -555,12 +564,12 @@ class LEn extends L {
 
   @override
   String fontsMissingOne(Object family) {
-    return '“$family” is not available; it is drawn with the app font.';
+    return '“$family” is not available. The app font was used.';
   }
 
   @override
   String fontsMissingMany(int count) {
-    return '$count fonts are not available; they are drawn with the app font.';
+    return '$count fonts are not available. The app font was used.';
   }
 
   @override
@@ -568,6 +577,9 @@ class LEn extends L {
 
   @override
   String get showDetails => 'Details';
+
+  @override
+  String get retryFonts => 'Try again';
 
   @override
   String get originEmbedded => 'Embedded in the document';
@@ -579,6 +591,9 @@ class LEn extends L {
   String get originSystem => 'Installed on this machine';
 
   @override
+  String get originFolder => 'From your font folder';
+
+  @override
   String get originCached => 'Stored locally';
 
   @override
@@ -588,7 +603,7 @@ class LEn extends L {
   String get originUnavailable => 'Not found on Google Fonts';
 
   @override
-  String get originSubstituted => 'Drawn with a metric-compatible stand-in';
+  String get originSubstituted => 'Metric-compatible substitute';
 
   @override
   String get originOffline => 'Could not connect';
@@ -966,13 +981,11 @@ class LEn extends L {
   String get fitSubstitute => 'Metric substitute';
 
   @override
-  String get fitFallback => 'Not available here';
+  String get fitFallback => 'Not available';
 
   @override
-  String get fitFallbackWhy =>
-      'Drawn with the app font, so the preview is approximate.';
+  String get fitFallbackWhy => 'The app font was used.';
 
   @override
-  String get fitSubstituteWhy =>
-      'Drawn with a metric-compatible substitute: the layout is right, the letterforms are not.';
+  String get fitSubstituteWhy => 'A metric-compatible substitute was used.';
 }

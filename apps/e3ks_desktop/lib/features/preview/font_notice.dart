@@ -34,7 +34,7 @@ class _FontNoticeState extends State<FontNotice> {
     final t = context.l10n;
     final service = widget.service;
 
-    if (service.working) {
+    if (service.working && !service.retrying) {
       return _Bar(
         icon: LucideIcons.download,
         tone: Shade.textMuted,

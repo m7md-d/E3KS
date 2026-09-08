@@ -1015,6 +1015,24 @@ abstract class L {
   /// **'يُرسَل اسم الخطّ فقط؛ لا يُرسَل المستند ولا اسمه.'**
   String get fetchFontsHint;
 
+  /// No description provided for @fontFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'مجلد خطوط'**
+  String get fontFolder;
+
+  /// No description provided for @fontFolderHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'مصدر إضافي لخطوط المعاينة.'**
+  String get fontFolderHint;
+
+  /// No description provided for @fontFolderClear.
+  ///
+  /// In ar, this message translates to:
+  /// **'أزل المجلد'**
+  String get fontFolderClear;
+
   /// No description provided for @cachedFonts.
   ///
   /// In ar, this message translates to:
@@ -1078,13 +1096,13 @@ abstract class L {
   /// No description provided for @fontsMissingOne.
   ///
   /// In ar, this message translates to:
-  /// **'«{family}» غير متاح، ويُرسَم بخط التطبيق.'**
+  /// **'«{family}» غير متاح. تم استعمال خط التطبيق.'**
   String fontsMissingOne(Object family);
 
   /// No description provided for @fontsMissingMany.
   ///
   /// In ar, this message translates to:
-  /// **'{count, plural, =2{خطان غير متاحين، ويُرسمان بخط التطبيق.} few{{count} خطوط غير متاحة، وتُرسَم بخط التطبيق.} many{{count} خط غير متاح، ويُرسَم بخط التطبيق.} other{{count} خط غير متاح، ويُرسَم بخط التطبيق.}}'**
+  /// **'{count, plural, =2{خطان غير متاحين} few{{count} خطوط غير متاحة} many{{count} خط غير متاح} other{{count} خط غير متاح}}. تم استعمال خط التطبيق.'**
   String fontsMissingMany(int count);
 
   /// No description provided for @fontsFetching.
@@ -1098,6 +1116,12 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'التفاصيل'**
   String get showDetails;
+
+  /// No description provided for @retryFonts.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعد المحاولة'**
+  String get retryFonts;
 
   /// No description provided for @originEmbedded.
   ///
@@ -1116,6 +1140,12 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'على الجهاز'**
   String get originSystem;
+
+  /// No description provided for @originFolder.
+  ///
+  /// In ar, this message translates to:
+  /// **'من مجلد الخطوط'**
+  String get originFolder;
 
   /// No description provided for @originCached.
   ///
@@ -1138,7 +1168,7 @@ abstract class L {
   /// No description provided for @originSubstituted.
   ///
   /// In ar, this message translates to:
-  /// **'رُسم ببديل مطابق في المقاسات'**
+  /// **'بديل مطابق في المقاسات'**
   String get originSubstituted;
 
   /// No description provided for @originOffline.
@@ -1732,19 +1762,19 @@ abstract class L {
   /// No description provided for @fitFallback.
   ///
   /// In ar, this message translates to:
-  /// **'غير متاح هنا'**
+  /// **'غير متاح'**
   String get fitFallback;
 
   /// No description provided for @fitFallbackWhy.
   ///
   /// In ar, this message translates to:
-  /// **'يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.'**
+  /// **'تم استعمال خط التطبيق.'**
   String get fitFallbackWhy;
 
   /// No description provided for @fitSubstituteWhy.
   ///
   /// In ar, this message translates to:
-  /// **'يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره.'**
+  /// **'تم استعمال بديل مطابق في المقاسات.'**
   String get fitSubstituteWhy;
 }
 

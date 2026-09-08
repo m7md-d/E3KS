@@ -11,6 +11,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../data/folder_fonts.dart';
 import '../data/font_cache.dart';
 import '../data/font_service.dart';
 import '../data/identity_store.dart';
@@ -33,13 +34,21 @@ typedef AppServices = ({
   WindowFrameWatch frame,
 });
 
-Future<AppServices> openServices() async => (
-  settings: await SettingsStore.open(),
-  identities: await IdentityStore.open(),
-  fonts: FontService(await FontCache.open()),
-  // ويبقى مصغيًا: ملء الشاشة يُخفي أزرار النظام، فيسقط حجزها معها.
-  frame: await _openFrame(),
-);
+Future<AppServices> openServices() async {
+  final settings = await SettingsStore.open();
+  return (
+    settings: settings,
+    identities: await IdentityStore.open(),
+    fonts: FontService(
+      await FontCache.open(),
+      // مزوّدٌ من قرص المستخدم يُسأل قبل الشبكة، ويقرأ المجلد عند كل نداء
+      // فيتبع تبديله في الإعدادات بلا إعادة تشغيل.
+      folder: FolderFontFetcher(() => settings.fontFolder),
+    ),
+    // ويبقى مصغيًا: ملء الشاشة يُخفي أزرار النظام، فيسقط حجزها معها.
+    frame: await _openFrame(),
+  );
+}
 
 /// يقرأ القياس الأول قبل أوّل رسمة: بدء الحجز صفرًا ثم قفزه بعد لحظة
 /// يُري المستخدم شريطًا ينزلق تحته المحتوى بلا سبب ظاهر.

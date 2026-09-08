@@ -7,6 +7,7 @@ library;
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:e3ks_desktop/data/folder_fonts.dart';
 import 'package:e3ks_desktop/data/font_cache.dart';
 import 'package:e3ks_engine/e3ks_engine.dart';
 import 'package:e3ks_desktop/data/font_fetcher.dart';
@@ -195,6 +196,108 @@ void main() {
     });
   });
 
+  group('إعادة المحاولة', () {
+    test('ما تعذّر يُعاد، وما نجح لا يُعاد', () async {
+      // **انقطاعٌ لحظيّ عند بدء التشغيل كان يبقى إلى آخر الجلسة.**
+      final fetcher = _ScriptedFetcher({
+        'Amiri': (outcome: FetchOutcome.offline, bytes: null),
+      });
+      final service = FontService(freshCache(), fetcher: fetcher);
+      await service.resolveAll(['Amiri']);
+      expect(service.statuses.single.origin, equals(FontOrigin.offline));
+
+      // عاد الاتصال.
+      fetcher.script['Amiri'] = (
+        outcome: FetchOutcome.fetched,
+        bytes: fakeTtf(),
+      );
+      await service.retryMissing();
+
+      expect(service.statuses.single.origin, equals(FontOrigin.fetched));
+      expect(service.missing, isEmpty);
+    });
+
+    test('بلا متعذّرٍ لا طلب', () async {
+      final fetcher = _ScriptedFetcher({
+        'Amiri': (outcome: FetchOutcome.fetched, bytes: fakeTtf()),
+      });
+      final service = FontService(freshCache(), fetcher: fetcher);
+      await service.resolveAll(['Amiri']);
+
+      await service.retryMissing();
+
+      expect(fetcher.asked, hasLength(1), reason: 'أعاد طلب ما نجح');
+    });
+  });
+
+  group('مجلد الخطوط: مزوّدٌ من قرص المستخدم', () {
+    late Directory folder;
+
+    setUp(() => folder = Directory.systemTemp.createTempSync('e3ks_folder_'));
+    tearDown(() {
+      if (folder.existsSync()) folder.deleteSync(recursive: true);
+    });
+
+    /// **الاسم من داخل الملفّ لا من اسمه**، فاسم الملفّ هنا لا يدلّ عليه.
+    File seed(String family, [String fileName = 'anything.ttf']) =>
+        File('${folder.path}/$fileName')
+          ..writeAsBytesSync(ttfWithName(1, family));
+
+    test('الخطّ يُعرَف باسمه المكتوب في جدول `name`', () async {
+      seed('Company Sans');
+      final supplier = FolderFontFetcher(() => folder.path);
+
+      final found = await supplier.fetch('Company Sans');
+      final missing = await supplier.fetch('Nothing Here');
+
+      expect(found.outcome, equals(FetchOutcome.fetched));
+      expect(found.bytes, isNotNull);
+      expect(missing.outcome, equals(FetchOutcome.notFound));
+    });
+
+    test('يُسأل قبل الشبكة، فلا يُطلَب ما على القرص', () async {
+      seed('Company Sans');
+      final fetcher = _FakeFetcher(FetchOutcome.fetched, bytes: fakeTtf());
+      final service = FontService(
+        freshCache(),
+        fetcher: fetcher,
+        folder: FolderFontFetcher(() => folder.path),
+      );
+
+      await service.resolveAll(['Company Sans']);
+
+      expect(service.statuses.single.origin, equals(FontOrigin.folder));
+      expect(fetcher.calls, isZero, reason: 'طلب من الشبكة ما على القرص');
+    });
+
+    test('مفتاح الجلب لا يحكم قرص المستخدم', () async {
+      // **الفرق الذي يُغفَل**: «اجلب الخطوط الناقصة» يخصّ الطلب الخارجي،
+      // وإطفاؤه كان يقطع الطريق إلى مجلدٍ على الجهاز نفسه.
+      seed('Company Sans');
+      final service = FontService(
+        freshCache(),
+        fetcher: _FakeFetcher(FetchOutcome.notFound),
+        folder: FolderFontFetcher(() => folder.path),
+      )..fetchEnabled = false;
+
+      await service.resolveAll(['Company Sans']);
+
+      expect(service.statuses.single.origin, equals(FontOrigin.folder));
+    });
+
+    test('بلا مجلد لا يتغيّر شيء', () async {
+      final service = FontService(
+        freshCache(),
+        fetcher: _FakeFetcher(FetchOutcome.notFound),
+        folder: FolderFontFetcher(() => null),
+      );
+
+      await service.resolveAll(['Company Sans']);
+
+      expect(service.statuses.single.origin, equals(FontOrigin.unavailable));
+    });
+  });
+
   group('الإبلاغ عند التعذّر', () {
     test('خطّ غير موجود في المصدر يُعلَن ولا يُبتلع', () async {
       // خطٌّ لا تعرفه الخدمة. الصمت هنا يجعل المعاينة كاذبة (`00` §5).
@@ -318,11 +421,32 @@ void main() {
       );
     });
 
-    test('لا تُجرَّد حين تكون هي العائلة أو نصفها', () {
+    test('تُجرَّد ولو بقيت كلمة واحدة', () {
+      // **الخلل الذي وُلد منه الاختبار:** اشتراط بقاء كلمتين كان يردّ
+      // «Calibri Light» — أشهر خطّ عناوين في Word — و Google تخدم
+      // «Calibri» ولا تخدم «Calibri Light»: 200 مقابل 400، مقيسًا.
+      expect(familyWithoutStyleSuffix('Calibri Light'), equals('Calibri'));
+      expect(familyWithoutStyleSuffix('Cairo Bold'), equals('Cairo'));
+    });
+
+    test('لا تُجرَّد حين تكون هي العائلة أو تصنع غيرها', () {
       // «Light» وحده عائلة، و«Arial Black» بلا Black عائلة أخرى.
       expect(familyWithoutStyleSuffix('Light'), isNull);
       expect(familyWithoutStyleSuffix('Arial Black'), isNull);
+      expect(familyWithoutStyleSuffix('Arial Narrow'), isNull);
       expect(familyWithoutStyleSuffix('Cairo'), isNull);
+      // وحين يبقى اسمٌ من كلمتين فاللاحقة نمطٌ لا عائلة.
+      expect(
+        familyWithoutStyleSuffix('IBM Plex Sans Condensed'),
+        equals('IBM Plex Sans'),
+      );
+    });
+
+    test('البديل يتبع الاسم المجرَّد', () {
+      // بلا هذا يسقط «Calibri Light» إلى خطّ التطبيق متى تعذّر الجلب.
+      expect(substituteFor('Calibri Light'), equals('Carlito'));
+      expect(previewFit('Calibri Light'), equals(PreviewFit.substitute));
+      expect(substituteFor('DIN Next LT Arabic'), isNull);
     });
   });
 

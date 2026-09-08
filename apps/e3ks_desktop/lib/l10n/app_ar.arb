@@ -208,6 +208,9 @@
   "fontsSectionHint": "المعاينة تستعمل خطوط المستند. ما ليس على الجهاز يُجلب ويُحفَظ هنا.",
   "fetchFonts": "اجلب الخطوط الناقصة",
   "fetchFontsHint": "يُرسَل اسم الخطّ فقط؛ لا يُرسَل المستند ولا اسمه.",
+  "fontFolder": "مجلد خطوط",
+  "fontFolderHint": "مصدر إضافي لخطوط المعاينة.",
+  "fontFolderClear": "أزل المجلد",
   "cachedFonts": "خطوط محفوظة",
   "cacheSize": "المساحة المستهلكة",
   "deleteAllFonts": "احذف الكل",
@@ -225,13 +228,13 @@
   "deleteFont": "احذف",
   "noCachedFonts": "لا خطوط محفوظة.",
   "fontDeletedNote": "المحذوف يبقى معروضًا حتى إعادة تشغيل التطبيق.",
-  "fontsMissingOne": "«{family}» غير متاح، ويُرسَم بخط التطبيق.",
+  "fontsMissingOne": "«{family}» غير متاح. تم استعمال خط التطبيق.",
   "@fontsMissingOne": {
     "placeholders": {
       "family": {}
     }
   },
-  "fontsMissingMany": "{count, plural, =2{خطان غير متاحين، ويُرسمان بخط التطبيق.} few{{count} خطوط غير متاحة، وتُرسَم بخط التطبيق.} many{{count} خط غير متاح، ويُرسَم بخط التطبيق.} other{{count} خط غير متاح، ويُرسَم بخط التطبيق.}}",
+  "fontsMissingMany": "{count, plural, =2{خطان غير متاحين} few{{count} خطوط غير متاحة} many{{count} خط غير متاح} other{{count} خط غير متاح}}. تم استعمال خط التطبيق.",
   "@fontsMissingMany": {
     "placeholders": {
       "count": {
@@ -241,13 +244,15 @@
   },
   "fontsFetching": "جارٍ جلب الخطوط…",
   "showDetails": "التفاصيل",
+  "retryFonts": "أعد المحاولة",
   "originEmbedded": "مضمَّن في المستند",
   "originBundled": "مشحون مع التطبيق",
   "originSystem": "على الجهاز",
+  "originFolder": "من مجلد الخطوط",
   "originCached": "محفوظ على القرص",
   "originFetched": "جُلب",
   "originUnavailable": "غير موجود على Google Fonts",
-  "originSubstituted": "رُسم ببديل مطابق في المقاسات",
+  "originSubstituted": "بديل مطابق في المقاسات",
   "originOffline": "تعذّر الاتصال",
   "originDisabled": "الجلب موقوف من الإعدادات",
   "errNotAnArchive": "تعذّر فتح الملف: ليس أرشيف OOXML.",
@@ -452,7 +457,7 @@
   "exportFailed": "تعذّرت الكتابة",
   "exportFailedWhy": "لم يُنشأ ملف. جرّب موضعًا آخر: المستندات أو سطح المكتب.",
   "fitSubstitute": "بديل مطابق",
-  "fitFallback": "غير متاح هنا",
-  "fitFallbackWhy": "يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.",
-  "fitSubstituteWhy": "يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره."
+  "fitFallback": "غير متاح",
+  "fitFallbackWhy": "تم استعمال خط التطبيق.",
+  "fitSubstituteWhy": "تم استعمال بديل مطابق في المقاسات."
 }
