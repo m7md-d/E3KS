@@ -33,9 +33,6 @@ class LEn extends L {
   String get reading => 'Reading the document…';
 
   @override
-  String get openAnother => 'Open another file';
-
-  @override
   String get tabColors => 'Colours';
 
   @override
@@ -63,12 +60,25 @@ class LEn extends L {
 
   @override
   String colorUsage(int count, Object role, Object parts) {
-    return '$count places · $role · $parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$_temp0 · $role · $parts';
   }
 
   @override
   String occurrences(int count) {
-    return '$count places';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+      zero: 'No places',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -85,16 +95,6 @@ class LEn extends L {
 
   @override
   String get confirm => 'Apply';
-
-  @override
-  String get fromOtherDocument => 'From another open document';
-
-  @override
-  String get openReferenceHint =>
-      'Colours from other open documents appear here.';
-
-  @override
-  String get fromSavedIdentities => 'From saved identities';
 
   @override
   String contrastReadable(Object ratio) {
@@ -168,14 +168,10 @@ class LEn extends L {
   }
 
   @override
-  String get inspectingDocument => 'Reading the document';
+  String get inspectingDocument => 'Inspecting the document';
 
   @override
   String get previewLoadingRest => 'The remaining pages are still being read';
-
-  @override
-  String get previewTruncated =>
-      'Part of the document is shown because it is long.';
 
   @override
   String get sectionBody => 'Body';
@@ -341,7 +337,7 @@ class LEn extends L {
   String get factScannedParts => 'Parts scanned';
 
   @override
-  String get export => 'Export document';
+  String get export => 'Export';
 
   @override
   String get exporting => 'Exporting…';
@@ -387,7 +383,14 @@ class LEn extends L {
 
   @override
   String changesBadge(int count) {
-    return '$count changes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes',
+      one: '1 change',
+      zero: 'No changes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -405,9 +408,6 @@ class LEn extends L {
 
   @override
   String get componentLicenses => 'Component licenses';
-
-  @override
-  String get sourceCode => 'Source code';
 
   @override
   String get roleShapeFill => 'Shape fill';
@@ -474,18 +474,7 @@ class LEn extends L {
   String get extractIdentityHint => 'The file\'s colours, ordered by use';
 
   @override
-  String extractFrom(String file) {
-    return 'Extract from: $file';
-  }
-
-  @override
   String get noOtherFiles => 'No other files open';
-
-  @override
-  String get quickPick => 'Quick pick';
-
-  @override
-  String get quickPickHint => 'Colours extracted from open files';
 
   @override
   String get labelPrimary => 'Primary';
@@ -532,6 +521,15 @@ class LEn extends L {
       'Only the font name is sent; the document and its name are not.';
 
   @override
+  String get fontFolder => 'Font folder';
+
+  @override
+  String get fontFolderHint => 'An additional source for preview fonts.';
+
+  @override
+  String get fontFolderClear => 'Remove the folder';
+
+  @override
   String get cachedFonts => 'Saved fonts';
 
   @override
@@ -566,12 +564,12 @@ class LEn extends L {
 
   @override
   String fontsMissingOne(Object family) {
-    return '“$family” is not available; it is drawn with the app font.';
+    return '“$family” is not available. The app font was used.';
   }
 
   @override
   String fontsMissingMany(int count) {
-    return '$count fonts are not available; they are drawn with the app font.';
+    return '$count fonts are not available. The app font was used.';
   }
 
   @override
@@ -581,10 +579,19 @@ class LEn extends L {
   String get showDetails => 'Details';
 
   @override
+  String get retryFonts => 'Try again';
+
+  @override
+  String get originEmbedded => 'Embedded in the document';
+
+  @override
   String get originBundled => 'Bundled with the app';
 
   @override
   String get originSystem => 'Installed on this machine';
+
+  @override
+  String get originFolder => 'From your font folder';
 
   @override
   String get originCached => 'Stored locally';
@@ -596,7 +603,7 @@ class LEn extends L {
   String get originUnavailable => 'Not found on Google Fonts';
 
   @override
-  String get originSubstituted => 'Drawn with a metric-compatible stand-in';
+  String get originSubstituted => 'Metric-compatible substitute';
 
   @override
   String get originOffline => 'Could not connect';
@@ -734,9 +741,6 @@ class LEn extends L {
   String get filesPanel => 'Files';
 
   @override
-  String get openFolder => 'Open a folder';
-
-  @override
   String get looseFiles => 'Added files';
 
   @override
@@ -756,9 +760,6 @@ class LEn extends L {
 
   @override
   String get propsTitle => 'File properties';
-
-  @override
-  String get propsPath => 'Path';
 
   @override
   String get propsFormat => 'Format';
@@ -813,7 +814,13 @@ class LEn extends L {
         intl.NumberFormat.decimalPattern(localeName);
     final String spotsString = spotsNumberFormat.format(spots);
 
-    return '$mappedString of $totalString · $spotsString occurrences';
+    String _temp0 = intl.Intl.pluralLogic(
+      spots,
+      locale: localeName,
+      other: '$spotsString occurrences',
+      one: '1 occurrence',
+    );
+    return '$mappedString of $totalString · $_temp0';
   }
 
   @override
@@ -933,7 +940,13 @@ class LEn extends L {
 
   @override
   String markUsage(int count, Object kind, Object parts) {
-    return '$count places · $kind · $parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$_temp0 · $kind · $parts';
   }
 
   @override
@@ -952,7 +965,7 @@ class LEn extends L {
   String get focusedMark => 'Tracked mark';
 
   @override
-  String get tapMarkHint => 'Tap to track its places';
+  String get tapMarkHint => 'Track this mark on the page';
 
   @override
   String get reportMarksLifted => 'Marks removed';
@@ -968,13 +981,11 @@ class LEn extends L {
   String get fitSubstitute => 'Metric substitute';
 
   @override
-  String get fitFallback => 'Not available here';
+  String get fitFallback => 'Not available';
 
   @override
-  String get fitFallbackWhy =>
-      'Drawn with the app font, so the preview is approximate.';
+  String get fitFallbackWhy => 'The app font was used.';
 
   @override
-  String get fitSubstituteWhy =>
-      'Drawn with a metric-compatible substitute: the layout is right, the letterforms are not.';
+  String get fitSubstituteWhy => 'A metric-compatible substitute was used.';
 }

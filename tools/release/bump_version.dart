@@ -3,13 +3,17 @@
 // القاعدة `08` §3: رقم واحد للمنتج كلّه، واختبارٌ يحرس تطابقه. هذه الأداة
 // هي الطرف الآخر من ذلك الحارس — ترفعها دفعةً فلا ينحرف واحد.
 //
-// **وموضعان منها مشتقّان لا مكتوبان باليد:** `pubspec.lock` في التطبيق وفي
+// **ومواضع منها مشتقّة لا مكتوبة باليد:** `pubspec.lock` في التطبيق وفي
 // سطر الأوامر يسجّل نسخة `e3ks_engine` لأنها اعتمادية مسار. وتركهما على
 // الرقم القديم يُسقط `pub get --enforce-lockfile` بـ«Unable to satisfy
 // pubspec.yaml using pubspec.lock» — فيسقط الفحص عند العامل، **ويسقط
 // الإصدار نفسه** لأن `release.yml` يرفع الرقم ثم يجلب الحزم بنفس الراية.
 // وقع هذا فعلًا عند رفع ٠٫٢٫٠. والسطر المكتوب هنا هو نفسه الذي يكتبه
 // `pub get`، والقفل يبقى قفلًا: بقيّة الحزم مثبَّتة كما كانت.
+//
+// ومنها `README.md`: يعلن الرقم في شارة الرأس وفي فقرة «Versioning». وقع
+// هذا فعلًا عند رفع ٠٫٢٫١ — رُفعت المواضع الستّة وبقي الريدمي يقول ٠٫٢٫٠،
+// وهو أول ما يقرأه القادم إلى المستودع.
 //
 //   dart tools/release/bump_version.dart --check      يتحقّق من التطابق فقط
 //   dart tools/release/bump_version.dart patch        0.1.0 → 0.1.1
@@ -40,6 +44,9 @@ const _lockfiles = [
   'tools/e3ks_cli/pubspec.lock',
 ];
 
+/// الواجهة المقروءة: الشارة اسمًا وصورةً، وفقرة «Versioning».
+const _readme = 'README.md';
+
 // المسافة الأفقية وحدها: `\s` يبتلع سطر الفراغ بعد الرقم فيختفي من
 // الملف مع كل رفع.
 final _pubspecLine = RegExp(
@@ -52,6 +59,11 @@ final _dartLine = RegExp(r"const String appVersion = '([^']+)';");
 final _lockLine = RegExp(
   r'^  e3ks_engine:\n(?:[ ]{4}.*\n)*?[ ]{4}version: "([^"]+)"',
   multiLine: true,
+);
+
+/// ما يسبق الرقم في README يبقى كما هو، والرقم وحده يُستبدل.
+final _readmeSites = RegExp(
+  r'(alt="Version |/badge/version-|Current version \*\*)(\d+\.\d+\.\d+)',
 );
 final _semver = RegExp(r'^(\d+)\.(\d+)\.(\d+)$');
 
@@ -81,8 +93,10 @@ void main(List<String> arguments) {
         if (_read(root, lock, _lockLine) != current)
           lock: _read(root, lock, _lockLine),
     };
+    final behind = _readmeVersions(root).where((v) => v != current).toSet();
+    if (behind.isNotEmpty) stale[_readme] = behind.join('، ');
     if (stale.isNotEmpty) {
-      stderr.writeln('قفلٌ يسجّل نسخةً قديمة للمحرّك (المطلوب $current):');
+      stderr.writeln('موضعٌ مشتقّ على رقمٍ قديم (المطلوب $current):');
       stale.forEach((file, version) => stderr.writeln('  $version  $file'));
       stderr.writeln(
         'أصلحه: dart tools/release/bump_version.dart --set $current',
@@ -107,6 +121,8 @@ void main(List<String> arguments) {
   for (final lock in _lockfiles) {
     _writeLock(root, lock, next);
   }
+  _readmeVersions(root); // يصرخ إن غاب الملف أو غاب الرقم منه
+  _writeReadme(root, next);
 
   stdout.writeln(next);
 }
@@ -146,6 +162,34 @@ void _writeLock(Directory root, String path, String version) {
       final at = whole.lastIndexOf(old);
       return whole.replaceRange(at, at + old.length, '"$version"');
     }),
+  );
+}
+
+/// كل رقمٍ يعلنه README، بترتيب وروده.
+List<String> _readmeVersions(Directory root) {
+  final file = File.fromUri(root.uri.resolve(_readme));
+  if (!file.existsSync()) {
+    stderr.writeln('مفقود: $_readme');
+    exit(1);
+  }
+  final found = [
+    for (final match in _readmeSites.allMatches(file.readAsStringSync()))
+      match.group(2)!,
+  ];
+  if (found.isEmpty) {
+    stderr.writeln('لا رقم إصدار في: $_readme');
+    exit(1);
+  }
+  return found;
+}
+
+void _writeReadme(Directory root, String version) {
+  final file = File.fromUri(root.uri.resolve(_readme));
+  file.writeAsStringSync(
+    file.readAsStringSync().replaceAllMapped(
+      _readmeSites,
+      (match) => '${match.group(1)}$version',
+    ),
   );
 }
 

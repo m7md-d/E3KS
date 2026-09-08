@@ -159,3 +159,56 @@ Uint8List buildMarkedPptx() {
   }
   return ZipEncoder().encodeBytes(archive);
 }
+
+/// عرضٌ يضمّن خطًّا في نفسه — `p:embeddedFontLst` وملفّ `.fntdata` بلا تشويش.
+const String embeddedPptxFamily = 'Northwind Display';
+
+const String _presentationWithFont =
+    '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>
+<p:sldIdLst><p:sldId id="256" r:id="rId2"/></p:sldIdLst>
+<p:sldSz cx="12192000" cy="6858000"/>
+<p:notesSz cx="6858000" cy="9144000"/>
+<p:embeddedFontLst>
+<p:embeddedFont>
+<p:font typeface="$embeddedPptxFamily" pitchFamily="34" charset="0"/>
+<p:regular r:id="rId20"/>
+</p:embeddedFont>
+</p:embeddedFontLst>
+</p:presentation>''';
+
+const String _presentationRelsWithFont = '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="slideMasters/slideMaster1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/>
+<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
+<Relationship Id="rId20" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/font" Target="fonts/font1.fntdata"/>
+</Relationships>''';
+
+Uint8List buildEmbeddedFontPptx() {
+  final archive = Archive();
+  for (final entry in pptxFixtureParts.entries) {
+    final text = switch (entry.key) {
+      'ppt/presentation.xml' => _presentationWithFont,
+      'ppt/_rels/presentation.xml.rels' => _presentationRelsWithFont,
+      _ => entry.value,
+    };
+    archive.add(ArchiveFile.bytes(entry.key, utf8.encode(text.trim())));
+  }
+  archive.add(
+    ArchiveFile.bytes(
+      'ppt/fonts/font1.fntdata',
+      Uint8List.fromList([
+        0x00,
+        0x01,
+        0x00,
+        0x00,
+        for (var i = 0; i < 40; i++) (i * 5 + 11) & 0xFF,
+      ]),
+    ),
+  );
+  return ZipEncoder().encodeBytes(archive);
+}

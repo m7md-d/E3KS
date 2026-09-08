@@ -214,7 +214,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('صدّر المستند'));
+    await tester.tap(find.byTooltip('تصدير'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('المجموعة كلّها').last, warnIfMissed: false);
     await tester.pumpAndSettle();

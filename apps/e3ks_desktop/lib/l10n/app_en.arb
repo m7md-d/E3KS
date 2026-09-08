@@ -8,7 +8,6 @@
   "chooseFile": "Choose a file…",
   "supported": "Supported formats: .docx and .pptx",
   "reading": "Reading the document…",
-  "openAnother": "Open another file",
   "tabColors": "Colours",
   "tabFonts": "Fonts",
   "tabIdentities": "Saved identities",
@@ -17,7 +16,7 @@
   "inheritedColors": "Inherited colours",
   "inheritedColorsHint": "Colours defined in Word templates that do not appear in the content.",
   "pickReplacement": "Pick a replacement colour",
-  "colorUsage": "{count} places · {role} · {parts}",
+  "colorUsage": "{count, plural, =1{1 place} other{{count} places}} · {role} · {parts}",
   "@colorUsage": {
     "placeholders": {
       "count": {
@@ -27,7 +26,7 @@
       "parts": {}
     }
   },
-  "occurrences": "{count} places",
+  "occurrences": "{count, plural, =0{No places} =1{1 place} other{{count} places}}",
   "@occurrences": {
     "placeholders": {
       "count": {
@@ -40,9 +39,6 @@
   "replacementColor": "Replacement colour",
   "removeMapping": "Remove replacement",
   "confirm": "Apply",
-  "fromOtherDocument": "From another open document",
-  "openReferenceHint": "Colours from other open documents appear here.",
-  "fromSavedIdentities": "From saved identities",
   "contrastReadable": "Contrast on white {ratio}:1 ✓ readable",
   "@contrastReadable": {
     "placeholders": {
@@ -84,9 +80,8 @@
       }
     }
   },
-  "inspectingDocument": "Reading the document",
+  "inspectingDocument": "Inspecting the document",
   "previewLoadingRest": "The remaining pages are still being read",
-  "previewTruncated": "Part of the document is shown because it is long.",
   "sectionBody": "Body",
   "sectionHeader": "Header",
   "sectionFooter": "Footer",
@@ -141,7 +136,7 @@
   "factInheritedColors": "Inherited colours",
   "factFonts": "Fonts",
   "factScannedParts": "Parts scanned",
-  "export": "Export document",
+  "export": "Export",
   "exporting": "Exporting…",
   "exported": "Saved",
   "exportBlocked": "Write cancelled — no file was created",
@@ -160,7 +155,7 @@
   "cancel": "Cancel",
   "save": "Save",
   "reset": "Undo all",
-  "changesBadge": "{count} changes",
+  "changesBadge": "{count, plural, =0{No changes} =1{1 change} other{{count} changes}}",
   "@changesBadge": {
     "placeholders": {
       "count": {
@@ -173,7 +168,6 @@
   "aboutCopyright": "© 2026 m7md-d",
   "aboutLicense": "Free software under the GNU General Public License, version 3. Distributed with no warranty.",
   "componentLicenses": "Component licenses",
-  "sourceCode": "Source code",
   "roleShapeFill": "Shape fill",
   "sectionSlides": "Slides",
   "errUnsupportedFormat": "This format is not supported. Supported today: Word (.docx) and PowerPoint (.pptx).",
@@ -199,17 +193,7 @@
   "previousMatch": "Previous match",
   "extractIdentity": "Extract identity from an open file",
   "extractIdentityHint": "The file's colours, ordered by use",
-  "extractFrom": "Extract from: {file}",
-  "@extractFrom": {
-    "placeholders": {
-      "file": {
-        "type": "String"
-      }
-    }
-  },
   "noOtherFiles": "No other files open",
-  "quickPick": "Quick pick",
-  "quickPickHint": "Colours extracted from open files",
   "labelPrimary": "Primary",
   "labelText": "Text colour",
   "labelBackground": "Background",
@@ -224,6 +208,9 @@
   "fontsSectionHint": "The preview uses the document's fonts. Those not installed are fetched and stored here.",
   "fetchFonts": "Fetch missing fonts",
   "fetchFontsHint": "Only the font name is sent; the document and its name are not.",
+  "fontFolder": "Font folder",
+  "fontFolderHint": "An additional source for preview fonts.",
+  "fontFolderClear": "Remove the folder",
   "cachedFonts": "Saved fonts",
   "cacheSize": "Space used",
   "deleteAllFonts": "Delete all",
@@ -241,13 +228,13 @@
   "deleteFont": "Delete",
   "noCachedFonts": "No stored fonts.",
   "fontDeletedNote": "Deleted fonts stay on screen until the app restarts.",
-  "fontsMissingOne": "“{family}” is not available; it is drawn with the app font.",
+  "fontsMissingOne": "“{family}” is not available. The app font was used.",
   "@fontsMissingOne": {
     "placeholders": {
       "family": {}
     }
   },
-  "fontsMissingMany": "{count} fonts are not available; they are drawn with the app font.",
+  "fontsMissingMany": "{count} fonts are not available. The app font was used.",
   "@fontsMissingMany": {
     "placeholders": {
       "count": {
@@ -257,12 +244,15 @@
   },
   "fontsFetching": "Fetching fonts…",
   "showDetails": "Details",
+  "retryFonts": "Try again",
+  "originEmbedded": "Embedded in the document",
   "originBundled": "Bundled with the app",
   "originSystem": "Installed on this machine",
+  "originFolder": "From your font folder",
   "originCached": "Stored locally",
   "originFetched": "Fetched",
   "originUnavailable": "Not found on Google Fonts",
-  "originSubstituted": "Drawn with a metric-compatible stand-in",
+  "originSubstituted": "Metric-compatible substitute",
   "originOffline": "Could not connect",
   "originDisabled": "Fetching is turned off in settings",
   "errNotAnArchive": "Not a valid OOXML archive; it could not be opened.",
@@ -346,7 +336,6 @@
   },
   "filesEmpty": "No files yet. Add files or a folder.",
   "filesPanel": "Files",
-  "openFolder": "Open a folder",
   "looseFiles": "Added files",
   "addFiles": "Add files",
   "addFolder": "Add a folder",
@@ -354,7 +343,6 @@
   "fileReviewed": "Reviewed",
   "fileProperties": "Properties",
   "propsTitle": "File properties",
-  "propsPath": "Path",
   "propsFormat": "Format",
   "propsSize": "Size",
   "propsModified": "Last modified",
@@ -364,7 +352,7 @@
   "propsSizeKb": "{size} KB",
   "propsPlan": "What the plan does to this file",
   "propsColorsLabel": "Colours replaced",
-  "propsColorsValue": "{mapped} of {total} · {spots} occurrences",
+  "propsColorsValue": "{mapped} of {total} · {spots, plural, =1{1 occurrence} other{{spots} occurrences}}",
   "propsNothing": "Nothing",
   "propsReaches": "Reaches",
   "propsMarksLabel": "Marks removed",
@@ -449,7 +437,7 @@
   "noMarks": "No marks in this document.",
   "markHighlight": "Highlighter",
   "markShading": "Text shading",
-  "markUsage": "{count} places · {kind} · {parts}",
+  "markUsage": "{count, plural, =1{1 place} other{{count} places}} · {kind} · {parts}",
   "@markUsage": {
     "placeholders": {
       "count": {
@@ -464,12 +452,12 @@
   "liftMark": "Remove",
   "markLifted": "Will be removed",
   "focusedMark": "Tracked mark",
-  "tapMarkHint": "Tap to track its places",
+  "tapMarkHint": "Track this mark on the page",
   "reportMarksLifted": "Marks removed",
   "exportFailed": "Could not write the file",
   "exportFailedWhy": "No file was created. Try another location, such as Documents or the Desktop.",
   "fitSubstitute": "Metric substitute",
-  "fitFallback": "Not available here",
-  "fitFallbackWhy": "Drawn with the app font, so the preview is approximate.",
-  "fitSubstituteWhy": "Drawn with a metric-compatible substitute: the layout is right, the letterforms are not."
+  "fitFallback": "Not available",
+  "fitFallbackWhy": "The app font was used.",
+  "fitSubstituteWhy": "A metric-compatible substitute was used."
 }

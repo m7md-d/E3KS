@@ -7,7 +7,7 @@
 <p align="center">Swap the colours and fonts of Word and PowerPoint documents.</p>
 
 <p align="center">
-  <img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-2A2F35">
+  <img alt="Version 0.2.1" src="https://img.shields.io/badge/version-0.2.1-2A2F35">
   <img alt="Flutter 3.47" src="https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white">
   <img alt="Dart 3.9" src="https://img.shields.io/badge/Dart-3.9-0175C2?logo=dart&logoColor=white">
   <img alt="macOS, Windows and Linux" src="https://img.shields.io/badge/desktop-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-111111">
@@ -141,12 +141,12 @@ cd apps/e3ks_desktop && flutter build macos --release
 ./brand/build-appicon.sh
 ```
 
-112 engine tests and 204 app tests. Documentation and project rules are in
+116 engine tests and 219 app tests. Documentation and project rules are in
 Arabic; code is in English.
 
 ## Versioning
 
-Current version **0.2.0**. The number describes the output contract: a patch
+Current version **0.2.1**. The number describes the output contract: a patch
 release produces the same bytes for the same plan, a minor release adds a
 capability, and a major release changes what the engine writes or what a saved
 identity file looks like. 1.0 follows metadata support and a manual acceptance

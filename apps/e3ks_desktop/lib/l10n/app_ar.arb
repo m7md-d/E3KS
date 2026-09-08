@@ -8,7 +8,6 @@
   "chooseFile": "اختر ملف…",
   "supported": "الصيغ المدعومة: ‎.docx‎ و‎.pptx‎",
   "reading": "جارٍ قراءة المستند…",
-  "openAnother": "افتح ملف آخر",
   "tabColors": "الألوان",
   "tabFonts": "الخطوط",
   "tabIdentities": "الهويات المحفوظة",
@@ -17,7 +16,7 @@
   "inheritedColors": "ألوان موروثة",
   "inheritedColorsHint": "ألوان من قوالب Word لا تظهر في المحتوى.",
   "pickReplacement": "اختر اللون البديل",
-  "colorUsage": "{count} موضعًا · {role} · {parts}",
+  "colorUsage": "{count, plural, =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضع} other{{count} موضع}} · {role} · {parts}",
   "@colorUsage": {
     "placeholders": {
       "count": {
@@ -27,7 +26,7 @@
       "parts": {}
     }
   },
-  "occurrences": "{count} موضعًا",
+  "occurrences": "{count, plural, =0{بلا مواضع} =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضع} other{{count} موضع}}",
   "@occurrences": {
     "placeholders": {
       "count": {
@@ -40,9 +39,6 @@
   "replacementColor": "اللون البديل",
   "removeMapping": "أزل التبديل",
   "confirm": "اعتمد",
-  "fromOtherDocument": "من مستند آخر مفتوح",
-  "openReferenceHint": "ألوان المستندات الأخرى المفتوحة تظهر هنا.",
-  "fromSavedIdentities": "من الهويات المحفوظة",
   "contrastReadable": "التباين مع الأبيض {ratio}:1 ✓ مقروء",
   "@contrastReadable": {
     "placeholders": {
@@ -86,7 +82,6 @@
   },
   "inspectingDocument": "جارٍ فحص المستند",
   "previewLoadingRest": "بقيّة الصفحات قيد الاستخراج",
-  "previewTruncated": "عُرض جزء من المستند لأنه طويل.",
   "sectionBody": "المتن",
   "sectionHeader": "الترويسة",
   "sectionFooter": "التذييل",
@@ -141,7 +136,7 @@
   "factInheritedColors": "ألوان موروثة",
   "factFonts": "خطوط",
   "factScannedParts": "أجزاء مفحوصة",
-  "export": "صدّر المستند",
+  "export": "تصدير",
   "exporting": "جارٍ التصدير…",
   "exported": "تم الحفظ",
   "exportBlocked": "أُلغيت الكتابة — لم يُنشأ أي ملف",
@@ -160,7 +155,7 @@
   "cancel": "إلغاء",
   "save": "حفظ",
   "reset": "تراجع عن الكل",
-  "changesBadge": "{count} تغييرًا",
+  "changesBadge": "{count, plural, =0{بلا تغييرات} =1{تغيير واحد} =2{تغييران} few{{count} تغييرات} many{{count} تغيير} other{{count} تغيير}}",
   "@changesBadge": {
     "placeholders": {
       "count": {
@@ -173,7 +168,6 @@
   "aboutCopyright": "© 2026 m7md-d",
   "aboutLicense": "برنامج حرّ تحت رخصة جنو العمومية العامة، الإصدار الثالث. يُنشر بلا أي ضمان.",
   "componentLicenses": "رخص المكوّنات",
-  "sourceCode": "الشيفرة المصدرية",
   "roleShapeFill": "تعبئة شكل",
   "sectionSlides": "الشرائح",
   "errUnsupportedFormat": "هذه الصيغة غير مدعومة. المدعوم اليوم: Word ‏(.docx) و PowerPoint ‏(.pptx).",
@@ -199,17 +193,7 @@
   "previousMatch": "الموضع السابق",
   "extractIdentity": "استخرج الهوية من ملف مفتوح",
   "extractIdentityHint": "ألوان الملف مرتّبة بحسب الاستعمال",
-  "extractFrom": "استخرج من: {file}",
-  "@extractFrom": {
-    "placeholders": {
-      "file": {
-        "type": "String"
-      }
-    }
-  },
   "noOtherFiles": "لا ملفات أخرى مفتوحة",
-  "quickPick": "اختيار سريع",
-  "quickPickHint": "ألوان مستخرَجة من الملفات المفتوحة",
   "labelPrimary": "الأساسي",
   "labelText": "لون النصّ",
   "labelBackground": "الخلفية",
@@ -224,10 +208,13 @@
   "fontsSectionHint": "المعاينة تستعمل خطوط المستند. ما ليس على الجهاز يُجلب ويُحفَظ هنا.",
   "fetchFonts": "اجلب الخطوط الناقصة",
   "fetchFontsHint": "يُرسَل اسم الخطّ فقط؛ لا يُرسَل المستند ولا اسمه.",
+  "fontFolder": "مجلد خطوط",
+  "fontFolderHint": "مصدر إضافي لخطوط المعاينة.",
+  "fontFolderClear": "أزل المجلد",
   "cachedFonts": "خطوط محفوظة",
   "cacheSize": "المساحة المستهلكة",
   "deleteAllFonts": "احذف الكل",
-  "addFont": "أضف خط",
+  "addFont": "إضافة خط",
   "fontAdded": "أُضيف {family}",
   "@fontAdded": {
     "placeholders": {
@@ -241,13 +228,13 @@
   "deleteFont": "احذف",
   "noCachedFonts": "لا خطوط محفوظة.",
   "fontDeletedNote": "المحذوف يبقى معروضًا حتى إعادة تشغيل التطبيق.",
-  "fontsMissingOne": "«{family}» غير متاح، ويُرسَم بخطّ التطبيق.",
+  "fontsMissingOne": "«{family}» غير متاح. تم استعمال خط التطبيق.",
   "@fontsMissingOne": {
     "placeholders": {
       "family": {}
     }
   },
-  "fontsMissingMany": "{count} خطوط غير متاحة، وتُرسَم بخطّ التطبيق.",
+  "fontsMissingMany": "{count, plural, =2{خطان غير متاحين} few{{count} خطوط غير متاحة} many{{count} خط غير متاح} other{{count} خط غير متاح}}. تم استعمال خط التطبيق.",
   "@fontsMissingMany": {
     "placeholders": {
       "count": {
@@ -257,12 +244,15 @@
   },
   "fontsFetching": "جارٍ جلب الخطوط…",
   "showDetails": "التفاصيل",
+  "retryFonts": "أعد المحاولة",
+  "originEmbedded": "مضمَّن في المستند",
   "originBundled": "مشحون مع التطبيق",
   "originSystem": "على الجهاز",
+  "originFolder": "من مجلد الخطوط",
   "originCached": "محفوظ على القرص",
   "originFetched": "جُلب",
   "originUnavailable": "غير موجود على Google Fonts",
-  "originSubstituted": "رُسم ببديل مطابق في المقاسات",
+  "originSubstituted": "بديل مطابق في المقاسات",
   "originOffline": "تعذّر الاتصال",
   "originDisabled": "الجلب موقوف من الإعدادات",
   "errNotAnArchive": "تعذّر فتح الملف: ليس أرشيف OOXML.",
@@ -346,15 +336,13 @@
   },
   "filesEmpty": "لا ملفات بعد. أضف ملفات أو مجلدًا.",
   "filesPanel": "الملفات",
-  "openFolder": "افتح مجلدًا",
   "looseFiles": "ملفات مضافة",
-  "addFiles": "أضف ملفات",
-  "addFolder": "أضف مجلدًا",
+  "addFiles": "إضافة ملفات",
+  "addFolder": "إضافة مجلد",
   "fileLocked": "مقفل عن الخطة العامّة",
-  "fileReviewed": "راجعته",
+  "fileReviewed": "تمت مراجعته",
   "fileProperties": "خصائص",
   "propsTitle": "خصائص الملفّ",
-  "propsPath": "المسار",
   "propsFormat": "الصيغة",
   "propsSize": "الحجم",
   "propsModified": "آخر تعديل",
@@ -364,7 +352,7 @@
   "propsSizeKb": "{size} ك.ب",
   "propsPlan": "ما ستفعله الخطة بهذا الملفّ",
   "propsColorsLabel": "ألوان تُبدَّل",
-  "propsColorsValue": "{mapped} من {total} · {spots} موضعًا",
+  "propsColorsValue": "{mapped} من {total} · {spots, plural, =1{موضع واحد} =2{موضعان} few{{spots} مواضع} many{{spots} موضع} other{{spots} موضع}}",
   "propsNothing": "لا شيء",
   "propsReaches": "يبلغ",
   "propsMarksLabel": "علامات تُرفع",
@@ -449,7 +437,7 @@
   "noMarks": "لا علامات في هذا المستند.",
   "markHighlight": "قلم تمييز",
   "markShading": "تظليل نصّ",
-  "markUsage": "{count} موضعًا · {kind} · {parts}",
+  "markUsage": "{count, plural, =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضع} other{{count} موضع}} · {kind} · {parts}",
   "@markUsage": {
     "placeholders": {
       "count": {
@@ -464,12 +452,12 @@
   "liftMark": "امسح",
   "markLifted": "سيُمسح",
   "focusedMark": "علامة متتبَّعة",
-  "tapMarkHint": "اضغط لتتبّع مواضعها",
+  "tapMarkHint": "متابعة العلامة في الصفحة",
   "reportMarksLifted": "علامات رُفعت",
   "exportFailed": "تعذّرت الكتابة",
   "exportFailedWhy": "لم يُنشأ ملف. جرّب موضعًا آخر: المستندات أو سطح المكتب.",
   "fitSubstitute": "بديل مطابق",
-  "fitFallback": "غير متاح هنا",
-  "fitFallbackWhy": "يُرسَم بخطّ التطبيق، فالمعاينة تقريبية.",
-  "fitSubstituteWhy": "يُرسَم ببديل يطابقه في المقاسات، فالتخطيط سليم والحروف حروف غيره."
+  "fitFallback": "غير متاح",
+  "fitFallbackWhy": "تم استعمال خط التطبيق.",
+  "fitSubstituteWhy": "تم استعمال بديل مطابق في المقاسات."
 }

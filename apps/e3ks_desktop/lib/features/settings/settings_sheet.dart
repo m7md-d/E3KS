@@ -14,29 +14,34 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/font_cache.dart';
 import '../../data/font_service.dart';
+import '../../data/settings_store.dart';
 import '../../shared/widgets/panel.dart';
 import 'licenses_screen.dart';
 
-Future<void> showSettings(BuildContext context, FontService fonts) =>
-    showAppDialog<void>(
-      context,
-      (_) => Dialog(
-        backgroundColor: Shade.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Metrics.radius),
-          side: const BorderSide(color: Shade.border),
-        ),
-        child: SizedBox(
-          width: 620,
-          height: 560,
-          child: _SettingsBody(fonts: fonts),
-        ),
-      ),
-    );
+Future<void> showSettings(
+  BuildContext context,
+  FontService fonts,
+  SettingsStore settings,
+) => showAppDialog<void>(
+  context,
+  (_) => Dialog(
+    backgroundColor: Shade.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(Metrics.radius),
+      side: const BorderSide(color: Shade.border),
+    ),
+    child: SizedBox(
+      width: 620,
+      height: 560,
+      child: _SettingsBody(fonts: fonts, settings: settings),
+    ),
+  ),
+);
 
 class _SettingsBody extends StatefulWidget {
-  const _SettingsBody({required this.fonts});
+  const _SettingsBody({required this.fonts, required this.settings});
   final FontService fonts;
+  final SettingsStore settings;
 
   @override
   State<_SettingsBody> createState() => _SettingsBodyState();
@@ -46,11 +51,40 @@ class _SettingsBodyState extends State<_SettingsBody> {
   /// حصيلة آخر إضافة: اسم ما أُضيف، أو سبب التعذّر.
   String? _addNote;
 
+  @override
+  void initState() {
+    super.initState();
+    widget.fonts.addListener(_onFonts);
+  }
+
+  @override
+  void dispose() {
+    widget.fonts.removeListener(_onFonts);
+    super.dispose();
+  }
+
+  void _onFonts() {
+    if (mounted) setState(() {});
+  }
+
   /// يضيف خطًّا من قرص المستخدم.
   ///
   /// **الخطّ ملفٌّ عنده لا خدمةٌ عندنا.** حين لا نجد خطّ المستند على الشبكة،
   /// أو يكون خطًّا خاصًّا لا يُنشر أصلًا، يبقى عند صاحب المستند نفسه — وهذا
   /// أقصر طريق إلى معاينة صادقة.
+  /// **المجلد يُختار مرّةً ويبقى.** ملفّاته لا تُنسَخ إلينا: تُقرأ من مكانها
+  /// عند الحاجة، فما يزيده المستخدم فيه يبلغ المعاينة بلا خطوة أخرى.
+  /// إعادة محاولة ما لم يُحلّ. موضعها هنا: الحصيلة تُقرأ هنا، والزرّ في
+  /// المعاينة يَعِد بما لا يملكه.
+  Future<void> _retry() => widget.fonts.retryMissing();
+
+  Future<void> _chooseFolder() async {
+    final path = await getDirectoryPath();
+    if (path == null) return;
+    await widget.settings.setFontFolder(path);
+    if (mounted) setState(() {});
+  }
+
   Future<void> _addFont() async {
     const type = XTypeGroup(label: 'Fonts', extensions: ['ttf', 'otf']);
     final file = await openFile(acceptedTypeGroups: const [type]);
@@ -135,6 +169,54 @@ class _SettingsBodyState extends State<_SettingsBody> {
                   ],
                 ),
               ),
+              const SizedBox(height: 10),
+
+              // **قرصه قبل الشبكة.** ما لا تخدمه قناة عامّة — Segoe UI و
+              // Aptos وخطوط العربية الويندوزية — لا يبلغ المعاينة إلا من
+              // هنا، ولا يُنسَخ إلينا: ملفّه يبقى في مكانه.
+              Panel(
+                padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.fontFolder,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.settings.fontFolder ?? t.fontFolderHint,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _chooseFolder,
+                      child: Text(
+                        t.batchChoose,
+                        overflow: TextOverflow.visible,
+                      ),
+                    ),
+                    if (widget.settings.fontFolder != null)
+                      IconButton(
+                        onPressed: () async {
+                          await widget.settings.setFontFolder(null);
+                          if (mounted) setState(() {});
+                        },
+                        icon: const Icon(LucideIcons.x, size: 14),
+                        color: Shade.textMuted,
+                        visualDensity: VisualDensity.compact,
+                        tooltip: t.fontFolderClear,
+                      ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 22),
 
               SectionHeader(
@@ -192,6 +274,21 @@ class _SettingsBodyState extends State<_SettingsBody> {
                 SectionHeader(
                   title: t.fontsSection,
                   count: widget.fonts.statuses.length,
+                  trailing: widget.fonts.missing.isEmpty
+                      ? null
+                      : TextButton.icon(
+                          onPressed: widget.fonts.retrying ? null : _retry,
+                          icon: widget.fonts.retrying
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(LucideIcons.refreshCw, size: 14),
+                          label: Text(t.retryFonts),
+                        ),
                 ),
                 for (final status in widget.fonts.statuses)
                   _StatusRow(status: status),

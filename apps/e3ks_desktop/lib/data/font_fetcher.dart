@@ -87,7 +87,8 @@ final class GoogleFontFetcher implements FontFetcher {
     return ttfUrlFromCss(body);
   }
 
-  /// لاحقات الأنماط التي يلحقها Word باسم العائلة.
+  /// لاحقات **الأنماط** التي يلحقها Word باسم العائلة. تُجرَّد دائمًا:
+  /// «Calibri Light» عائلتها Calibri، و«Light» وحدها ليست لاحقةً لشيء.
   static const List<String> styleSuffixes = [
     'Extra Light',
     'ExtraLight',
@@ -104,15 +105,21 @@ final class GoogleFontFetcher implements FontFetcher {
     'Regular',
     'Medium',
     'Bold',
-    'Black',
     'Heavy',
     'Italic',
     'Oblique',
+  ];
+
+  /// لاحقاتٌ **تصنع عائلةً مستقلّة** حين تلتصق باسمٍ من كلمة واحدة:
+  /// «Arial Black» و«Arial Narrow» غير Arial، و«Arial» بلا اللاحقة خطٌّ آخر.
+  /// فلا تُجرَّد إلا إن بقي بعدها اسمٌ من كلمتين («IBM Plex Sans Condensed»).
+  static const List<String> familySuffixes = [
     'Condensed',
     'Narrow',
     'Display',
     'Text',
     'Caption',
+    'Black',
   ];
 
   bool _looksLikeFont(Uint8List bytes) {
@@ -147,20 +154,31 @@ String? ttfUrlFromCss(String css) => RegExp(
 
 /// الاسم بلا لاحقة النمط، أو `null` إن لم تكن فيه لاحقة.
 ///
-/// Word يكتب النمط داخل اسم العائلة («IBM Plex Sans Light»)، وGoogle تعرف
-/// العائلة وحدها. نشترط بقاء كلمتين على الأقلّ: «Light» وحده عائلة قائمة،
-/// و«Arial Black» بلا «Black» عائلة أخرى — ولذلك هذه محاولة **ثانية** بعد
-/// فشل الاسم كما كُتب، لا استبدال له.
+/// Word يكتب النمط داخل اسم العائلة («Calibri Light»)، وGoogle تعرف العائلة
+/// وحدها. وهذه محاولة **ثانية** بعد فشل الاسم كما كُتب، لا استبدال له.
+///
+/// **واشتراط بقاء كلمتين كان يقطع الطريق على أشهرها.** ‏«Calibri Light» يبقى
+/// منها «Calibri» كلمةً واحدة، فكانت تُردّ — و Google تخدم «Calibri» ولا
+/// تخدم «Calibri Light» (مقيسًا: 200 مقابل 400). فصار الشرط على اللاحقة لا
+/// على عدد الكلمات: لاحقةُ النمط تُجرَّد دائمًا، ولاحقةٌ تصنع عائلةً مستقلّة
+/// («Arial Black») لا تُجرَّد إلا إن بقي بعدها اسمٌ من كلمتين.
 String? familyWithoutStyleSuffix(String family) {
   final trimmed = family.trim();
   for (final suffix in GoogleFontFetcher.styleSuffixes) {
-    if (!trimmed.toLowerCase().endsWith(' ${suffix.toLowerCase()}')) continue;
-    final bare = trimmed
-        .substring(0, trimmed.length - suffix.length - 1)
-        .trim();
-    if (bare.contains(' ')) return bare;
+    final bare = _strip(trimmed, suffix);
+    if (bare != null) return bare;
+  }
+  for (final suffix in GoogleFontFetcher.familySuffixes) {
+    final bare = _strip(trimmed, suffix);
+    if (bare != null && bare.contains(' ')) return bare;
   }
   return null;
+}
+
+String? _strip(String family, String suffix) {
+  if (!family.toLowerCase().endsWith(' ${suffix.toLowerCase()}')) return null;
+  final bare = family.substring(0, family.length - suffix.length - 1).trim();
+  return bare.isEmpty ? null : bare;
 }
 
 /// هل يعلن الخطّ نفسه أنه تحت رخصة SIL Open Font License؟

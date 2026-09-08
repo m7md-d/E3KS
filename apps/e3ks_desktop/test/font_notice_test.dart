@@ -1,6 +1,7 @@
 /// إشعار الخطوط المتعذّرة: يظهر، ويُخفى بطلب المستخدم، ويعود لخطٍّ جديد.
 library;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -14,6 +15,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+/// جالبٌ يقف عند الطلب — به نمسك لحظة «جارٍ الجلب» ونفحصها.
+class _Held implements FontFetcher {
+  final Completer<void> gate = Completer<void>();
+  bool hold = false;
+
+  @override
+  Future<FetchResult> fetch(String family) async {
+    if (hold) await gate.future;
+    return (outcome: FetchOutcome.notFound, bytes: null);
+  }
+}
 
 /// جالبٌ لا يجد شيئًا: نريد حالة العجز لا حالة الشبكة.
 class _Missing implements FontFetcher {
@@ -108,6 +121,35 @@ void main() {
 
     expect(added, equals('Frutiger'));
     expect(fonts.missing, isEmpty);
+  });
+
+  testWidgets('إعادة المحاولة من الإعدادات لا تُضيء شريط المعاينة', (
+    tester,
+  ) async {
+    // **الأثر يظهر حيث وقع الفعل.** ضغطةٌ في نافذة الإعدادات كانت تُضيء
+    // «جارٍ جلب الخطوط» فوق المعاينة، فيبدو التطبيق يعمل من تلقائه.
+    final held = _Held();
+    final service = FontService(FontCache(dir), fetcher: held);
+    await service.resolveAll(['Amiri']);
+    await tester.pumpWidget(harness(service));
+    await tester.pumpAndSettle();
+    expect(find.text('جارٍ جلب الخطوط…'), findsNothing);
+
+    held.hold = true;
+    final retry = service.retryMissing();
+    await tester.pump();
+
+    expect(service.retrying, isTrue);
+    expect(
+      find.text('جارٍ جلب الخطوط…'),
+      findsNothing,
+      reason: 'شريط المعاينة تفاعل مع ضغطةٍ في الإعدادات',
+    );
+
+    held.gate.complete();
+    await retry;
+    await tester.pumpAndSettle();
+    expect(service.retrying, isFalse);
   });
 }
 

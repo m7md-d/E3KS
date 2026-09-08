@@ -96,8 +96,10 @@ extension PreviewSectionKindText on PreviewSectionKind {
 
 extension FontOriginText on FontOrigin {
   String label(L t) => switch (this) {
+    FontOrigin.embedded => t.originEmbedded,
     FontOrigin.bundled => t.originBundled,
     FontOrigin.system => t.originSystem,
+    FontOrigin.folder => t.originFolder,
     FontOrigin.cached => t.originCached,
     FontOrigin.fetched => t.originFetched,
     FontOrigin.unavailable => t.originUnavailable,

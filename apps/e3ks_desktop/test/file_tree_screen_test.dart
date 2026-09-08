@@ -54,22 +54,61 @@ void main() {
   final ready = File(_demo).existsSync();
 
   testWidgets('باب المجلد مفتوح قبل أي ملف', (tester) async {
-    // **الخلل الذي وُلد منه الاختبار:** زرّ «أضف مجلدًا» كان في رأس شجرة
+    // **الخلل الذي وُلد منه الاختبار:** زرّ «إضافة مجلد» كان في رأس شجرة
     // الملفات وحدها، والشجرة لا تظهر إلا بملفَّين — فلا سبيل إلى فتح مجلد
-    // إلا بعد فتح مجلد. بابٌ داخل الغرفة التي يفتحها.
+    // إلا بعد فتح مجلد. بابٌ داخل الغرفة التي يفتحها. والشجرة اليوم ظاهرة
+    // دائمًا، فالحارس على زرّها هو.
     await tester.binding.setSurfaceSize(const Size(1280, 800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pump(tester, WorkspaceStore());
     await tester.pumpAndSettle();
 
-    // التلميح يبنيه `IconButton` داخله، فيُصعَد منه إلى الزرّ.
-    final button = find.ancestor(
-      of: find.byTooltip('افتح مجلدًا'),
-      matching: find.byType(IconButton),
+    // التلميح فوق الزرّ، فيُنزَل منه إلى ما يستقبل الضغطة.
+    final button = find.descendant(
+      of: find.byTooltip('إضافة مجلد'),
+      matching: find.byType(InkWell),
     );
     expect(button, findsOneWidget, reason: 'لا باب إلى المجلد بلا ملف مفتوح');
-    expect(tester.widget<IconButton>(button).onPressed, isNotNull);
+    expect(tester.widget<InkWell>(button).onTap, isNotNull);
+  });
+
+  testWidgets('زرّ الفتح حاضر وحيّ قبل أي ملف', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pump(tester, WorkspaceStore());
+    await tester.pumpAndSettle();
+
+    final button = find.widgetWithText(FilledButton, 'اختر ملف…');
+    expect(button, findsOneWidget);
+    expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+  });
+
+  test('لوحة الفتح الأصلية تقبل الملفات والمجلدات معًا', () {
+    // **الحارس على المصدر**: الرايتان تعبران إلى AppKit ولا يبلغهما اختبار
+    // ودجة — كالصندوق الرملي (`03`). فالمقياس أن تبقيا مكتوبتين، وأن يبقى
+    // طرفا القناة على اسمٍ واحد.
+    final swift = File(
+      'macos/Runner/MainFlutterWindow.swift',
+    ).readAsStringSync();
+    expect(swift, contains('panel.canChooseFiles = true'));
+    expect(swift, contains('panel.canChooseDirectories = true'));
+    expect(swift, contains('panel.allowsMultipleSelection = true'));
+    expect(
+      swift,
+      contains('types.append(.folder)'),
+      reason: 'حصرُ الأنواع يُطفئ المجلدات',
+    );
+
+    final dart = File('lib/data/open_panel.dart').readAsStringSync();
+    final channel = RegExp(
+      r"MethodChannel\('([^']+)'\)",
+    ).firstMatch(dart)?.group(1);
+    expect(channel, isNotNull, reason: 'لا اسم قناة في الدارت');
+    expect(swift, contains('name: "$channel"'), reason: 'طرفان باسمين');
+    expect(dart, contains("'pickAny'"));
+    expect(swift, contains('call.method == "pickAny"'));
   });
 
   testWidgets(

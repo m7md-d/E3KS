@@ -1,5 +1,6 @@
 import Cocoa
 import FlutterMacOS
+import UniformTypeIdentifiers
 
 /// النافذة: إطار مخصّص، وأزرار النظام في مكانها الذي يقرّره النظام.
 ///
@@ -61,6 +62,10 @@ class MainFlutterWindow: NSWindow {
       result(window.frameMetrics())
     }
     self.channel = channel
+
+    // لوحة الفتح: ملفات ومجلدات في مستعرضٍ واحد.
+    OpenPanel.register(
+      messenger: flutterViewController.engine.binaryMessenger, window: self)
 
     // ملء الشاشة يُخفي الأزرار ويُلغي الشريط، والتحجيم يزيح ما كان يمينًا.
     let center = NotificationCenter.default
@@ -158,5 +163,52 @@ class MainFlutterWindow: NSWindow {
       "reserveLeft": onLeft ? Double(maxX + minX) : 0,
       "reserveRight": onLeft ? 0 : Double((width - minX) + (width - maxX)),
     ]
+  }
+}
+
+/// لوحة فتحٍ واحدة تقبل الملفات والمجلدات معًا.
+///
+/// **لماذا كودٌ أصليّ:** `file_selector` تفتح أحدهما لا كليهما — تثبّت
+/// `canChooseDirectories` في كل نداء. وقائمةُ اختيارٍ قبل الحوار تنقل القرار
+/// إلى المستخدم قبل أن يرى ما عنده. و AppKit يقدر على الاثنين في لوحة
+/// واحدة، فيختار المستخدم ما شاء كما اعتاد في كل تطبيق macOS.
+enum OpenPanel {
+  static func register(messenger: FlutterBinaryMessenger, window: NSWindow) {
+    let channel = FlutterMethodChannel(
+      name: "e3ks/open", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "pickAny" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let extensions = (call.arguments as? [String]) ?? []
+      present(extensions: extensions, window: window, result: result)
+    }
+  }
+
+  private static func present(
+    extensions: [String], window: NSWindow, result: @escaping FlutterResult
+  ) {
+    let panel = NSOpenPanel()
+    panel.canChooseFiles = true
+    panel.canChooseDirectories = true
+    panel.allowsMultipleSelection = true
+    // الحزمة (`.app` مثلًا) ملفٌّ لا مجلد، فلا يدخلها المستعرض.
+    panel.treatsFilePackagesAsDirectories = false
+
+    // **المجلد نوعٌ في القائمة لا استثناءٌ منها.** حصرُ الأنواع في امتدادات
+    // المستندات وحدها يُطفئ المجلدات في اللوحة، فيعود الحصر من باب آخر.
+    var types = extensions.compactMap { UTType(filenameExtension: $0) }
+    types.append(.folder)
+    panel.allowedContentTypes = types
+
+    // ورقةٌ معلّقة بالنافذة لا حوارٌ يحجب التطبيق: الواجهة تبقى حيّة خلفها.
+    panel.beginSheetModal(for: window) { response in
+      guard response == .OK else {
+        result([String]())
+        return
+      }
+      result(panel.urls.map { $0.path })
+    }
   }
 }

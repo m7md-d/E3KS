@@ -18,6 +18,7 @@ export 'src/diagnostics/engine_result.dart';
 export 'src/format/document_format.dart';
 export 'src/format/format_registry.dart';
 export 'src/inspect/color_usage.dart';
+export 'src/inspect/embedded_font.dart';
 export 'src/inspect/font_usage.dart';
 export 'src/inspect/hex_color.dart';
 export 'src/inspect/inspection_report.dart';

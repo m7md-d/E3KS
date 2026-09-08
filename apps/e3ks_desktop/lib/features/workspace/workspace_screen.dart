@@ -17,6 +17,7 @@ import '../../app/theme.dart';
 import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
 import '../../data/identity_store.dart';
+import '../../data/open_panel.dart';
 import '../../data/openable_files.dart';
 import '../../data/output_writer.dart';
 import '../../data/settings_store.dart';
@@ -74,6 +75,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     // والوعد لا يتحقّق بخطوط ناقصة.
     final report = widget.store.report;
     if (report == null) return;
+    // **ما حمله المستند يسبق كل بحث**: حروف كاتبه، بلا شبكة ولا بديل.
+    await widget.fonts.adoptEmbedded(report.embeddedFonts);
     await widget.fonts.resolveAll([for (final font in report.fonts) font.name]);
   }
 
@@ -84,12 +87,34 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     extensions: openableExtensions,
   );
 
-  /// **ملفات لا ملفًّا.** المجموعة تُبنى من أربعة أبواب، وهذا أوّلها
-  /// (`ADR 0005` §١)، و`openFiles` موجودة في الحزمة ولم تكن مستعملة.
+  /// **مستعرضٌ واحد يقبل الملفات والمجلدات معًا** (`ADR 0005` §١).
+  ///
+  /// اللوحة الأصلية تفتح الاثنين في مكان واحد، فيختار المستخدم ما شاء
+  /// ويستقرّ في الشجرة على كل حال. وحيث لا لوحة — ويندوز ولينكس، ولا
+  /// يخلطان الاثنين أصلًا — يبقى حوار الملفات وزرُّ المجلد في رأس الشجرة.
   Future<void> _browse() async {
+    final picked = await pickFilesOrFolders(openableExtensions);
+    if (picked != null) {
+      await _intake(picked);
+      return;
+    }
     final files = await openFiles(acceptedTypeGroups: const [_openable]);
-    for (final file in files) {
-      await _open(file.path);
+    await _intake([for (final file in files) file.path]);
+  }
+
+  /// يستقبل مسارات مختلطة: المجلد يصير جذرًا، والملفّ المدعوم يُفتح.
+  ///
+  /// **مشتركٌ بين المستعرض والإفلات**: مصدرهما يختلف وحصيلتهما واحدة.
+  Future<void> _intake(Iterable<String> paths) async {
+    for (final path in paths) {
+      if (Directory(path).existsSync()) {
+        await _openDirectory(path);
+        continue;
+      }
+      final name = path.toLowerCase();
+      if (openableExtensions.any((e) => name.endsWith('.$e'))) {
+        await _open(path);
+      }
     }
   }
 
@@ -114,16 +139,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   /// كان يأخذ أوّل ملفٍّ مطابق ثم يخرج، فيهمل البقيّة ويهمل المجلدات معًا.
   Future<void> _dropped(DropDoneDetails details) async {
     setState(() => _dragging = false);
-    for (final item in details.files) {
-      if (Directory(item.path).existsSync()) {
-        await _openDirectory(item.path);
-        continue;
-      }
-      final name = item.path.toLowerCase();
-      if (openableExtensions.any((e) => name.endsWith('.$e'))) {
-        await _open(item.path);
-      }
-    }
+    await _intake([for (final item in details.files) item.path]);
   }
 
   Future<void> _export() async {
@@ -179,7 +195,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 frame: widget.frame,
                 store: store,
                 settings: widget.settings,
-                onSettings: () => showSettings(context, widget.fonts),
+                onSettings: () =>
+                    showSettings(context, widget.fonts, widget.settings),
                 onOpenFolder: _browseFolder,
                 exporting: _exporting,
                 onExport: _export,
@@ -230,13 +247,17 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                               if (store.hasDocument)
                                 FontNotice(
                                   service: widget.fonts,
-                                  onDetails: () =>
-                                      showSettings(context, widget.fonts),
+                                  onDetails: () => showSettings(
+                                    context,
+                                    widget.fonts,
+                                    widget.settings,
+                                  ),
                                 ),
                               Expanded(
                                 child: PreviewPanel(
                                   store: store,
                                   onOpen: _open,
+                                  onBrowse: _browse,
                                   dragging: _dragging,
                                 ),
                               ),
@@ -489,17 +510,6 @@ class _TopBar extends StatelessWidget {
             ),
             _LanguageMenu(settings: settings),
             const SizedBox(width: 4),
-            // الدفعة بجوار الإعدادات: كلاهما فعلٌ يفتح حوارًا، ولا يزاحم
-            // زرَّ التصدير الذي يخصّ الملف المفتوح وحده.
-            // **الباب قبل الغرفة.** زرّ «أضف مجلدًا» يسكن رأس شجرة الملفات،
-            // والشجرة لا تظهر إلا بملفَّين — فلا سبيل إلى فتح مجلد إلا بعد
-            // فتح مجلد. وهذا الزرّ هو المخرج من تلك الحلقة.
-            IconButton(
-              onPressed: onOpenFolder,
-              icon: const Icon(LucideIcons.folderOpen, size: 16),
-              color: Shade.textMuted,
-              tooltip: t.openFolder,
-            ),
             IconButton(
               onPressed: onSettings,
               icon: const Icon(LucideIcons.settings, size: 16),

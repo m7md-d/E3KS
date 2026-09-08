@@ -152,3 +152,77 @@ Uint8List buildMarkedDocx() {
   }
   return ZipEncoder().encodeBytes(archive);
 }
+
+/// مستندٌ يضمّن خطًّا في نفسه — `word/fontTable.xml` وملفّ مشوَّش تحت
+/// `word/fonts/`.
+///
+/// **مصنوعٌ بنفس التشويش الذي يكتبه Word**: أوّل ٣٢ بايتًا مخالَفة (XOR)
+/// بمفتاح `w:fontKey` مقلوب البايتات. والقارئ يفكّها ويتحقّق من التوقيع،
+/// فالاختبار يقيس الفكّ لا صحّة نيّتنا.
+const String embeddedFontKey = '{2A9CC1D4-0B77-4E3F-9A55-8D1E6C3B0F21}';
+const String embeddedFontFamily = 'Northwind Sans';
+
+/// خطّ مصطنع: توقيع TrueType صحيح ثم حشو يميّز بايتاته.
+Uint8List fakeEmbeddedTtf() => Uint8List.fromList([
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  for (var i = 0; i < 60; i++) (i * 7 + 3) & 0xFF,
+]);
+
+/// يشوّش [bytes] كما يفعل Word: مفتاحٌ من `fontKey` مقلوب، على أوّل ٣٢ بايتًا.
+Uint8List obfuscate(Uint8List bytes, String fontKey) {
+  final hex = fontKey.replaceAll(RegExp(r'[{}\-]'), '');
+  final key = [
+    for (var i = 0; i < 32; i += 2)
+      int.parse(hex.substring(i, i + 2), radix: 16),
+  ].reversed.toList();
+  final out = Uint8List.fromList(bytes);
+  for (var i = 0; i < 32 && i < out.length; i++) {
+    out[i] ^= key[i % 16];
+  }
+  return out;
+}
+
+const String _fontTable =
+    '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<w:font w:name="$embeddedFontFamily">
+<w:embedRegular r:id="rId10" w:fontKey="$embeddedFontKey" w:subsetted="true"/>
+</w:font>
+<w:font w:name="Calibri"/>
+</w:fonts>''';
+
+const String _fontTableRels = '''
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId10" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/font" Target="fonts/font1.odttf"/>
+</Relationships>''';
+
+/// [fontKey] المخالف للمفتاح الحقيقي يمثّل ملفًّا لا يُفكّ.
+Uint8List buildEmbeddedFontDocx({String fontKey = embeddedFontKey}) {
+  final archive = Archive();
+  for (final entry in fixtureParts.entries) {
+    archive.add(ArchiveFile.bytes(entry.key, utf8.encode(entry.value.trim())));
+  }
+  archive
+    ..add(
+      ArchiveFile.bytes('word/fontTable.xml', utf8.encode(_fontTable.trim())),
+    )
+    ..add(
+      ArchiveFile.bytes(
+        'word/_rels/fontTable.xml.rels',
+        utf8.encode(_fontTableRels.trim()),
+      ),
+    )
+    ..add(
+      ArchiveFile.bytes(
+        'word/fonts/font1.odttf',
+        obfuscate(fakeEmbeddedTtf(), fontKey),
+      ),
+    );
+  return ZipEncoder().encodeBytes(archive);
+}
