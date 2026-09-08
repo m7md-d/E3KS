@@ -1,6 +1,6 @@
 name: e3ks_engine
 description: محرّك E3KS — فحص وتبديل الألوان والخطوط في مستندات OOXML بأمانة تامة.
-version: 0.2.0
+version: 0.2.1
 publish_to: none
 repository: https://github.com/m7md-d/E3KS
 issue_tracker: https://github.com/m7md-d/E3KS/issues

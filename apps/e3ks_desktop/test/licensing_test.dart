@@ -49,6 +49,21 @@ void main() {
     }
   });
 
+  test('الريدمي يعلن الإصدار الحالي', () {
+    // **وقع فعلًا عند رفع ٠٫٢٫١:** ارتفعت المواضع الستّة وبقي الريدمي على
+    // ٠٫٢٫٠. وهو أول ما يُقرأ في المستودع، فيكذب قبل أن يُفتح التطبيق.
+    // ترفعه الأداة مع الباقي، وهذا الحارس هو طرفها الآخر (`08` §3).
+    final readme = File('../../README.md').readAsStringSync();
+    final sites = RegExp(
+      r'(?:alt="Version |/badge/version-|Current version \*\*)(\d+\.\d+\.\d+)',
+    ).allMatches(readme).toList();
+
+    expect(sites, isNotEmpty, reason: 'لا رقم إصدار في README');
+    for (final site in sites) {
+      expect(site.group(1), equals(appVersion), reason: 'README.md');
+    }
+  });
+
   test('نصّ رخصة كل خطّ مشحون ومعلَن كأصل', () {
     // OFL 1.1 تُلزم بشحن النصّ مع الخطّ. غيابه مخالفة ترخيص لا سهو تنظيمي.
     // وتسعة خطوط تعني تسع رخص، لا رخصةً واحدة تنوب عنها.
