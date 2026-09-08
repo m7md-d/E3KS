@@ -216,7 +216,7 @@ void main() {
     // **`warnIfMissed` مطفأ عن قصد**: الضغطة يتلقّاها عنصر القائمة الملتفّ
     // حول النصّ، فيقول المحذّر إن النصّ نفسه ليس هدف الاختبار — وهو بنية
     // `PopupMenuItem` لا خلل في الاختبار.
-    await tester.tap(find.text('راجعته').last, warnIfMissed: false);
+    await tester.tap(find.text('تمت مراجعته').last, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     expect(store.files[store.activeIndex].reviewed, isTrue);
@@ -260,9 +260,9 @@ void main() {
     await tester.tap(actionsIn(other));
     await tester.pumpAndSettle();
     // والمؤشّر يغادر الصفّ إلى القائمة، كما يفعل المستخدم.
-    await mouse.moveTo(tester.getCenter(find.text('راجعته').last));
+    await mouse.moveTo(tester.getCenter(find.text('تمت مراجعته').last));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('راجعته').last, warnIfMissed: false);
+    await tester.tap(find.text('تمت مراجعته').last, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     expect(store.files[other].reviewed, isTrue, reason: 'سقط الاختيار');

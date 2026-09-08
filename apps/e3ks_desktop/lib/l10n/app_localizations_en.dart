@@ -33,9 +33,6 @@ class LEn extends L {
   String get reading => 'Reading the document…';
 
   @override
-  String get openAnother => 'Open another file';
-
-  @override
   String get tabColors => 'Colours';
 
   @override
@@ -63,12 +60,25 @@ class LEn extends L {
 
   @override
   String colorUsage(int count, Object role, Object parts) {
-    return '$count places · $role · $parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$_temp0 · $role · $parts';
   }
 
   @override
   String occurrences(int count) {
-    return '$count places';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+      zero: 'No places',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -85,16 +95,6 @@ class LEn extends L {
 
   @override
   String get confirm => 'Apply';
-
-  @override
-  String get fromOtherDocument => 'From another open document';
-
-  @override
-  String get openReferenceHint =>
-      'Colours from other open documents appear here.';
-
-  @override
-  String get fromSavedIdentities => 'From saved identities';
 
   @override
   String contrastReadable(Object ratio) {
@@ -168,14 +168,10 @@ class LEn extends L {
   }
 
   @override
-  String get inspectingDocument => 'Reading the document';
+  String get inspectingDocument => 'Inspecting the document';
 
   @override
   String get previewLoadingRest => 'The remaining pages are still being read';
-
-  @override
-  String get previewTruncated =>
-      'Part of the document is shown because it is long.';
 
   @override
   String get sectionBody => 'Body';
@@ -341,7 +337,7 @@ class LEn extends L {
   String get factScannedParts => 'Parts scanned';
 
   @override
-  String get export => 'Export document';
+  String get export => 'Export';
 
   @override
   String get exporting => 'Exporting…';
@@ -387,7 +383,14 @@ class LEn extends L {
 
   @override
   String changesBadge(int count) {
-    return '$count changes';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes',
+      one: '1 change',
+      zero: 'No changes',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -405,9 +408,6 @@ class LEn extends L {
 
   @override
   String get componentLicenses => 'Component licenses';
-
-  @override
-  String get sourceCode => 'Source code';
 
   @override
   String get roleShapeFill => 'Shape fill';
@@ -474,18 +474,7 @@ class LEn extends L {
   String get extractIdentityHint => 'The file\'s colours, ordered by use';
 
   @override
-  String extractFrom(String file) {
-    return 'Extract from: $file';
-  }
-
-  @override
   String get noOtherFiles => 'No other files open';
-
-  @override
-  String get quickPick => 'Quick pick';
-
-  @override
-  String get quickPickHint => 'Colours extracted from open files';
 
   @override
   String get labelPrimary => 'Primary';
@@ -734,9 +723,6 @@ class LEn extends L {
   String get filesPanel => 'Files';
 
   @override
-  String get openFolder => 'Open a folder';
-
-  @override
   String get looseFiles => 'Added files';
 
   @override
@@ -756,9 +742,6 @@ class LEn extends L {
 
   @override
   String get propsTitle => 'File properties';
-
-  @override
-  String get propsPath => 'Path';
 
   @override
   String get propsFormat => 'Format';
@@ -813,7 +796,13 @@ class LEn extends L {
         intl.NumberFormat.decimalPattern(localeName);
     final String spotsString = spotsNumberFormat.format(spots);
 
-    return '$mappedString of $totalString · $spotsString occurrences';
+    String _temp0 = intl.Intl.pluralLogic(
+      spots,
+      locale: localeName,
+      other: '$spotsString occurrences',
+      one: '1 occurrence',
+    );
+    return '$mappedString of $totalString · $_temp0';
   }
 
   @override
@@ -933,7 +922,13 @@ class LEn extends L {
 
   @override
   String markUsage(int count, Object kind, Object parts) {
-    return '$count places · $kind · $parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$_temp0 · $kind · $parts';
   }
 
   @override
@@ -952,7 +947,7 @@ class LEn extends L {
   String get focusedMark => 'Tracked mark';
 
   @override
-  String get tapMarkHint => 'Tap to track its places';
+  String get tapMarkHint => 'Track this mark on the page';
 
   @override
   String get reportMarksLifted => 'Marks removed';

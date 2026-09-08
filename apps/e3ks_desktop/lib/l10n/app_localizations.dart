@@ -145,12 +145,6 @@ abstract class L {
   /// **'جارٍ قراءة المستند…'**
   String get reading;
 
-  /// No description provided for @openAnother.
-  ///
-  /// In ar, this message translates to:
-  /// **'افتح ملف آخر'**
-  String get openAnother;
-
   /// No description provided for @tabColors.
   ///
   /// In ar, this message translates to:
@@ -202,13 +196,13 @@ abstract class L {
   /// No description provided for @colorUsage.
   ///
   /// In ar, this message translates to:
-  /// **'{count} موضعًا · {role} · {parts}'**
+  /// **'{count, plural, =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضع} other{{count} موضع}} · {role} · {parts}'**
   String colorUsage(int count, Object role, Object parts);
 
   /// No description provided for @occurrences.
   ///
   /// In ar, this message translates to:
-  /// **'{count} موضعًا'**
+  /// **'{count, plural, =0{بلا مواضع} =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضع} other{{count} موضع}}'**
   String occurrences(int count);
 
   /// No description provided for @emptyColors.
@@ -240,24 +234,6 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'اعتمد'**
   String get confirm;
-
-  /// No description provided for @fromOtherDocument.
-  ///
-  /// In ar, this message translates to:
-  /// **'من مستند آخر مفتوح'**
-  String get fromOtherDocument;
-
-  /// No description provided for @openReferenceHint.
-  ///
-  /// In ar, this message translates to:
-  /// **'ألوان المستندات الأخرى المفتوحة تظهر هنا.'**
-  String get openReferenceHint;
-
-  /// No description provided for @fromSavedIdentities.
-  ///
-  /// In ar, this message translates to:
-  /// **'من الهويات المحفوظة'**
-  String get fromSavedIdentities;
 
   /// No description provided for @contrastReadable.
   ///
@@ -396,12 +372,6 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'بقيّة الصفحات قيد الاستخراج'**
   String get previewLoadingRest;
-
-  /// No description provided for @previewTruncated.
-  ///
-  /// In ar, this message translates to:
-  /// **'عُرض جزء من المستند لأنه طويل.'**
-  String get previewTruncated;
 
   /// No description provided for @sectionBody.
   ///
@@ -730,7 +700,7 @@ abstract class L {
   /// No description provided for @export.
   ///
   /// In ar, this message translates to:
-  /// **'صدّر المستند'**
+  /// **'تصدير'**
   String get export;
 
   /// No description provided for @exporting.
@@ -814,7 +784,7 @@ abstract class L {
   /// No description provided for @changesBadge.
   ///
   /// In ar, this message translates to:
-  /// **'{count} تغييرًا'**
+  /// **'{count, plural, =0{بلا تغييرات} =1{تغيير واحد} =2{تغييران} few{{count} تغييرات} many{{count} تغيير} other{{count} تغيير}}'**
   String changesBadge(int count);
 
   /// No description provided for @language.
@@ -846,12 +816,6 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'رخص المكوّنات'**
   String get componentLicenses;
-
-  /// No description provided for @sourceCode.
-  ///
-  /// In ar, this message translates to:
-  /// **'الشيفرة المصدرية'**
-  String get sourceCode;
 
   /// No description provided for @roleShapeFill.
   ///
@@ -961,29 +925,11 @@ abstract class L {
   /// **'ألوان الملف مرتّبة بحسب الاستعمال'**
   String get extractIdentityHint;
 
-  /// No description provided for @extractFrom.
-  ///
-  /// In ar, this message translates to:
-  /// **'استخرج من: {file}'**
-  String extractFrom(String file);
-
   /// No description provided for @noOtherFiles.
   ///
   /// In ar, this message translates to:
   /// **'لا ملفات أخرى مفتوحة'**
   String get noOtherFiles;
-
-  /// No description provided for @quickPick.
-  ///
-  /// In ar, this message translates to:
-  /// **'اختيار سريع'**
-  String get quickPick;
-
-  /// No description provided for @quickPickHint.
-  ///
-  /// In ar, this message translates to:
-  /// **'ألوان مستخرَجة من الملفات المفتوحة'**
-  String get quickPickHint;
 
   /// No description provided for @labelPrimary.
   ///
@@ -1090,7 +1036,7 @@ abstract class L {
   /// No description provided for @addFont.
   ///
   /// In ar, this message translates to:
-  /// **'أضف خط'**
+  /// **'إضافة خط'**
   String get addFont;
 
   /// No description provided for @fontAdded.
@@ -1132,13 +1078,13 @@ abstract class L {
   /// No description provided for @fontsMissingOne.
   ///
   /// In ar, this message translates to:
-  /// **'«{family}» غير متاح، ويُرسَم بخطّ التطبيق.'**
+  /// **'«{family}» غير متاح، ويُرسَم بخط التطبيق.'**
   String fontsMissingOne(Object family);
 
   /// No description provided for @fontsMissingMany.
   ///
   /// In ar, this message translates to:
-  /// **'{count} خطوط غير متاحة، وتُرسَم بخطّ التطبيق.'**
+  /// **'{count, plural, =2{خطان غير متاحين، ويُرسمان بخط التطبيق.} few{{count} خطوط غير متاحة، وتُرسَم بخط التطبيق.} many{{count} خط غير متاح، ويُرسَم بخط التطبيق.} other{{count} خط غير متاح، ويُرسَم بخط التطبيق.}}'**
   String fontsMissingMany(int count);
 
   /// No description provided for @fontsFetching.
@@ -1423,12 +1369,6 @@ abstract class L {
   /// **'الملفات'**
   String get filesPanel;
 
-  /// No description provided for @openFolder.
-  ///
-  /// In ar, this message translates to:
-  /// **'افتح مجلدًا'**
-  String get openFolder;
-
   /// No description provided for @looseFiles.
   ///
   /// In ar, this message translates to:
@@ -1438,13 +1378,13 @@ abstract class L {
   /// No description provided for @addFiles.
   ///
   /// In ar, this message translates to:
-  /// **'أضف ملفات'**
+  /// **'إضافة ملفات'**
   String get addFiles;
 
   /// No description provided for @addFolder.
   ///
   /// In ar, this message translates to:
-  /// **'أضف مجلدًا'**
+  /// **'إضافة مجلد'**
   String get addFolder;
 
   /// No description provided for @fileLocked.
@@ -1456,7 +1396,7 @@ abstract class L {
   /// No description provided for @fileReviewed.
   ///
   /// In ar, this message translates to:
-  /// **'راجعته'**
+  /// **'تمت مراجعته'**
   String get fileReviewed;
 
   /// No description provided for @fileProperties.
@@ -1470,12 +1410,6 @@ abstract class L {
   /// In ar, this message translates to:
   /// **'خصائص الملفّ'**
   String get propsTitle;
-
-  /// No description provided for @propsPath.
-  ///
-  /// In ar, this message translates to:
-  /// **'المسار'**
-  String get propsPath;
 
   /// No description provided for @propsFormat.
   ///
@@ -1534,7 +1468,7 @@ abstract class L {
   /// No description provided for @propsColorsValue.
   ///
   /// In ar, this message translates to:
-  /// **'{mapped} من {total} · {spots} موضعًا'**
+  /// **'{mapped} من {total} · {spots, plural, =1{موضع واحد} =2{موضعان} few{{spots} مواضع} many{{spots} موضع} other{{spots} موضع}}'**
   String propsColorsValue(int mapped, int total, int spots);
 
   /// No description provided for @propsNothing.
@@ -1726,7 +1660,7 @@ abstract class L {
   /// No description provided for @markUsage.
   ///
   /// In ar, this message translates to:
-  /// **'{count} موضعًا · {kind} · {parts}'**
+  /// **'{count, plural, =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضع} other{{count} موضع}} · {kind} · {parts}'**
   String markUsage(int count, Object kind, Object parts);
 
   /// No description provided for @liftAll.
@@ -1762,7 +1696,7 @@ abstract class L {
   /// No description provided for @tapMarkHint.
   ///
   /// In ar, this message translates to:
-  /// **'اضغط لتتبّع مواضعها'**
+  /// **'متابعة العلامة في الصفحة'**
   String get tapMarkHint;
 
   /// No description provided for @reportMarksLifted.

@@ -24,6 +24,7 @@ import '../../data/window_frame.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/app_menu.dart';
 import '../../shared/widgets/entrance.dart';
+import '../../shared/widgets/open_button.dart';
 import '../../shared/widgets/panel.dart';
 import '../export/export_set_sheet.dart';
 import '../identity/identities_panel.dart';
@@ -237,6 +238,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                                 child: PreviewPanel(
                                   store: store,
                                   onOpen: _open,
+                                  onOpenFolder: _browseFolder,
                                   dragging: _dragging,
                                 ),
                               ),
@@ -489,17 +491,6 @@ class _TopBar extends StatelessWidget {
             ),
             _LanguageMenu(settings: settings),
             const SizedBox(width: 4),
-            // الدفعة بجوار الإعدادات: كلاهما فعلٌ يفتح حوارًا، ولا يزاحم
-            // زرَّ التصدير الذي يخصّ الملف المفتوح وحده.
-            // **الباب قبل الغرفة.** زرّ «أضف مجلدًا» يسكن رأس شجرة الملفات،
-            // والشجرة لا تظهر إلا بملفَّين — فلا سبيل إلى فتح مجلد إلا بعد
-            // فتح مجلد. وهذا الزرّ هو المخرج من تلك الحلقة.
-            IconButton(
-              onPressed: onOpenFolder,
-              icon: const Icon(LucideIcons.folderOpen, size: 16),
-              color: Shade.textMuted,
-              tooltip: t.openFolder,
-            ),
             IconButton(
               onPressed: onSettings,
               icon: const Icon(LucideIcons.settings, size: 16),
@@ -567,10 +558,18 @@ class _TopBar extends StatelessWidget {
             // كانت تخرج مبتورة. والزرّ هنا وحده يبلغ هذا الحدّ: صفٌّ
             // ضيّق داخل زرٍّ مضغوط الكثافة في شريط بارتفاع مضبوط.
             if (document == null)
-              FilledButton.icon(
-                onPressed: store.busy ? null : onBrowse,
-                icon: const Icon(LucideIcons.folderOpen, size: 16),
-                label: Text(t.chooseFile, overflow: TextOverflow.visible),
+              // **بابان في زرٍّ واحد.** الشجرة تحمل زرَّيها دائمًا، وهذا
+              // الزرّ يحمل البابين نفسيهما — فلا يبقى للأيقونة المنفردة
+              // في الشريط عمل.
+              OpenButton(
+                enabled: !store.busy,
+                onFiles: onBrowse,
+                onFolder: onOpenFolder,
+                child: FilledButton.icon(
+                  onPressed: store.busy ? null : () {},
+                  icon: const Icon(LucideIcons.folderOpen, size: 16),
+                  label: Text(t.chooseFile, overflow: TextOverflow.visible),
+                ),
               )
             else ...[
               // **الوجهتان تُسألان لا تُخمَّنان.** بمجموعةٍ مفتوحة قد يريد

@@ -27,11 +27,13 @@ class PreviewPanel extends StatefulWidget {
     super.key,
     required this.store,
     required this.onOpen,
+    required this.onOpenFolder,
     required this.dragging,
   });
 
   final WorkspaceStore store;
   final void Function(String path) onOpen;
+  final VoidCallback onOpenFolder;
   final bool dragging;
 
   @override
@@ -201,6 +203,7 @@ class _PreviewPanelState extends State<PreviewPanel> {
       final failure = store.failure;
       return DropZone(
         onOpen: widget.onOpen,
+        onOpenFolder: widget.onOpenFolder,
         busy: store.busy,
         dragging: widget.dragging,
         errors: failure == null ? const [] : failureLines(t, failure),

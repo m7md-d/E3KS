@@ -14,17 +14,22 @@ import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
 import '../../data/openable_files.dart';
 import '../../shared/widgets/mirror_mark.dart';
+import '../../shared/widgets/open_button.dart';
 
 class DropZone extends StatelessWidget {
   const DropZone({
     super.key,
     required this.onOpen,
+    required this.onOpenFolder,
     required this.busy,
     required this.dragging,
     this.errors = const [],
   });
 
   final void Function(String path) onOpen;
+
+  /// الباب الثاني: مجلدٌ وما تحته — القائمة على الزرّ نفسه.
+  final VoidCallback onOpenFolder;
   final bool busy;
   final bool dragging;
 
@@ -106,9 +111,13 @@ class DropZone extends StatelessWidget {
                               style: theme.textTheme.labelSmall,
                             ),
                             const SizedBox(height: 12),
-                            OutlinedButton(
-                              onPressed: _browse,
-                              child: Text(t.chooseFile),
+                            OpenButton(
+                              onFiles: _browse,
+                              onFolder: onOpenFolder,
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                child: Text(t.chooseFile),
+                              ),
                             ),
                           ],
                         ),

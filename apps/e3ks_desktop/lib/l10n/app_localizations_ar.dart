@@ -33,9 +33,6 @@ class LAr extends L {
   String get reading => 'جارٍ قراءة المستند…';
 
   @override
-  String get openAnother => 'افتح ملف آخر';
-
-  @override
   String get tabColors => 'الألوان';
 
   @override
@@ -61,12 +58,31 @@ class LAr extends L {
 
   @override
   String colorUsage(int count, Object role, Object parts) {
-    return '$count موضعًا · $role · $parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موضع',
+      many: '$count موضع',
+      few: '$count مواضع',
+      two: 'موضعان',
+      one: 'موضع واحد',
+    );
+    return '$_temp0 · $role · $parts';
   }
 
   @override
   String occurrences(int count) {
-    return '$count موضعًا';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موضع',
+      many: '$count موضع',
+      few: '$count مواضع',
+      two: 'موضعان',
+      one: 'موضع واحد',
+      zero: 'بلا مواضع',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -83,15 +99,6 @@ class LAr extends L {
 
   @override
   String get confirm => 'اعتمد';
-
-  @override
-  String get fromOtherDocument => 'من مستند آخر مفتوح';
-
-  @override
-  String get openReferenceHint => 'ألوان المستندات الأخرى المفتوحة تظهر هنا.';
-
-  @override
-  String get fromSavedIdentities => 'من الهويات المحفوظة';
 
   @override
   String contrastReadable(Object ratio) {
@@ -169,9 +176,6 @@ class LAr extends L {
 
   @override
   String get previewLoadingRest => 'بقيّة الصفحات قيد الاستخراج';
-
-  @override
-  String get previewTruncated => 'عُرض جزء من المستند لأنه طويل.';
 
   @override
   String get sectionBody => 'المتن';
@@ -336,7 +340,7 @@ class LAr extends L {
   String get factScannedParts => 'أجزاء مفحوصة';
 
   @override
-  String get export => 'صدّر المستند';
+  String get export => 'تصدير';
 
   @override
   String get exporting => 'جارٍ التصدير…';
@@ -382,7 +386,17 @@ class LAr extends L {
 
   @override
   String changesBadge(int count) {
-    return '$count تغييرًا';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغيير',
+      many: '$count تغيير',
+      few: '$count تغييرات',
+      two: 'تغييران',
+      one: 'تغيير واحد',
+      zero: 'بلا تغييرات',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -400,9 +414,6 @@ class LAr extends L {
 
   @override
   String get componentLicenses => 'رخص المكوّنات';
-
-  @override
-  String get sourceCode => 'الشيفرة المصدرية';
 
   @override
   String get roleShapeFill => 'تعبئة شكل';
@@ -470,18 +481,7 @@ class LAr extends L {
   String get extractIdentityHint => 'ألوان الملف مرتّبة بحسب الاستعمال';
 
   @override
-  String extractFrom(String file) {
-    return 'استخرج من: $file';
-  }
-
-  @override
   String get noOtherFiles => 'لا ملفات أخرى مفتوحة';
-
-  @override
-  String get quickPick => 'اختيار سريع';
-
-  @override
-  String get quickPickHint => 'ألوان مستخرَجة من الملفات المفتوحة';
 
   @override
   String get labelPrimary => 'الأساسي';
@@ -537,7 +537,7 @@ class LAr extends L {
   String get deleteAllFonts => 'احذف الكل';
 
   @override
-  String get addFont => 'أضف خط';
+  String get addFont => 'إضافة خط';
 
   @override
   String fontAdded(String family) {
@@ -561,12 +561,20 @@ class LAr extends L {
 
   @override
   String fontsMissingOne(Object family) {
-    return '«$family» غير متاح، ويُرسَم بخطّ التطبيق.';
+    return '«$family» غير متاح، ويُرسَم بخط التطبيق.';
   }
 
   @override
   String fontsMissingMany(int count) {
-    return '$count خطوط غير متاحة، وتُرسَم بخطّ التطبيق.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count خط غير متاح، ويُرسَم بخط التطبيق.',
+      many: '$count خط غير متاح، ويُرسَم بخط التطبيق.',
+      few: '$count خطوط غير متاحة، وتُرسَم بخط التطبيق.',
+      two: 'خطان غير متاحين، ويُرسمان بخط التطبيق.',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -727,31 +735,25 @@ class LAr extends L {
   String get filesPanel => 'الملفات';
 
   @override
-  String get openFolder => 'افتح مجلدًا';
-
-  @override
   String get looseFiles => 'ملفات مضافة';
 
   @override
-  String get addFiles => 'أضف ملفات';
+  String get addFiles => 'إضافة ملفات';
 
   @override
-  String get addFolder => 'أضف مجلدًا';
+  String get addFolder => 'إضافة مجلد';
 
   @override
   String get fileLocked => 'مقفل عن الخطة العامّة';
 
   @override
-  String get fileReviewed => 'راجعته';
+  String get fileReviewed => 'تمت مراجعته';
 
   @override
   String get fileProperties => 'خصائص';
 
   @override
   String get propsTitle => 'خصائص الملفّ';
-
-  @override
-  String get propsPath => 'المسار';
 
   @override
   String get propsFormat => 'الصيغة';
@@ -806,7 +808,16 @@ class LAr extends L {
         intl.NumberFormat.decimalPattern(localeName);
     final String spotsString = spotsNumberFormat.format(spots);
 
-    return '$mappedString من $totalString · $spotsString موضعًا';
+    String _temp0 = intl.Intl.pluralLogic(
+      spots,
+      locale: localeName,
+      other: '$spotsString موضع',
+      many: '$spotsString موضع',
+      few: '$spotsString مواضع',
+      two: 'موضعان',
+      one: 'موضع واحد',
+    );
+    return '$mappedString من $totalString · $_temp0';
   }
 
   @override
@@ -924,7 +935,16 @@ class LAr extends L {
 
   @override
   String markUsage(int count, Object kind, Object parts) {
-    return '$count موضعًا · $kind · $parts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موضع',
+      many: '$count موضع',
+      few: '$count مواضع',
+      two: 'موضعان',
+      one: 'موضع واحد',
+    );
+    return '$_temp0 · $kind · $parts';
   }
 
   @override
@@ -943,7 +963,7 @@ class LAr extends L {
   String get focusedMark => 'علامة متتبَّعة';
 
   @override
-  String get tapMarkHint => 'اضغط لتتبّع مواضعها';
+  String get tapMarkHint => 'متابعة العلامة في الصفحة';
 
   @override
   String get reportMarksLifted => 'علامات رُفعت';

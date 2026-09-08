@@ -54,22 +54,40 @@ void main() {
   final ready = File(_demo).existsSync();
 
   testWidgets('باب المجلد مفتوح قبل أي ملف', (tester) async {
-    // **الخلل الذي وُلد منه الاختبار:** زرّ «أضف مجلدًا» كان في رأس شجرة
+    // **الخلل الذي وُلد منه الاختبار:** زرّ «إضافة مجلد» كان في رأس شجرة
     // الملفات وحدها، والشجرة لا تظهر إلا بملفَّين — فلا سبيل إلى فتح مجلد
-    // إلا بعد فتح مجلد. بابٌ داخل الغرفة التي يفتحها.
+    // إلا بعد فتح مجلد. بابٌ داخل الغرفة التي يفتحها. والشجرة اليوم ظاهرة
+    // دائمًا، فالحارس على زرّها هو.
     await tester.binding.setSurfaceSize(const Size(1280, 800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pump(tester, WorkspaceStore());
     await tester.pumpAndSettle();
 
-    // التلميح يبنيه `IconButton` داخله، فيُصعَد منه إلى الزرّ.
-    final button = find.ancestor(
-      of: find.byTooltip('افتح مجلدًا'),
-      matching: find.byType(IconButton),
+    // التلميح فوق الزرّ، فيُنزَل منه إلى ما يستقبل الضغطة.
+    final button = find.descendant(
+      of: find.byTooltip('إضافة مجلد'),
+      matching: find.byType(InkWell),
     );
     expect(button, findsOneWidget, reason: 'لا باب إلى المجلد بلا ملف مفتوح');
-    expect(tester.widget<IconButton>(button).onPressed, isNotNull);
+    expect(tester.widget<InkWell>(button).onTap, isNotNull);
+  });
+
+  testWidgets('زرّ الفتح يحمل البابين: ملفات أو مجلد', (tester) async {
+    // **الحصر بالملفات كان قيدًا من الأداة.** الزرّ الكبير هو أوّل ما يلمسه
+    // القادم، وكان يفتح حوار الملفات وحده — والمجلد خلف أيقونةٍ منفردة في
+    // الشريط. الأيقونة رُفعت، والبابان صارا في الزرّ نفسه واسمه كما هو.
+    await tester.binding.setSurfaceSize(const Size(1280, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await _pump(tester, WorkspaceStore());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'اختر ملف…'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('إضافة ملفات'), findsOneWidget, reason: 'باب الملفات');
+    expect(find.text('إضافة مجلد'), findsOneWidget, reason: 'باب المجلد');
   });
 
   testWidgets(
