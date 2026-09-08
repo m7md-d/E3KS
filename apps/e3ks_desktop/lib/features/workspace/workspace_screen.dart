@@ -17,6 +17,7 @@ import '../../app/theme.dart';
 import '../../data/document_loader.dart';
 import '../../data/font_service.dart';
 import '../../data/identity_store.dart';
+import '../../data/open_panel.dart';
 import '../../data/openable_files.dart';
 import '../../data/output_writer.dart';
 import '../../data/settings_store.dart';
@@ -24,7 +25,6 @@ import '../../data/window_frame.dart';
 import '../../data/workspace_store.dart';
 import '../../shared/widgets/app_menu.dart';
 import '../../shared/widgets/entrance.dart';
-import '../../shared/widgets/open_button.dart';
 import '../../shared/widgets/panel.dart';
 import '../export/export_set_sheet.dart';
 import '../identity/identities_panel.dart';
@@ -87,12 +87,34 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     extensions: openableExtensions,
   );
 
-  /// **ملفات لا ملفًّا.** المجموعة تُبنى من أربعة أبواب، وهذا أوّلها
-  /// (`ADR 0005` §١)، و`openFiles` موجودة في الحزمة ولم تكن مستعملة.
+  /// **مستعرضٌ واحد يقبل الملفات والمجلدات معًا** (`ADR 0005` §١).
+  ///
+  /// اللوحة الأصلية تفتح الاثنين في مكان واحد، فيختار المستخدم ما شاء
+  /// ويستقرّ في الشجرة على كل حال. وحيث لا لوحة — ويندوز ولينكس، ولا
+  /// يخلطان الاثنين أصلًا — يبقى حوار الملفات وزرُّ المجلد في رأس الشجرة.
   Future<void> _browse() async {
+    final picked = await pickFilesOrFolders(openableExtensions);
+    if (picked != null) {
+      await _intake(picked);
+      return;
+    }
     final files = await openFiles(acceptedTypeGroups: const [_openable]);
-    for (final file in files) {
-      await _open(file.path);
+    await _intake([for (final file in files) file.path]);
+  }
+
+  /// يستقبل مسارات مختلطة: المجلد يصير جذرًا، والملفّ المدعوم يُفتح.
+  ///
+  /// **مشتركٌ بين المستعرض والإفلات**: مصدرهما يختلف وحصيلتهما واحدة.
+  Future<void> _intake(Iterable<String> paths) async {
+    for (final path in paths) {
+      if (Directory(path).existsSync()) {
+        await _openDirectory(path);
+        continue;
+      }
+      final name = path.toLowerCase();
+      if (openableExtensions.any((e) => name.endsWith('.$e'))) {
+        await _open(path);
+      }
     }
   }
 
@@ -117,16 +139,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   /// كان يأخذ أوّل ملفٍّ مطابق ثم يخرج، فيهمل البقيّة ويهمل المجلدات معًا.
   Future<void> _dropped(DropDoneDetails details) async {
     setState(() => _dragging = false);
-    for (final item in details.files) {
-      if (Directory(item.path).existsSync()) {
-        await _openDirectory(item.path);
-        continue;
-      }
-      final name = item.path.toLowerCase();
-      if (openableExtensions.any((e) => name.endsWith('.$e'))) {
-        await _open(item.path);
-      }
-    }
+    await _intake([for (final item in details.files) item.path]);
   }
 
   Future<void> _export() async {
@@ -240,7 +253,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                                 child: PreviewPanel(
                                   store: store,
                                   onOpen: _open,
-                                  onOpenFolder: _browseFolder,
+                                  onBrowse: _browse,
                                   dragging: _dragging,
                                 ),
                               ),
@@ -560,18 +573,10 @@ class _TopBar extends StatelessWidget {
             // كانت تخرج مبتورة. والزرّ هنا وحده يبلغ هذا الحدّ: صفٌّ
             // ضيّق داخل زرٍّ مضغوط الكثافة في شريط بارتفاع مضبوط.
             if (document == null)
-              // **بابان في زرٍّ واحد.** الشجرة تحمل زرَّيها دائمًا، وهذا
-              // الزرّ يحمل البابين نفسيهما — فلا يبقى للأيقونة المنفردة
-              // في الشريط عمل.
-              OpenButton(
-                enabled: !store.busy,
-                onFiles: onBrowse,
-                onFolder: onOpenFolder,
-                child: FilledButton.icon(
-                  onPressed: store.busy ? null : () {},
-                  icon: const Icon(LucideIcons.folderOpen, size: 16),
-                  label: Text(t.chooseFile, overflow: TextOverflow.visible),
-                ),
+              FilledButton.icon(
+                onPressed: store.busy ? null : onBrowse,
+                icon: const Icon(LucideIcons.folderOpen, size: 16),
+                label: Text(t.chooseFile, overflow: TextOverflow.visible),
               )
             else ...[
               // **الوجهتان تُسألان لا تُخمَّنان.** بمجموعةٍ مفتوحة قد يريد

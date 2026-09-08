@@ -6,48 +6,30 @@ library;
 
 import 'dart:io';
 
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../app/l10n_extensions.dart';
 import '../../app/theme.dart';
-import '../../data/openable_files.dart';
 import '../../shared/widgets/mirror_mark.dart';
-import '../../shared/widgets/open_button.dart';
 
 class DropZone extends StatelessWidget {
   const DropZone({
     super.key,
-    required this.onOpen,
-    required this.onOpenFolder,
+    required this.onBrowse,
     required this.busy,
     required this.dragging,
     this.errors = const [],
   });
 
-  final void Function(String path) onOpen;
-
-  /// الباب الثاني: مجلدٌ وما تحته — القائمة على الزرّ نفسه.
-  final VoidCallback onOpenFolder;
+  /// **الزرّ يستدعي مستعرض الشاشة لا مستعرضًا خاصًّا به.** كان يفتح حوار
+  /// ملفٍّ واحد بنفسه، فاختلف عمّا يفعله الزرّ التوأم في الشريط.
+  final VoidCallback onBrowse;
   final bool busy;
   final bool dragging;
 
   /// أسباب الفشل مصاغةً بلغة المستخدم الحالية.
   final List<String> errors;
-
-  Future<void> _browse() async {
-    // **الامتدادات من مرجعها الواحد.** كان امتداد Word مكتوبًا هنا وحده،
-    // فعجز زرّ الحالة الفارغة — أوّل ما يلمسه القادم الجديد — عن فتح عرضٍ
-    // تقديمي والتطبيق يدعمه منذ المرحلة ٣. قائمتان تنحرفان، والحارس
-    // يمسح `lib/` ويرفض امتدادًا مكتوبًا خارج مرجعه.
-    const type = XTypeGroup(
-      label: 'E3KS', // e3ks:not-ui
-      extensions: openableExtensions,
-    );
-    final file = await openFile(acceptedTypeGroups: const [type]);
-    if (file != null) onOpen(file.path);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,13 +93,9 @@ class DropZone extends StatelessWidget {
                               style: theme.textTheme.labelSmall,
                             ),
                             const SizedBox(height: 12),
-                            OpenButton(
-                              onFiles: _browse,
-                              onFolder: onOpenFolder,
-                              child: OutlinedButton(
-                                onPressed: () {},
-                                child: Text(t.chooseFile),
-                              ),
+                            OutlinedButton(
+                              onPressed: onBrowse,
+                              child: Text(t.chooseFile),
                             ),
                           ],
                         ),

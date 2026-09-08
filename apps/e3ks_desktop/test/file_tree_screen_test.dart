@@ -73,21 +73,42 @@ void main() {
     expect(tester.widget<InkWell>(button).onTap, isNotNull);
   });
 
-  testWidgets('زرّ الفتح يحمل البابين: ملفات أو مجلد', (tester) async {
-    // **الحصر بالملفات كان قيدًا من الأداة.** الزرّ الكبير هو أوّل ما يلمسه
-    // القادم، وكان يفتح حوار الملفات وحده — والمجلد خلف أيقونةٍ منفردة في
-    // الشريط. الأيقونة رُفعت، والبابان صارا في الزرّ نفسه واسمه كما هو.
+  testWidgets('زرّ الفتح حاضر وحيّ قبل أي ملف', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await _pump(tester, WorkspaceStore());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, 'اختر ملف…'));
-    await tester.pumpAndSettle();
+    final button = find.widgetWithText(FilledButton, 'اختر ملف…');
+    expect(button, findsOneWidget);
+    expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+  });
 
-    expect(find.text('إضافة ملفات'), findsOneWidget, reason: 'باب الملفات');
-    expect(find.text('إضافة مجلد'), findsOneWidget, reason: 'باب المجلد');
+  test('لوحة الفتح الأصلية تقبل الملفات والمجلدات معًا', () {
+    // **الحارس على المصدر**: الرايتان تعبران إلى AppKit ولا يبلغهما اختبار
+    // ودجة — كالصندوق الرملي (`03`). فالمقياس أن تبقيا مكتوبتين، وأن يبقى
+    // طرفا القناة على اسمٍ واحد.
+    final swift = File(
+      'macos/Runner/MainFlutterWindow.swift',
+    ).readAsStringSync();
+    expect(swift, contains('panel.canChooseFiles = true'));
+    expect(swift, contains('panel.canChooseDirectories = true'));
+    expect(swift, contains('panel.allowsMultipleSelection = true'));
+    expect(
+      swift,
+      contains('types.append(.folder)'),
+      reason: 'حصرُ الأنواع يُطفئ المجلدات',
+    );
+
+    final dart = File('lib/data/open_panel.dart').readAsStringSync();
+    final channel = RegExp(
+      r"MethodChannel\('([^']+)'\)",
+    ).firstMatch(dart)?.group(1);
+    expect(channel, isNotNull, reason: 'لا اسم قناة في الدارت');
+    expect(swift, contains('name: "$channel"'), reason: 'طرفان باسمين');
+    expect(dart, contains("'pickAny'"));
+    expect(swift, contains('call.method == "pickAny"'));
   });
 
   testWidgets(
