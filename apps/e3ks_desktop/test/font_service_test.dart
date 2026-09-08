@@ -67,6 +67,19 @@ class _FakeFetcher implements FontFetcher {
   }
 }
 
+/// جالبٌ يجيب بحسب اسم العائلة — يلزم حين يفشل الأصل وينجح بديله.
+class _ScriptedFetcher implements FontFetcher {
+  _ScriptedFetcher(this.script);
+  final Map<String, FetchResult> script;
+  final List<String> asked = [];
+
+  @override
+  Future<FetchResult> fetch(String family) async {
+    asked.add(family);
+    return script[family] ?? (outcome: FetchOutcome.notFound, bytes: null);
+  }
+}
+
 late Directory _dir;
 FontCache freshCache() {
   _dir = Directory.systemTemp.createTempSync('e3ks_fonts_');
@@ -101,6 +114,40 @@ void main() {
       expect(service.statuses.single.origin, equals(FontOrigin.fetched));
       expect(cache.has('Amiri'), isTrue, reason: 'لم يُحفَظ للمرّة القادمة');
       expect(cache.list().single.bytes, greaterThan(0));
+    });
+
+    test('بديل غير مشحون يُجلب، فيصير بديلًا حقًّا', () async {
+      // **الوعد يسبق الوصول إن لم نجلبه.** Cambria لا تخدمها Google ولا
+      // تُشحن معنا، وبديلها Caladea يُجلب كما يُجلب أي خطّ — وبلا هذا
+      // الجلب تقول الرقاقة «بديل مطابق» والصفحة مرسومة بخطّ التطبيق.
+      final fetcher = _ScriptedFetcher({
+        'Cambria': (outcome: FetchOutcome.notFound, bytes: null),
+        'Caladea': (outcome: FetchOutcome.fetched, bytes: fakeTtf()),
+      });
+      final cache = freshCache();
+      final service = FontService(cache, fetcher: fetcher);
+
+      await service.resolveAll(['Cambria']);
+
+      expect(service.statuses.single.origin, equals(FontOrigin.substituted));
+      expect(cache.has('Caladea'), isTrue, reason: 'البديل لم يُحفَظ');
+      expect(fetcher.asked, contains('Caladea'));
+    });
+
+    test('بديل لم يصل لا يُدَّعى', () async {
+      final fetcher = _ScriptedFetcher({
+        'Cambria': (outcome: FetchOutcome.offline, bytes: null),
+        'Caladea': (outcome: FetchOutcome.offline, bytes: null),
+      });
+      final service = FontService(freshCache(), fetcher: fetcher);
+
+      await service.resolveAll(['Cambria']);
+
+      expect(
+        service.statuses.single.origin,
+        equals(FontOrigin.offline),
+        reason: 'ادّعى بديلًا لم يصل',
+      );
     });
 
     test('المحفوظ لا يُجلَب مرّةً ثانية', () async {
@@ -448,6 +495,8 @@ void main() {
 
     test('ما لا نملكه ولا بديل له يُعلَن غير متاح', () {
       expect(previewFit('Sakkal Majalla'), equals(PreviewFit.fallback));
+      // بديل Cambria يُجلب ولا يُشحن، فقبل وصوله الرسم بخطّ التطبيق.
+      expect(previewFit('Cambria'), equals(PreviewFit.fallback));
     });
   });
 }

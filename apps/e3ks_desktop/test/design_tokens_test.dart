@@ -296,6 +296,12 @@ void main() {
     for (final open in substituteFamilies) {
       expect(bundledFamilies, contains(open));
     }
+    // **ما يُجلب لا يُشحن.** رخصة ما نوزّعه علينا، وما يجلبه جهاز المستخدم
+    // من قناة عامّة شأنه هو — فتسرّب أحدها إلى الحزمة يقلب المسؤولية.
+    for (final fetched in fetchedSubstituteFamilies) {
+      expect(bundledFamilies, isNot(contains(fetched)));
+      expect(pubspec, isNot(contains('family: $fetched')));
+    }
   });
 
   test('كل لون في الرموز فريد داخل نطاقه', () {

@@ -119,7 +119,7 @@ class FontService extends ChangeNotifier {
       return FontOrigin.cached;
     }
 
-    if (!fetchEnabled) return _lastResort(family, FontOrigin.disabled);
+    if (!fetchEnabled) return await _lastResort(family, FontOrigin.disabled);
 
     final result = await _fetcher.fetch(family);
     switch (result.outcome) {
@@ -128,10 +128,10 @@ class FontService extends ChangeNotifier {
         await _register(family, result.bytes!);
         return FontOrigin.fetched;
       case FetchOutcome.offline:
-        return _lastResort(family, FontOrigin.offline);
+        return await _lastResort(family, FontOrigin.offline);
       case FetchOutcome.notFound:
       case FetchOutcome.failed:
-        return _lastResort(family, FontOrigin.unavailable);
+        return await _lastResort(family, FontOrigin.unavailable);
     }
   }
 
@@ -140,8 +140,31 @@ class FontService extends ChangeNotifier {
   /// **يُعلَن ولا يُخفى**: التخطيط سليم والحروف ليست حروف الخطّ المطلوب،
   /// فالمستخدم يستحقّ أن يعرف (`00` §5). ويبقى [failure] لما لا بديل له —
   /// «انقطع الاتصال» غير «لن نجده أبدًا»، والفرق يقرّر هل يعيد المحاولة.
-  FontOrigin _lastResort(String family, FontOrigin failure) =>
-      hasSubstitute(family) ? FontOrigin.substituted : failure;
+  ///
+  /// **والبديل المجلوب يُجلب كما يُجلب أي خطّ.** بعضها مشحون معنا وبعضها
+  /// على القنوات العامّة، فالوعد به قبل وصوله يجعل الرقاقة تقول «بديل
+  /// مطابق» والصفحة مرسومة بخطّ التطبيق.
+  Future<FontOrigin> _lastResort(String family, FontOrigin failure) async {
+    final stand = substituteFor(family);
+    if (stand == null) return failure;
+    if (isBundled(stand) || _loaded.contains(stand)) {
+      return FontOrigin.substituted;
+    }
+    if (isFontAvailable(stand)) return FontOrigin.substituted;
+
+    final saved = cache.read(stand);
+    if (saved != null) {
+      await _register(stand, saved);
+      return FontOrigin.substituted;
+    }
+
+    if (!fetchEnabled) return failure;
+    final result = await _fetcher.fetch(stand);
+    if (result.outcome != FetchOutcome.fetched) return failure;
+    await cache.write(stand, result.bytes!);
+    await _register(stand, result.bytes!);
+    return FontOrigin.substituted;
+  }
 
   /// يسجّل الخطّ في محرّك الرسم كي تراه المعاينة فورًا، بلا إعادة تشغيل.
   Future<void> _register(String family, Uint8List bytes) async {

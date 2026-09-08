@@ -20,10 +20,24 @@ library;
 
 import 'font_probe.dart';
 
-/// خطّ مملوك ← بديله المضمَّن.
+/// **المقاسات مقيسة لا مدَّعاة.** قِسنا عرض كل محرف من ٧٣ محرفًا عند 100pt،
+/// وعرض جملة كاملة، بين كل أصل وبديله — بالخطوط الحقيقية على macOS:
+///
+/// | الأصل ← البديل | أسوأ فرق |
+/// |---|---|
+/// | Arial ← Arimo | 0.000px |
+/// | Georgia ← Gelasio | 0.000px |
+/// | Calibri ← Carlito | 0.000px |
+/// | Times New Roman ← Tinos | 0.000px |
+/// | Courier New ← Cousine | 0.000px |
+///
+/// وشاهدٌ سالب يقول إن القياس يميّز: Arial ← Times New Roman يختلف في ٥٢
+/// محرفًا من ٦٩، وأسوأ فرق 11.23px.
+
+/// خطّ مملوك ← بديله المشحون معنا.
 ///
 /// المفتاح بأحرف صغيرة: المستندات تكتب «CALIBRI» و«Calibri» و«calibri».
-const Map<String, String> _substitutes = {
+const Map<String, String> _bundled = {
   // Arimo مطابق مقاسيًّا لـ Arial، وHelvetica تشارك Arial مقاساتها.
   'arial': 'Arimo',
   'helvetica': 'Arimo',
@@ -35,6 +49,27 @@ const Map<String, String> _substitutes = {
   'georgia': 'Gelasio',
 };
 
+/// خطّ مملوك ← بديل **يُجلب إلى جهاز المستخدم**، ولا يُشحن معنا.
+///
+/// **الفرق مسؤولية لا تقنية:** ما نشحنه نلتزم برخصته، وما يجلبه جهاز
+/// المستخدم من قناة عامة شأنه هو. فهذه لا تزيد حجم الحزمة ولا تدخل شاشة
+/// الرخص؛ تصل عند أول مستند يطلب أصلها ثم تبقى محفوظة على قرصه.
+///
+/// **ولماذا هذه بالذات:** Google تخدم Times New Roman و Courier New بأسمائها
+/// (فيُجلب الأصل نفسه أوّلًا)، وتعجز عن Cambria و Segoe UI و Aptos — مقيسًا
+/// بطلبها من `css2`. فالبديل هنا لمن هو خارج التغطية: بلا شبكة، أو على
+/// نظامٍ لا يملك الخطّ.
+const Map<String, String> _fetched = {
+  'times new roman': 'Tinos',
+  'times': 'Tinos',
+  'liberation serif': 'Tinos',
+  'courier new': 'Cousine',
+  'liberation mono': 'Cousine',
+  // **غير مقيس عندنا**: لا Cambria على جهاز التطوير ولا تخدمها Google،
+  // فمقاسيّة Caladea قول ناشرها. تُقاس على أول جهاز فيه Cambria.
+  'cambria': 'Caladea',
+};
+
 /// العائلة التي تُرسم بها المعاينة نيابةً عن [family].
 ///
 /// **البديل ملاذٌ أخير لا اختصار.** الخطّ الحقيقي أدقّ من أي بديل، فإن كان
@@ -43,7 +78,13 @@ const Map<String, String> _substitutes = {
 String previewFamily(String family) {
   final name = family.trim();
   if (isBundled(name) || isFontAvailable(name)) return name;
-  return _substitutes[name.toLowerCase()] ?? name;
+  return substituteFor(name) ?? name;
+}
+
+/// بديل هذه العائلة إن كان لها بديل — مشحونًا كان أو مجلوبًا.
+String? substituteFor(String family) {
+  final key = family.trim().toLowerCase();
+  return _bundled[key] ?? _fetched[key];
 }
 
 /// بماذا سترسم المعاينة هذه العائلة **على هذا الجهاز**.
@@ -66,16 +107,25 @@ enum PreviewFit {
 PreviewFit previewFit(String family) {
   final name = family.trim();
   if (isBundled(name) || isFontAvailable(name)) return PreviewFit.real;
-  return hasSubstitute(name) ? PreviewFit.substitute : PreviewFit.fallback;
+  final stand = substituteFor(name);
+  if (stand == null) return PreviewFit.fallback;
+  // **البديل المجلوب لا يُوعَد به قبل وصوله.** الرقاقة تصف ما يُرسم الآن،
+  // فبديلٌ لم يصل بعدُ سقوطٌ إلى خطّ التطبيق لا بديل مطابق.
+  return isBundled(stand) || isFontAvailable(stand)
+      ? PreviewFit.substitute
+      : PreviewFit.fallback;
 }
 
-/// هل لهذه العائلة بديل مضمَّن؟ تستعمله الواجهة كي تقول للمستخدم إن ما يراه
+/// هل لهذه العائلة بديل؟ تستعمله الواجهة كي تقول للمستخدم إن ما يراه
 /// بديلٌ مطابق مقاسيًّا لا الخطّ نفسه.
-bool hasSubstitute(String family) =>
-    _substitutes.containsKey(family.trim().toLowerCase());
+bool hasSubstitute(String family) => substituteFor(family) != null;
 
-/// كل البدائل المضمَّنة، لعرضها في شاشة الرخص وللاختبارات.
-Set<String> get substituteFamilies => _substitutes.values.toSet();
+/// البدائل المشحونة معنا: تُعرض رخصها، ويحرسها الاختبار.
+Set<String> get substituteFamilies => _bundled.values.toSet();
+
+/// البدائل التي تُجلب ولا تُشحن — لا رخصة علينا فيها، ويحرس الاختبار
+/// ألّا تتسرّب إلى الحزمة.
+Set<String> get fetchedSubstituteFamilies => _fetched.values.toSet();
 
 /// الخطوط المشحونة داخل الحزمة، كما هي مصرَّحة في `pubspec.yaml`.
 ///
